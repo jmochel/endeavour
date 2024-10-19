@@ -25,7 +25,7 @@ jobs:
       run: mvn -B package --file pom.xml
 
   publish-job:
-      needs: build
+      needs: build_test
       runs-on: ubuntu-latest
       steps:
       - name: Checkout code

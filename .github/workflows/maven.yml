@@ -35,10 +35,12 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - run: mvn --batch-mode --update-snapshots verify
-      - run: mkdir staging && cp target/*.jar staging
-      - uses: actions/upload-artifact@v3
+      - name: Create and stage artifact
+        run: |
+          mvn --batch-mode --update-snapshots verify
+          mkdir staging && cp target/*.jar staging
+      - name: Uplaod artifact
+        uses: actions/upload-artifact@v3
         with:
           name: Package
-          path: staging
-
+          path: downloads

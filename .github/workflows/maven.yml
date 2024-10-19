@@ -19,21 +19,10 @@ jobs:
       uses: actions/setup-java@v3
       with:
         java-version: '21'
-        distribution: 'corretto'
+        distribution: 'temurin'
         cache: 'maven'
-    - name: Cache Maven packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
-
-    - name: Install dependencies
-      run: mvn install -DskipTests
-
-    - name: Run tests
-      run: mvn test
+    - name: Build with Maven
+      run: mvn -B package pom.xml
 
 publish-job:
     needs: build
@@ -45,11 +34,11 @@ publish-job:
       uses: actions/setup-java@v3
       with:
         java-version: '21'
-        distribution: 'corretto'
+        distribution: 'temurin'
     - run: mvn --batch-mode update-snapshots verify
-    - run: mvn staging && cp target/*.jar staging
+    - run: mkdir staging && cp target/*.jar staging
     - uses: actions/upload-artifact@v3
       with:
-        name: maven-artifact
+        name: Package
         path: staging
 

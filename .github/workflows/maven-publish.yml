@@ -4,6 +4,7 @@
 name: Endeavour - Java Publish with Maven
 
 on:
+  workflow_dispatch:
   release:
     types: [created]
 

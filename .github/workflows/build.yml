@@ -1,4 +1,4 @@
-name: Endeavour - Java CI with Maven
+name: Endeavour - Java build with Maven
 
 on:
   push:

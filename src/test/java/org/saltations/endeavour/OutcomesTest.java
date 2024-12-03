@@ -3,7 +3,6 @@ package org.saltations.endeavour;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.junit.jupiter.api.ClassOrderer;
-import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
@@ -28,9 +27,8 @@ public class OutcomesTest
 {
     @Getter
     @AllArgsConstructor
-    enum ExemplarFailure implements FailType
+    enum ExemplarFailure implements FailureType
     {
-
         GENERAL("Uncategorized error",""),
         POTENTIALLY_FATAL("Potentially Fatal error of some sort", ""),
         NOT_REALLY_SO_BAD("Not so bad problem", "Happened in widget [{}]");
@@ -82,7 +80,7 @@ public class OutcomesTest
 
             var failure = assertOutcomeIsFailure(result);
 
-            assertAll("Failure", () -> assertEquals(Fail.GenericFail.GENERIC, failure.getType(), "Type"), () -> assertNull(failure.getCause(), "Cause"));
+            assertAll("Failure", () -> assertEquals(FailureAssay.GenericFailureType.GENERIC, failure.getType(), "Type"), () -> assertNull(failure.getCause(), "Cause"));
 
             assertEquals("", failure.getDetail(), "Detail");
         }
@@ -96,7 +94,7 @@ public class OutcomesTest
             var failure = assertOutcomeIsFailure(result);
 
             assertAll("Failure",
-                    () -> assertEquals(Fail.GenericFail.GENERIC, failure.getType(), "Type"),
+                    () -> assertEquals(FailureAssay.GenericFailureType.GENERIC, failure.getType(), "Type"),
                     () -> assertNull(failure.getCause(), "Cause"),
                     () -> assertEquals("Bozo did it", failure.getDetail(), "Detail")
             );
@@ -118,7 +116,7 @@ public class OutcomesTest
             var failure = assertOutcomeIsFailure(result);
 
             assertAll("Failure",
-                    () -> assertEquals(Fail.GenericFail.GENERIC, failure.getType(), "Type"),
+                    () -> assertEquals(FailureAssay.GenericFailureType.GENERIC, failure.getType(), "Type"),
                     () -> assertNull(failure.getCause(), "Cause")
             );
 
@@ -135,7 +133,7 @@ public class OutcomesTest
             var failure = assertOutcomeIsFailure(result);
 
             assertAll("Failure",
-                    () -> assertEquals(Fail.GenericFail.GENERIC, failure.getType(), "Type"),
+                    () -> assertEquals(FailureAssay.GenericFailureType.GENERIC, failure.getType(), "Type"),
                     () -> assertNull(failure.getCause(), "Cause")
             );
 
@@ -206,7 +204,7 @@ public class OutcomesTest
             var failure = assertOutcomeIsFailure(result);
 
             assertAll("Failure",
-                    () -> assertEquals(Fail.GenericFail.GENERIC, failure.getType(), "Type"),
+                    () -> assertEquals(FailureAssay.GenericFailureType.GENERIC, failure.getType(), "Type"),
                     () -> assertEquals("", failure.getDetail(), "Detail"),
                     () -> assertNotNull(failure.getCause(), "Cause")
             );
@@ -256,7 +254,7 @@ public class OutcomesTest
             var failure = assertOutcomeIsFailure(result);
 
             assertAll("Failure",
-                    () -> assertEquals(Fail.GenericFail.GENERIC, failure.getType(), "Type"),
+                    () -> assertEquals(FailureAssay.GenericFailureType.GENERIC, failure.getType(), "Type"),
                     () -> assertEquals(detail, failure.getDetail(), "Detail"),
                     () -> assertNotNull(failure.getCause(), "Cause")
             );
@@ -284,7 +282,7 @@ public class OutcomesTest
             var value = result.get();
         }
 
-        Outcome<Fail, String> simpleReturnOfOKString()
+        Outcome<FailureAssay, String> simpleReturnOfOKString()
         {
             return Outcomes.succeed("OK");
         }
@@ -305,7 +303,7 @@ public class OutcomesTest
             assertThrows(Exception.class, () -> result.get(), "Cannot get value from a failure");
         }
 
-        Outcome<Fail, Object> simpleReturnOfFailure()
+        Outcome<FailureAssay, Object> simpleReturnOfFailure()
         {
             return Outcomes.typedFail(ExemplarFailure.NOT_REALLY_SO_BAD);
         }
@@ -340,8 +338,8 @@ public class OutcomesTest
         }
 
         assertAll("Result",
-                () -> assertFalse(result.hasSuccessValue(),"Is Not Success"),
-                () -> assertTrue(result.hasFailureValue(),"Is Failure")
+                () -> assertFalse(result.hasSuccessPayload(),"Is Not Success"),
+                () -> assertTrue(result.hasFailurePayload(),"Is Failure")
         );
 
         return (Failure<?,?>) result;
@@ -356,8 +354,8 @@ public class OutcomesTest
         }
 
         assertAll("Result",
-                () -> assertTrue(result.hasSuccessValue(),"Has Success value"),
-                () -> assertFalse(result.hasFailureValue(),"Does not have Failure value")
+                () -> assertTrue(result.hasSuccessPayload(),"Has Success value"),
+                () -> assertFalse(result.hasFailurePayload(),"Does not have Failure value")
         );
 
     }

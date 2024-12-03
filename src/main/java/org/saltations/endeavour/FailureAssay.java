@@ -7,14 +7,22 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.helpers.MessageFormatter;
 
+/**
+ * Represents the breakdown of a specific failure for an operation.
+ * <p>
+ * This class is used to provide a detailed breakdown of a failure that occurred during an operation.
+ * It is used to provide a detailed breakdown of the failure, including the type or category of the failure, the title of the failure,
+ * any additional details, the root cause (if any).
+ */
+
 @Slf4j
 @Data
 @Getter
 @Setter
 @AllArgsConstructor
-public class Fail
+public class FailureAssay
 {
-    private FailType type;
+    private FailureType type;
     private String title;
     private String detail;
     private Exception cause;
@@ -24,9 +32,13 @@ public class Fail
         return cause != null;
     }
 
+    /**
+     * The default generic failure type that is used when no other failure type is provided.
+     */
+
     @Getter
     @AllArgsConstructor
-    public enum GenericFail implements FailType
+    public enum GenericFailureType implements FailureType
     {
         GENERIC("generic-failure", "");
 
@@ -39,7 +51,6 @@ public class Fail
         return title + "-" + detail;
     }
 
-
     public static Builder of()
     {
         return new Builder();
@@ -49,7 +60,7 @@ public class Fail
     {
         // Final values that get passed into the XFail.
 
-        private FailType type = GenericFail.GENERIC;
+        private FailureType type = GenericFailureType.GENERIC;
         private Exception cause;
 
         // Additional fields input for building
@@ -62,14 +73,14 @@ public class Fail
         {
         }
 
-        private Builder(Fail initialData)
+        private Builder(FailureAssay initialData)
         {
             this.type = initialData.type;
             this.title = initialData.title;
             this.cause = initialData.cause;
         }
 
-        public Builder type(FailType type)
+        public Builder type(FailureType type)
         {
             this.type = type;
 
@@ -110,9 +121,9 @@ public class Fail
             return this;
         }
 
-        public Fail build()
+        public FailureAssay build()
         {
-            return new Fail(type, title, MessageFormatter.basicArrayFormat(template, args), cause);
+            return new FailureAssay(type, title, MessageFormatter.basicArrayFormat(template, args), cause);
         }
     }
 }

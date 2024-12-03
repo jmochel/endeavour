@@ -3,7 +3,6 @@ package org.saltations.endeavour;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.ClassOrderer;
-import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
@@ -38,7 +37,7 @@ public class OutcomeTest
         void whenAttemptingWithSuccessThenReturnsSuccess()
         {
             var result = Outcome.attempt(() -> 1111L);
-            assertTrue(result.hasSuccessValue());
+            assertTrue(result.hasSuccessPayload());
             assertEquals(1111L, result.get(), "Success Value");
         }
 
@@ -47,8 +46,8 @@ public class OutcomeTest
         void whenAttemptingWithExceptionThenReturnsFailure()
         {
             var result = Outcome.attempt(() -> {throw new Exception("Test");});
-            assertFalse(result.hasSuccessValue());
-            assertTrue(result.hasFailureValue());
+            assertFalse(result.hasSuccessPayload());
+            assertTrue(result.hasFailurePayload());
         }
 
     }
@@ -59,7 +58,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenSuccess {
 
-        private final Outcome<Fail, Long> success = Outcomes.succeed(1111L);
+        private final Outcome<FailureAssay, Long> success = Outcomes.succeed(1111L);
 
         @Test
         @Order(10)
@@ -91,7 +90,7 @@ public class OutcomeTest
         void whenTransformingOutcomeOnSuccessThenReturnsTransformedOutcomeToNewFailure() throws Throwable
         {
             var outcome = success.ifSuccess(x -> Outcomes.fail());
-            assertTrue(outcome.hasFailureValue(), "Now a Failure");
+            assertTrue(outcome.hasFailurePayload(), "Now a Failure");
         }
 
         @Test
@@ -117,7 +116,7 @@ public class OutcomeTest
         @Order(60)
         void whenTransformingOutcomeOnFailureThenReturnsExistingSuccess() throws Throwable
         {
-            var outcome = success.ifFailureTransform(x -> Outcomes.succeed(x.get() * 3));
+            var outcome = success.ifFailure(x -> Outcomes.succeed(x.get() * 3));
             assertSame(outcome, success, "Existing Success");
         }
 
@@ -169,7 +168,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenPartialSuccess {
 
-        private final Outcome<Fail, Long> partialSuccess = Outcomes.partialSucceed(Fail.of().build(),1111L);
+        private final Outcome<FailureAssay, Long> partialSuccess = Outcomes.partialSucceed(FailureAssay.of().build(),1111L);
 
         @Test
         @Order(10)
@@ -200,7 +199,7 @@ public class OutcomeTest
         void whenTransformingOutcomeOnSuccessThenReturnsTransformedOutcomeToNewFailure() throws Throwable
         {
             var outcome = partialSuccess.ifSuccess(x -> Outcomes.fail());
-            assertTrue(outcome.hasFailureValue(), "Now a Failure");
+            assertTrue(outcome.hasFailurePayload(), "Now a Failure");
         }
 
         @Test
@@ -224,7 +223,7 @@ public class OutcomeTest
         @Order(60)
         void whenTransformingOutcomeOnFailureThenReturnsExistingSuccess() throws Throwable
         {
-            var value = partialSuccess.ifFailureTransform(x -> Outcomes.succeed(x.get() * 3));
+            var value = partialSuccess.ifFailure(x -> Outcomes.succeed(x.get() * 3));
             assertSame(value, partialSuccess, "Existing Success");
         }
 
@@ -257,8 +256,8 @@ public class OutcomeTest
         {
             var outcome = partialSuccess.map(x -> x * 3);
 
-            assertTrue(outcome.hasSuccessValue(), "Has Success");
-            assertTrue(outcome.hasFailureValue(), "Has Failure");
+            assertTrue(outcome.hasSuccessPayload(), "Has Success");
+            assertTrue(outcome.hasFailurePayload(), "Has Failure");
             assertEquals(3333L, outcome.get(), "Mapped Outcome");
         }
 
@@ -268,8 +267,8 @@ public class OutcomeTest
         {
             var outcome = partialSuccess.flatMap(x -> Outcomes.succeed(x * 3));
 
-            assertTrue(outcome.hasSuccessValue(), "Has Success");
-            assertFalse(outcome.hasFailureValue(), "Has Failure");
+            assertTrue(outcome.hasSuccessPayload(), "Has Success");
+            assertFalse(outcome.hasFailurePayload(), "Has Failure");
             assertEquals(3333L, outcome.get(), "Mapped Outcome");
         }
 
@@ -280,7 +279,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenFailure {
 
-        private final Outcome<Fail, Long> failure = Outcomes.fail();
+        private final Outcome<FailureAssay, Long> failure = Outcomes.fail();
 
         @Test
         @Order(10)
@@ -314,7 +313,6 @@ public class OutcomeTest
             assertFalse(applied.get(), "Action taken");
         }
 
-
         @Test
         @Order(50)
         void whenSupplyingValueOnFailureThenReturnsNewOutcome() throws Throwable
@@ -327,10 +325,9 @@ public class OutcomeTest
         @Order(60)
         void whenTransformingOutcomeOnFailureThenReturnsNewOutcome() throws Throwable
         {
-            var outcome = failure.ifFailureTransform(x -> Outcomes.fail());
+            var outcome = failure.ifFailure(x -> Outcomes.fail());
             assertNotSame(outcome, failure, "New Outcome");
         }
-
 
         @Test
         @Order(70)
@@ -339,6 +336,14 @@ public class OutcomeTest
             final AtomicBoolean applied = new AtomicBoolean(false);
             failure.onFailure(x -> applied.getAndSet(true));
             assertTrue(applied.get(), "Action taken");
+        }
+
+        @Test
+        @Order(72)
+        void whenTakingActionOnFailureThenTakesActionThatThrowsException()
+        {
+            final AtomicBoolean applied = new AtomicBoolean(false);
+            assertThrows(IllegalArgumentException.class, () -> failure.onFailure(x -> {throw new IllegalArgumentException("Test"); }));
         }
 
         @Test
@@ -360,8 +365,8 @@ public class OutcomeTest
         {
             var outcome = failure.map(x -> x * 3);
 
-            assertFalse(outcome.hasSuccessValue(), "Has Success");
-            assertTrue(outcome.hasFailureValue(), "Has Failure");
+            assertFalse(outcome.hasSuccessPayload(), "Has Success");
+            assertTrue(outcome.hasFailurePayload(), "Has Failure");
         }
 
         @Test
@@ -370,8 +375,8 @@ public class OutcomeTest
         {
             var outcome = failure.flatMap(x -> Outcomes.succeed(x * 3));
 
-            assertFalse(outcome.hasSuccessValue(), "Has Success");
-            assertTrue(outcome.hasFailureValue(), "Has Failure");
+            assertFalse(outcome.hasSuccessPayload(), "Has Success");
+            assertTrue(outcome.hasFailurePayload(), "Has Failure");
         }
     }
 

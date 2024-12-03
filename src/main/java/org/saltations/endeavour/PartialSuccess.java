@@ -4,16 +4,16 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public record PartialSuccess<FV extends Fail, SV>(FV failureValue, SV successValue) implements Outcome<FV, SV>
+public record PartialSuccess<FV extends FailureAssay, SV>(FV failureValue, SV successValue) implements Outcome<FV, SV>
 {
     @Override
-    public boolean hasSuccessValue()
+    public boolean hasSuccessPayload()
     {
         return true;
     }
 
     @Override
-    public boolean hasFailureValue()
+    public boolean hasFailurePayload()
     {
         return true;
     }
@@ -49,13 +49,19 @@ public record PartialSuccess<FV extends Fail, SV>(FV failureValue, SV successVal
     }
 
     @Override
-    public Outcome<FV, SV> ifFailureTransform(Function<Outcome<FV, SV>, Outcome<FV, SV>> transform)
+    public Outcome<FV, SV> ifFailure(Function<Outcome<FV, SV>, Outcome<FV, SV>> transform)
     {
         return this;
     }
 
     @Override
     public void onFailure(Consumer<Outcome<FV, SV>> action)
+    {
+        // Do Nothing
+    }
+
+    @Override
+    public void onFailure(ExceptionalConsumer<Outcome<FV, SV>> action)
     {
         // Do Nothing
     }
@@ -68,7 +74,7 @@ public record PartialSuccess<FV extends Fail, SV>(FV failureValue, SV successVal
     }
 
     @Override
-    public <FV extends Fail, SV2> Outcome<FV, SV2> map(Function<SV, SV2> transform)
+    public <FV extends FailureAssay, SV2> Outcome<FV, SV2> map(Function<SV, SV2> transform)
     {
         return new PartialSuccess<FV, SV2>((FV) failureValue, transform.apply(successValue));
     }

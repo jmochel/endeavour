@@ -6,23 +6,23 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Represents the full failure of an operation. Carries information about the failure.
+ * Represents an Outcome that is a full failure of an operation. Carries information about the failure.
  *
- * @param <FV>
- * @param <SV>
+ * @param <FV> The class of Failure value that is being carried.
+ * @param <SV> The class of the unrealized Success value.
  */
 
-public record Failure<FV extends Fail, SV>(FV fail) implements Outcome<FV, SV>
+public record Failure<FV extends FailureAssay, SV>(FV fail) implements Outcome<FV, SV>
 {
 
     @Override
-    public boolean hasSuccessValue()
+    public boolean hasSuccessPayload()
     {
         return false;
     }
 
     @Override
-    public boolean hasFailureValue()
+    public boolean hasFailurePayload()
     {
         return true;
     }
@@ -33,7 +33,7 @@ public record Failure<FV extends Fail, SV>(FV fail) implements Outcome<FV, SV>
         throw new IllegalStateException(fail.getTotalMessage());
     }
 
-    public FailType getType()
+    public FailureType getType()
     {
         return fail.getType();
     }
@@ -78,7 +78,7 @@ public record Failure<FV extends Fail, SV>(FV fail) implements Outcome<FV, SV>
     }
 
     @Override
-    public Outcome<FV, SV> ifFailureTransform(Function<Outcome<FV, SV>, Outcome<FV, SV>> transform)
+    public Outcome<FV, SV> ifFailure(Function<Outcome<FV, SV>, Outcome<FV, SV>> transform)
     {
         return transform.apply(this);
     }
@@ -90,19 +90,19 @@ public record Failure<FV extends Fail, SV>(FV fail) implements Outcome<FV, SV>
     }
 
     @Override
+    public void onFailure(ExceptionalConsumer<Outcome<FV, SV>> action)
+    {
+        action.accept(this);
+    }
+
+    @Override
     public void on(Consumer<Outcome<FV, SV>> successAction, Consumer<Outcome<FV, SV>> failureAction)
     {
         failureAction.accept(this);
     }
 
-//    @Override
-//    public <U> Outcome<FV, U> map(Function<SV, U> transform)
-//    {
-//        return new Failure<FV, U>(fail);
-//    }
-
     @Override
-    public <FV extends Fail, SV2> Outcome<FV, SV2> map(Function<SV, SV2> transform)
+    public <FV extends FailureAssay, SV2> Outcome<FV, SV2> map(Function<SV, SV2> transform)
     {
         return new Failure<FV, SV2>((FV) fail);
     }

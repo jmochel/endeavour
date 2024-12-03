@@ -2,7 +2,12 @@ package org.saltations.endeavour;
 
 import java.util.regex.Pattern;
 
-public interface FailType
+/**
+ * Represents the type of failure that occurred and provide a default title and any additional
+ * template information for the details.
+ */
+
+public interface FailureType
 {
     String getTitle();
     String getTemplate();

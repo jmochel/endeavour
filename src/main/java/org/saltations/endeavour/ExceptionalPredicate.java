@@ -22,11 +22,13 @@ public interface ExceptionalPredicate<T> extends Predicate<T>
         }
         catch (Exception e)
         {
-            if (e instanceof RuntimeException)
+            var toBeThrown = switch(e)
             {
-                throw (RuntimeException) e;
-            }
-            throw new RuntimeException(e);
+                case RuntimeException ex -> ex;
+                case Exception ex -> new RuntimeException(ex);
+            };
+
+            throw toBeThrown;
         }
     }
 

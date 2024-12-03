@@ -22,12 +22,13 @@ public interface ExceptionalSupplier<T> extends Supplier<T>
         }
         catch (Exception e)
         {
-            if (e instanceof RuntimeException)
+            var toBeThrown = switch(e)
             {
-                throw (RuntimeException) e;
-            }
+                case RuntimeException ex -> ex;
+                case Exception ex -> new RuntimeException(ex);
+            };
 
-            throw new RuntimeException(e);
+            throw toBeThrown;
         }
     }
 

@@ -21,10 +21,13 @@ public interface ExceptionalFunction<T,R>
         }
         catch (Exception e)
         {
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            }
-            throw new RuntimeException(e);
+            var toBeThrown = switch(e)
+            {
+                case RuntimeException ex -> ex;
+                case Exception ex -> new RuntimeException(ex);
+            };
+
+            throw toBeThrown;
         }
     }
 

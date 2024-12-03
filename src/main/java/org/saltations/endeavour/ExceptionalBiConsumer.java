@@ -22,12 +22,11 @@ public interface ExceptionalBiConsumer<T,U> extends BiConsumer<T,U>
         }
         catch (Exception e)
         {
-            if (e instanceof RuntimeException)
+            throw switch(e)
             {
-                throw (RuntimeException) e;
-            }
-
-            throw new RuntimeException(e);
+                case RuntimeException ex -> ex;
+                case Exception ex -> new RuntimeException(ex);
+            };
         }
     }
 

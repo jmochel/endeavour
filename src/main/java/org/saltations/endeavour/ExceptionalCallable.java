@@ -12,13 +12,13 @@ import java.util.concurrent.Callable;
 @FunctionalInterface
 public interface ExceptionalCallable<T> extends Callable<T>
 {
-    T apply() throws Exception;
+    T callIt() throws Exception;
 
     default T call()
     {
         try
         {
-            return apply();
+            return callIt();
         }
         catch (Exception e)
         {

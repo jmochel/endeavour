@@ -12,13 +12,13 @@ import java.util.function.BiConsumer;
 @FunctionalInterface
 public interface ExceptionalBiConsumer<T,U> extends BiConsumer<T,U>
 {
-    void consume(T t, U u) throws Exception;
+    void consumeIt(T t, U u) throws Exception;
 
     default void accept(T t, U u)
     {
         try
         {
-            consume(t, u);
+            consumeIt(t, u);
         }
         catch (Exception e)
         {

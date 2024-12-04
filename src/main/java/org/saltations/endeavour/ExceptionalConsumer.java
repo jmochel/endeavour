@@ -12,13 +12,13 @@ import java.util.function.Consumer;
 @FunctionalInterface
 public interface ExceptionalConsumer<T> extends Consumer<T>
 {
-    void consume(T t) throws Exception;
+    void consumeIt(T t) throws Exception;
 
     default void accept(T t)
     {
         try
         {
-            consume(t);
+            consumeIt(t);
         }
         catch (Exception e)
         {

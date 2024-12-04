@@ -1,39 +1,63 @@
 package org.saltations.endeavour;
 
+import org.junit.jupiter.api.ClassOrderer;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestClassOrder;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Order(40)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@TestClassOrder(ClassOrderer.OrderAnnotation.class)
 public class ExceptionalBiConsumerTest
 {
     @Test
-    void biConsumerWithoutException()
+    @Order(1)
+    void whenNoExceptionIsThrownThenExceptionalBiConsumerConsumes()
     {
-        ExceptionalBiConsumer<String, String> biConsumer = (t, u) -> {
-            // Implementation that does not throw an exception
+        var exceptionalBiConsumer = new ExceptionalBiConsumer<String, String>() {
+
+            @Override
+            public void consumeIt(String s, String s2) throws Exception
+            {
+                return;
+            }
         };
 
-        assertDoesNotThrow(() -> biConsumer.accept("Hello", "World"));
+        assertDoesNotThrow(() -> exceptionalBiConsumer.accept("Hello", "World"));
     }
 
     @Test
-    void biConsumerWithGenericExceptionCastsItToRuntimeException()
+    @Order(2)
+    void whenRuntimeExceptionIsThrownThenExceptionalBiConsumerThrowsUntouchedRuntimeException()
     {
-        ExceptionalBiConsumer<String, String> biConsumer = (t, u) -> {
-            throw new Exception("Test exception");
+        var exceptionalBiConsumer = new ExceptionalBiConsumer<String, String>() {
+            @Override
+            public void consumeIt(String s, String s2) throws Exception
+            {
+                throw new Exception("Test exception");
+            }
         };
 
-        assertThrows(RuntimeException.class, () -> biConsumer.accept("Hello", "World"));
+        assertThrows(RuntimeException.class, () -> exceptionalBiConsumer.accept("Hello", "World"));
     }
 
     @Test
-    void biConsumerWithRuntimeExceptionLeavesItAsRuntimeException()
+    @Order(3)
+    void whenCheckedExceptionIsThrownThenExceptionalBiConsumerThrowsWrappedRuntimeException()
     {
-        ExceptionalBiConsumer<String, String> biConsumer = (t, u) -> {
-            throw new RuntimeException("Test exception");
+        var exceptionalBiConsumer = new ExceptionalBiConsumer<String, String>() {
+            @Override
+            public void consumeIt(String s, String s2) throws Exception
+            {
+                throw new RuntimeException("Test exception");
+            }
         };
 
-        var exception = assertThrows(Exception.class, () -> biConsumer.accept("Hello", "World"));
+        var exception = assertThrows(Exception.class, () -> exceptionalBiConsumer.accept("Hello", "World"));
         assertEquals("Test exception", exception.getMessage());
     }
 }

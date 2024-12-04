@@ -12,13 +12,13 @@ import java.util.function.Supplier;
 @FunctionalInterface
 public interface ExceptionalSupplier<T> extends Supplier<T>
 {
-    T supply() throws Exception;
+    T supplyIt() throws Exception;
 
     default T get()
     {
         try
         {
-            return supply();
+            return supplyIt();
         }
         catch (Exception e)
         {

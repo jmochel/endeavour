@@ -10,13 +10,13 @@ package org.saltations.endeavour;
 @FunctionalInterface
 public interface ExceptionalRunnable extends Runnable
 {
-    void apply() throws Exception;
+    void runIt() throws Exception;
 
     default void run()
     {
         try
         {
-            apply();
+            runIt();
         }
         catch (Exception e)
         {

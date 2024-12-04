@@ -1,5 +1,7 @@
 package org.saltations.endeavour;
 
+import java.util.function.Function;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -10,19 +12,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 
 @FunctionalInterface
-public interface ExceptionalFunction<T,R>
+public interface ExceptionalFunction<T, R> extends Function<T, R>
 {
-    R transform(T t) throws Exception;
+    R transformIt(T t) throws Exception;
 
     default R apply(T t)
     {
         try {
-            return transform(t);
+            return transformIt(t);
         }
-        catch (Exception e)
-        {
-            var toBeThrown = switch(e)
-            {
+        catch (Exception e) {
+            var toBeThrown = switch (e) {
                 case RuntimeException ex -> ex;
                 case Exception ex -> new RuntimeException(ex);
             };
@@ -31,19 +31,22 @@ public interface ExceptionalFunction<T,R>
         }
     }
 
-    default <V> ExceptionalFunction<V, R> compose(ExceptionalFunction<? super V, ? extends T> before) throws Throwable {
+    default <V> ExceptionalFunction<V, R> compose(ExceptionalFunction<? super V, ? extends T> before) throws Throwable
+    {
         checkNotNull(before);
 
-        return (V v) -> transform(before.transform(v));
+        return (V v) -> transformIt(before.transformIt(v));
     }
 
-    default <V> ExceptionalFunction<T, V> andThen(ExceptionalFunction<? super R, ? extends V> after) throws Throwable {
+    default <V> ExceptionalFunction<T, V> andThen(ExceptionalFunction<? super R, ? extends V> after) throws Throwable
+    {
         checkNotNull(after);
 
-        return (T t) -> after.transform(transform(t));
+        return (T t) -> after.transformIt(transformIt(t));
     }
 
-    static <T> ExceptionalFunction<T, T> identity() {
+    static <T> ExceptionalFunction<T, T> identity()
+    {
         return t -> t;
     }
 

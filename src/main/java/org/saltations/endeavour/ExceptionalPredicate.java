@@ -12,13 +12,13 @@ import java.util.function.Predicate;
 @FunctionalInterface
 public interface ExceptionalPredicate<T> extends Predicate<T>
 {
-    boolean apply(T t) throws Exception;
+    boolean testIt(T t) throws Exception;
 
     default boolean test(T t)
     {
         try
         {
-            return apply(t);
+            return testIt(t);
         }
         catch (Exception e)
         {

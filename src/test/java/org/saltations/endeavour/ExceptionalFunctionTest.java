@@ -71,4 +71,37 @@ class ExceptionalFunctionTest {
         var exception = assertThrows(RuntimeException.class, () -> exceptionalFunction.apply(5));
         assertEquals("java.lang.Exception: " + EXCEPTION_MESSAGE, exception.getMessage(), "Exception message should match");
     }
+
+    @Test
+    @Order(4)
+    void whenComposedAndChangedThenExceptionalFunctionReturnsTransformedValue() throws Throwable
+    {
+        final String EXCEPTION_MESSAGE = "Oooops!";
+
+        var initialFunction = new ExceptionalFunction<Integer, Integer>()
+        {
+            @Override
+            public Integer transformIt(Integer source) throws Exception
+            {
+                return 2 * source;
+            }
+        };
+
+        var multiplyBy10 = new ExceptionalFunction<Integer, Integer>() {
+            @Override
+            public Integer transformIt(Integer source) throws Exception
+            {
+                return source * 10;
+            }
+        };
+
+        var first = initialFunction.apply(2);
+        assertEquals(4, first.intValue(), "The function should return '4'");
+
+        var second = initialFunction.compose(multiplyBy10).apply(2);
+        assertEquals(40, second.intValue(), "The function should return '4'");
+
+        var third = initialFunction.andThen(multiplyBy10).apply(2);
+        assertEquals(40, second.intValue(), "The function should return '4'");
+    }
 }

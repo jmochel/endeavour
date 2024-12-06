@@ -102,6 +102,9 @@ class ExceptionalFunctionTest {
         assertEquals(40, second.intValue(), "The function should return '4'");
 
         var third = initialFunction.andThen(multiplyBy10).apply(2);
-        assertEquals(40, second.intValue(), "The function should return '4'");
+        assertEquals(40, third.intValue(), "The function should return '4'");
+
+        var fourth = initialFunction.compose(ExceptionalFunction.identity()).apply(2);
+        assertEquals(4, fourth.intValue(), "The function should return '4'");
     }
 }

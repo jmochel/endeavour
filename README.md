@@ -2,6 +2,15 @@
 
 Endeavour is a Java library used to implement the operational result pattern.
 
+![Tactical Ferret](./tactical-ferret-logo.png)
+[^1] Tactical Ferret images created using Craiyon
+
+>
+> This library is not yet ready for prime time. 
+> It is just an example until it starts getting versioned and 
+> this message is removed
+>
+
 ## Basic Resources on the Operational Result Pattern
 
 ### What is the Operational Result Pattern?

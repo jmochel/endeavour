@@ -48,5 +48,10 @@
             <version>3.12.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava-parent</artifactId>
+            <version>33.3.1-jre</version>
+        </dependency>
     </dependencies>
 </project>

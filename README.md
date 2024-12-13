@@ -1,6 +1,6 @@
 # Endeavour
 
-ADPSucksB1g!
+![Tactical Ferret](https://github.com/jmochel/endeavour/blob/master/tactical-ferret-logo.png?raw=true)
 
 Endeavour is a Java library used to implement the operational result pattern.
 

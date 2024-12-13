@@ -1,8 +1,9 @@
 # Endeavour
 
-![Tactical Ferret](https://github.com/jmochel/endeavour/blob/master/tactical-ferret-logo.png?raw=true)
-
 Endeavour is a Java library used to implement the operational result pattern.
+
+![Tactical Ferret](./tactical-ferret-logo.png)
+[^1] Tactical Ferret images created using Craiyon
 
 ## Basic Resources on the Operational Result Pattern
 

@@ -1,6 +1,6 @@
-name: Endeavour - Java build with Maven
-
+name: Endeavour - Maven Build
 on:
+  workflow_dispatch:
   push:
     branches: [ $default-branch ]
   pull_request:
@@ -8,9 +8,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 21

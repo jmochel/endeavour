@@ -1,4 +1,4 @@
-name: Output context
+name: Endeavour - Output context
 on: workflow_dispatch
 jobs:
   info:

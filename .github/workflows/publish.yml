@@ -2,15 +2,14 @@
 # For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
 
 name: Endeavour - Java Publish with Maven
-
 on:
-  workflow_dispatch:
-  release:
-    types: [created]
+  push:
+    branches:
+      - master
 
 jobs:
-
-  build-and-test:
+  # Builds are not successful unless the tests are successful
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,12 +23,12 @@ jobs:
         run: mvn -B test
       - name: Package
         run: mvn -B package --file pom.xml
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: library
+          path: target/endeavor-*.jar
 
-  publish:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Publish to GitHub Packages Apache Maven
-        run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+
 
 

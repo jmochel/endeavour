@@ -4,7 +4,9 @@ on:
   push:
 
 jobs:
-  build-and-test:
+  # Builds are not successful unless the tests are successful
+
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

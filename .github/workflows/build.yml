@@ -2,7 +2,8 @@ name: Endeavour - Maven Build
 on:
   workflow_dispatch:
   push:
-
+    branches:
+      - dev
 jobs:
   # Builds are not successful unless the tests are successful
 

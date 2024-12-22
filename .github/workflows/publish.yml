@@ -23,12 +23,15 @@ jobs:
         run: mvn -B test
       - name: Package
         run: mvn -B package --file pom.xml
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: library
           path: target/endeavor-SNAPSHOT-1.0.jar
-
-
 
 

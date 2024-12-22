@@ -21,6 +21,9 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: List folders
+        run: ls
+
       - name: Build with Maven
         run: mvn clean install
 

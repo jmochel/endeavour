@@ -31,4 +31,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist-jar
-          path: target/endeavor-SNAPSHOT-1.0.jar
+          path: target/endeavour-1.0-SNAPSHOT.jar

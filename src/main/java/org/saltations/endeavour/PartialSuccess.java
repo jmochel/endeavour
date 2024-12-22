@@ -61,12 +61,6 @@ public record PartialSuccess<FV extends FailureAssay, SV>(FV failureValue, SV su
     }
 
     @Override
-    public void onFailure(ExceptionalConsumer<Outcome<FV, SV>> action)
-    {
-        // Do Nothing
-    }
-
-    @Override
     public void on(Consumer<Outcome<FV, SV>> successAction, Consumer<Outcome<FV, SV>> failureAction)
     {
         successAction.accept(this);

@@ -178,19 +178,6 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
     void onFailure(Consumer<Outcome<FV,SV>> action);
 
     /**
-     * If this outcome is a failure apply the given action which can throw an exception
-     *
-     * @param action function that takes action based on failure. Not null
-     *
-     * <p><b>Example:</b>
-     * {@snippet :
-     *   var newOutcome = outcome.onFailure(x -> log.info("{}", x.get()));
-     * }
-     */
-
-    void onFailure(ExceptionalConsumer<Outcome<FV,SV>> action);
-
-    /**
      * If this outcome is a failure execute the failure action, if success execute the success action. If partial success apply both.
      *
      * @param successAction the action to execute if this is a success or partial success

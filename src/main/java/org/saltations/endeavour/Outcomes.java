@@ -1,4 +1,6 @@
 package org.saltations.endeavour;
+import java.util.function.Function;
+
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -272,5 +274,4 @@ public class Outcomes
 
         return new Failure(fail);
     }
-
 }

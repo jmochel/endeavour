@@ -161,6 +161,26 @@ public class OutcomeTest
 
             assertEquals(3333L, outcome.get(), "Mapped Outcome");
         }
+
+        @Test
+        @Order(100)
+        void whenTransformingThenGivesTransformedResult()
+        {
+            var result = success.transmute(this::outcomeToString);
+
+            assertEquals("Success", result, "Transformed to 'Success'");
+        }
+
+        String outcomeToString(Outcome<FailureAssay, Long> outcome)
+        {
+            return switch (outcome)
+            {
+                case Success out -> "Success";
+                case PartialSuccess out -> "Partial Success";
+                case Failure out -> "Failure";
+            };
+        }
+
     }
 
     @Nested
@@ -272,6 +292,24 @@ public class OutcomeTest
             assertEquals(3333L, outcome.get(), "Mapped Outcome");
         }
 
+        @Test
+        @Order(100)
+        void whenTransformingThenGivesTransformedResult()
+        {
+            var result = partialSuccess.transmute(this::outcomeToString);
+
+            assertEquals("Partial Success", result, "Transformed to 'Success'");
+        }
+
+        String outcomeToString(Outcome<FailureAssay, Long> outcome)
+        {
+            return switch (outcome)
+            {
+                case Success out -> "Success";
+                case PartialSuccess out -> "Partial Success";
+                case Failure out -> "Failure";
+            };
+        }
     }
 
     @Nested
@@ -377,6 +415,25 @@ public class OutcomeTest
 
             assertFalse(outcome.hasSuccessPayload(), "Has Success");
             assertTrue(outcome.hasFailurePayload(), "Has Failure");
+        }
+
+        @Test
+        @Order(100)
+        void whenTransformingThenGivesTransformedResult()
+        {
+            var result = failure.transmute(this::outcomeToString);
+
+            assertEquals("Failure", result, "Transformed to 'Success'");
+        }
+
+        String outcomeToString(Outcome<FailureAssay, Long> outcome)
+        {
+            return switch (outcome)
+            {
+                case Success out -> "Success";
+                case PartialSuccess out -> "Partial Success";
+                case Failure out -> "Failure";
+            };
         }
     }
 

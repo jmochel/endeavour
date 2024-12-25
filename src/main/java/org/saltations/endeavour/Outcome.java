@@ -4,6 +4,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import lombok.NonNull;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -161,7 +163,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
      *
      */
 
-    Outcome<FV,SV> ifFailure(Function<Outcome<FV,SV>, Outcome<FV,SV>> transform);
+    Outcome<FV,SV> ifFailure(@NonNull Function<Outcome<FV,SV>, Outcome<FV,SV>> transform);
 
     /**
      * Executes action if this outcome is a failure, takes no action otherwise.
@@ -175,7 +177,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
      *
      */
 
-    void onFailure(Consumer<Outcome<FV,SV>> action);
+    void onFailure(@NonNull Consumer<Outcome<FV,SV>> action);
 
     /**
      * If this outcome is a failure execute the failure action, if success execute the success action. If partial success apply both.
@@ -191,9 +193,14 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
 
     void on(Consumer<Outcome<FV,SV>> successAction, Consumer<Outcome<FV,SV>> failureAction);
 
-    <FV extends FailureAssay, SV2> Outcome<FV,SV2> map(Function<SV,SV2> transform);
+    <FV extends FailureAssay, SV2> Outcome<FV,SV2> map(@NonNull Function<SV,SV2> transform);
 
-    <SV2> Outcome<FV,SV2> flatMap(Function<SV,Outcome<FV,SV2>> transform);
+    <SV2> Outcome<FV,SV2> flatMap(@NonNull Function<SV,Outcome<FV,SV2>> transform);
+
+    default <RT> RT transmute(@NonNull Function<Outcome<FV,SV>, RT> transform)
+    {
+      return transform.apply(this);
+    }
 
     /**
      * Attempt to execute the given supplier and return the outcome
@@ -205,7 +212,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
      * @param <SV2> Type of the supplied value
      */
 
-    static <FV extends FailureAssay, SV2> Outcome<FV, SV2> attempt(ExceptionalSupplier<SV2> supplier)
+    static <FV extends FailureAssay, SV2> Outcome<FV, SV2> attempt(@NonNull ExceptionalSupplier<SV2> supplier)
     {
         checkNotNull(supplier, "Supplier cannot be null");
 
@@ -220,4 +227,6 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
                     .build());
         }
     }
+
+
 }

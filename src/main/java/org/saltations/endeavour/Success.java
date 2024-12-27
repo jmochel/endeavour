@@ -55,7 +55,7 @@ public record Success<FV extends FailureAssay, SV>(SV value) implements Outcome<
     }
 
     @Override
-    public void onFailure(Consumer<Outcome<FV, SV>> action)
+    public void onFailure(Consumer<Failure<FV, SV>> action)
     {
         // Do Nothing
     }

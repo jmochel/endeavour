@@ -177,7 +177,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
      *
      */
 
-    void onFailure(@NonNull Consumer<Outcome<FV,SV>> action);
+    void onFailure(@NonNull Consumer<Failure<FV,SV>> action);
 
     /**
      * If this outcome is a failure execute the failure action, if success execute the success action. If partial success apply both.

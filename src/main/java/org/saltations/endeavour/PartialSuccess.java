@@ -55,9 +55,9 @@ public record PartialSuccess<FV extends FailureAssay, SV>(FV failureValue, SV su
     }
 
     @Override
-    public void onFailure(Consumer<Failure<FV, SV>> action)
+    public Outcome<FV,SV> onFailure(Consumer<Failure<FV, SV>> action)
     {
-        // Do Nothing
+        return this;
     }
 
     @Override

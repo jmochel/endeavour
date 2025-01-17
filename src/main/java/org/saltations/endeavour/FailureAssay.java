@@ -16,8 +16,7 @@ import static java.util.Objects.nonNull;
 /**
  * Represents the breakdown of a specific failure for an operation.
  * <p>
- * This class provides a detailed breakdown of a failure that occurred during an operation.
- * This breakdown includes
+ * This class provides a detailed breakdown of a failure that occurred during an operation. This breakdown includes
  * <ul>
  *  <li>The type or category of the failure</li>
  *  <li>The title of the failure</li>

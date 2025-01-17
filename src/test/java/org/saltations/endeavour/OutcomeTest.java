@@ -1,5 +1,6 @@
 package org.saltations.endeavour;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.ClassOrderer;
@@ -18,11 +19,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Validates the functionality of the individual outcome classes and how they are used
+ * Validates the functionality of the individual outcome classes
+ * and how they are used
  */
 
 @Order(10)
-//@DisplayNameGeneration(ReplaceBDDCamelCase.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
 public class OutcomeTest
@@ -39,6 +40,7 @@ public class OutcomeTest
             var result = Outcome.attempt(() -> 1111L);
             assertTrue(result.hasSuccessPayload());
             assertEquals(1111L, result.get(), "Success Value");
+            assertEquals(1111L, result.opt().get(), "Success Value");
         }
 
         @Test
@@ -48,17 +50,16 @@ public class OutcomeTest
             var result = Outcome.attempt(() -> {throw new Exception("Test");});
             assertFalse(result.hasSuccessPayload());
             assertTrue(result.hasFailurePayload());
+            assertEquals(Optional.empty(), result.opt(), "Empty Optional");
         }
-
     }
-
 
     @Nested
     @Order(2)
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenSuccess {
 
-        private final Outcome<FailureAssay, Long> success = Outcomes.succeed(1111L);
+        private final Outcome<Long> success = Outcomes.succeed(1111L);
 
         @Test
         @Order(10)
@@ -171,7 +172,7 @@ public class OutcomeTest
             assertEquals("Success", result, "Transformed to 'Success'");
         }
 
-        String outcomeToString(Outcome<FailureAssay, Long> outcome)
+        String outcomeToString(Outcome<Long> outcome)
         {
             return switch (outcome)
             {
@@ -188,7 +189,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenPartialSuccess {
 
-        private final Outcome<FailureAssay, Long> partialSuccess = Outcomes.partialSucceed(FailureAssay.of().build(),1111L);
+        private final Outcome<Long> partialSuccess = Outcomes.partialSucceed(FailureAssay.of().build(),1111L);
 
         @Test
         @Order(10)
@@ -301,7 +302,7 @@ public class OutcomeTest
             assertEquals("Partial Success", result, "Transformed to 'Success'");
         }
 
-        String outcomeToString(Outcome<FailureAssay, Long> outcome)
+        String outcomeToString(Outcome<Long> outcome)
         {
             return switch (outcome)
             {
@@ -317,7 +318,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenFailure {
 
-        private final Outcome<FailureAssay, Long> failure = Outcomes.fail();
+        private final Outcome<Long> failure = Outcomes.fail();
 
         @Test
         @Order(10)
@@ -426,7 +427,7 @@ public class OutcomeTest
             assertEquals("Failure", result, "Transformed to 'Success'");
         }
 
-        String outcomeToString(Outcome<FailureAssay, Long> outcome)
+        String outcomeToString(Outcome<Long> outcome)
         {
             return switch (outcome)
             {

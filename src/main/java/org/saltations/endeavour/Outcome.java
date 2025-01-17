@@ -1,5 +1,6 @@
 package org.saltations.endeavour;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -43,7 +44,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author Jim Mochel
  */
 
-public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Success, PartialSuccess
+public sealed interface Outcome<SV> permits Failure, Success, PartialSuccess
 {
     /**
      * Returns <em>true</em> if this outcome has a success payload.
@@ -89,6 +90,22 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
     SV get();
 
     /**
+     * Returns the optional success payload if this outcome has one.
+     *
+     * @return optional payload associated with the success. Empty if there is no success payload.
+     *
+     * <p>
+     * <b>Example:</b>
+     * <pre>{@code
+     *      return outcome.opt();
+     * }
+     * </pre>
+     */
+
+    Optional<SV> opt();
+
+
+    /**
      * Return supplied outcome if this outcome is a success (or partial success), otherwise return the existing outcome
      *
      * @param supplier function that supplies a new outcome. Not null.
@@ -102,7 +119,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
      * }
      */
 
-    Outcome<FV,SV> ifSuccess(Supplier<Outcome<FV,SV>> supplier);
+    Outcome<SV> ifSuccess(Supplier<Outcome<SV>> supplier);
 
     /**
      * If this outcome is a success (or partial success) transform to a new outcome
@@ -118,7 +135,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
      *
      */
 
-    Outcome<FV,SV> ifSuccess(Function<SV, Outcome<FV,SV>> transform);
+    Outcome<SV> ifSuccess(Function<SV, Outcome<SV>> transform);
 
     /**
      * Executes action if this outcome is a success (or partial success), takes no action otherwise.
@@ -131,7 +148,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
      * }
      */
 
-    void onSuccess(Consumer<Outcome<FV,SV>> action);
+    void onSuccess(Consumer<Outcome<SV>> action);
 
     /**
      * Returns the supplied outcome if this outcome is a failure, otherwise returns the existing outcome.
@@ -147,7 +164,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
      *
      */
 
-    Outcome<FV,SV> ifFailure(Supplier<Outcome<FV,SV>> supplier);
+    Outcome<SV> ifFailure(Supplier<Outcome<SV>> supplier);
 
     /**
      * Returns a transformed outcome if this outcome is a failure
@@ -163,7 +180,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
      *
      */
 
-    Outcome<FV,SV> ifFailure(@NonNull Function<Outcome<FV,SV>, Outcome<FV,SV>> transform);
+    Outcome<SV> ifFailure(@NonNull Function<Outcome<SV>, Outcome<SV>> transform);
 
     /**
      * Executes action if this outcome is a failure, takes no action otherwise.
@@ -177,7 +194,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
      *
      */
 
-    Outcome<FV,SV> onFailure(@NonNull Consumer<Failure<FV,SV>> action);
+    Outcome<SV> onFailure(@NonNull Consumer<Failure<SV>> action);
 
     /**
      * If this outcome is a failure execute the failure action, if success execute the success action. If partial success apply both.
@@ -191,13 +208,13 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
      * }
      */
 
-    void on(Consumer<Outcome<FV,SV>> successAction, Consumer<Outcome<FV,SV>> failureAction);
+    void on(Consumer<Outcome<SV>> successAction, Consumer<Outcome<SV>> failureAction);
 
-    <FV extends FailureAssay, SV2> Outcome<FV,SV2> map(@NonNull Function<SV,SV2> transform);
+    <SV2> Outcome<SV2> map(@NonNull Function<SV,SV2> transform);
 
-    <SV2> Outcome<FV,SV2> flatMap(@NonNull Function<SV,Outcome<FV,SV2>> transform);
+    <SV2> Outcome<SV2> flatMap(@NonNull Function<SV,Outcome<SV2>> transform);
 
-    default <RT> RT transmute(@NonNull Function<Outcome<FV,SV>, RT> transform)
+    default <RT> RT transmute(@NonNull Function<Outcome<SV>, RT> transform)
     {
       return transform.apply(this);
     }
@@ -212,7 +229,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
      * @param <SV2> Type of the supplied value
      */
 
-    static <FV extends FailureAssay, SV2> Outcome<FV, SV2> attempt(@NonNull ExceptionalSupplier<SV2> supplier)
+    static <SV2> Outcome<SV2> attempt(@NonNull ExceptionalSupplier<SV2> supplier)
     {
         checkNotNull(supplier, "Supplier cannot be null");
 
@@ -222,7 +239,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
         }
         catch (Exception e)
         {
-            return new Failure<>((FV) FailureAssay.of()
+            return new Failure<>(FailureAssay.of()
                     .cause(e)
                     .build());
         }

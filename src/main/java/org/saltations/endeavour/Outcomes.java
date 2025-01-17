@@ -1,5 +1,4 @@
 package org.saltations.endeavour;
-import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
@@ -26,9 +25,9 @@ public class Outcomes
      *
      */
 
-    public static <FV extends FailureAssay, SV> Outcome<FV,SV> succeed()
+    public static <FV extends FailureAssay, SV> Outcome<SV> succeed()
     {
-        return (Outcome<FV, SV>) new Success<>(Boolean.TRUE);
+        return (Outcome<SV>) new Success<>(Boolean.TRUE);
     }
 
     /**
@@ -47,7 +46,7 @@ public class Outcomes
      * </pre>
      *
      */
-    public static <FV extends FailureAssay, SV> Outcome<FV,SV> succeed(SV value)
+    public static <FV extends FailureAssay, SV> Outcome<SV> succeed(SV value)
     {
         requireNonNull(value, "Result must have a non-null value to return");
 
@@ -70,7 +69,7 @@ public class Outcomes
      * </pre>
      *
      */
-    public static <FV extends FailureAssay, SV> Outcome<FV,SV> partialSucceed(FV failureValue , SV successValue)
+    public static <FV extends FailureAssay, SV> Outcome<SV> partialSucceed(FV failureValue , SV successValue)
     {
         requireNonNull(successValue, "Result must have a non-null success value to return");
         requireNonNull(failureValue, "Result must have a non-null failure value to return");
@@ -93,7 +92,7 @@ public class Outcomes
      * }
      * </pre>
      */
-    public static <FV extends FailureAssay, SV> Outcome<FV,SV> fail()
+    public static <FV extends FailureAssay, SV> Outcome<SV> fail()
     {
         var type = FailureAssay.GenericFailureType.GENERIC;
 
@@ -123,7 +122,7 @@ public class Outcomes
      * </pre>
      */
 
-    public static <FV extends FailureAssay, SV> Outcome<FV,SV> failWithDetails(String template, Object...args)
+    public static <FV extends FailureAssay, SV> Outcome<SV> failWithDetails(String template, Object...args)
     {
         requireNonNull(template, "Failure needs a non-null template");
 
@@ -154,7 +153,7 @@ public class Outcomes
      * }
      * </pre>
      */
-    public static <FV extends FailureAssay, SV> Outcome<FV,SV> titledFail(String title)
+    public static <FV extends FailureAssay, SV> Outcome<SV> titledFail(String title)
     {
         var failureType = FailureAssay.GenericFailureType.GENERIC;
 
@@ -182,7 +181,7 @@ public class Outcomes
      * }
      * </pre>
      */
-    public static <FV extends FailureAssay, SV> Outcome<FV,SV> titledFailWithDetails(String title, String template, Object...args)
+    public static <FV extends FailureAssay, SV> Outcome<SV> titledFailWithDetails(String title, String template, Object...args)
     {
         var failureType = FailureAssay.GenericFailureType.GENERIC;
 
@@ -197,7 +196,7 @@ public class Outcomes
     }
 
 
-    public static <FV extends FailureAssay, SV> Outcome<FV,SV> typedFail(FailureType failureType, Object...args)
+    public static <FV extends FailureAssay, SV> Outcome<SV> typedFail(FailureType failureType, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
 
@@ -217,7 +216,7 @@ public class Outcomes
     }
 
 
-    public static <FV extends FailureAssay, SV> Outcome<FV,SV> typedFailWithDetails(FailureType failureType, String template, Object...args)
+    public static <FV extends FailureAssay, SV> Outcome<SV> typedFailWithDetails(FailureType failureType, String template, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
 
@@ -230,7 +229,7 @@ public class Outcomes
         return new Failure(fail);
     }
 
-    public static <FV extends FailureAssay, SV> Outcome<FV,SV> causedFail(Exception cause)
+    public static <FV extends FailureAssay, SV> Outcome<SV> causedFail(Exception cause)
     {
         var failureType = FailureAssay.GenericFailureType.GENERIC;
 
@@ -242,7 +241,7 @@ public class Outcomes
         return new Failure(fail);
     }
 
-    public static <FV extends FailureAssay, SV> Outcome<FV,SV> causedFail(Exception cause, FailureType failureType, Object...args)
+    public static <FV extends FailureAssay, SV> Outcome<SV> causedFail(Exception cause, FailureType failureType, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
 
@@ -261,7 +260,7 @@ public class Outcomes
         return new Failure(fail);
     }
 
-    public static <FV extends FailureAssay, SV> Outcome<FV,SV> causedFailWithDetails(Exception cause, String template, Object...args)
+    public static <FV extends FailureAssay, SV> Outcome<SV> causedFailWithDetails(Exception cause, String template, Object...args)
     {
         var failureType = FailureAssay.GenericFailureType.GENERIC;
 

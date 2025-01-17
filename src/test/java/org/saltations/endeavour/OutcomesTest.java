@@ -282,7 +282,7 @@ public class OutcomesTest
             var value = result.get();
         }
 
-        Outcome<FailureAssay, String> simpleReturnOfOKString()
+        Outcome<String> simpleReturnOfOKString()
         {
             return Outcomes.succeed("OK");
         }
@@ -303,7 +303,7 @@ public class OutcomesTest
             assertThrows(Exception.class, () -> result.get(), "Cannot get value from a failure");
         }
 
-        Outcome<FailureAssay, Object> simpleReturnOfFailure()
+        Outcome<Object> simpleReturnOfFailure()
         {
             return Outcomes.typedFail(ExemplarFailure.NOT_REALLY_SO_BAD);
         }
@@ -330,9 +330,9 @@ public class OutcomesTest
         }
     }
 
-    private Failure<?,?> assertOutcomeIsFailure(Outcome<?,?> result)
+    private Failure<?> assertOutcomeIsFailure(Outcome<?> result)
     {
-        if (result instanceof Success<?,?>)
+        if (result instanceof Success<?>)
         {
             fail("Result should be a Failure");
         }
@@ -342,13 +342,12 @@ public class OutcomesTest
                 () -> assertTrue(result.hasFailurePayload(),"Is Failure")
         );
 
-        return (Failure<?,?>) result;
+        return (Failure<?>) result;
     }
 
-
-    private void assertOutcomeIsSuccess(Outcome<?, ?> result)
+    private void assertOutcomeIsSuccess(Outcome<?> result)
     {
-        if (result instanceof Failure<?,?>)
+        if (result instanceof Failure<?>)
         {
             fail("Result should be a Success");
         }

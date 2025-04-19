@@ -19,7 +19,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.saltations.endeavour.fixture.ReplaceBDDCamelCase;
 import org.slf4j.LoggerFactory;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DisplayNameGeneration;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -27,12 +26,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This class tests the FailureAnalysis class.  
@@ -81,33 +78,48 @@ class FailureAnalysisCreationTest
         @Order(1)
         void andFailureTypeIsExplicitlyNullThenAnalysisHasDefaultGenericTypeTitleAndEmptyDetails()
         {
-            var failureAnalysis = FailureAnalysis.of()
-                    .type(null)
-                    .build();
+            // Given
+            var analysis = new FailureAnalysis(null, null, null, null);
 
-            // @formatter:off
-            assertAll("FailureAnalysis",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
-                    () -> assertEquals("", failureAnalysis.getDetail(), "has empty detail"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+            // Then
+            assertAll(
+                () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC, analysis.getType()),
+                () -> assertNull(analysis.getTitle()),
+                () -> assertNull(analysis.getDetail()),
+                () -> assertFalse(analysis.hasCause())
             );
-            // @formatter:on
         }
 
         @Test
         @Order(2)
         void andNothingElseThenAnalysisHasDefaultGenericTypeTitleAndEmptyDetails()
         {
-            var failureAnalysis = FailureAnalysis.of()
-                    .build();
+            // Given
+            var analysis = new FailureAnalysis(null, null, null, null);
 
-            // @formatter:off
-            assertAll("FailureAnalysis",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
-                    () -> assertEquals("", failureAnalysis.getDetail(), "has empty detail"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+            // Then
+            assertAll(
+                () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC, analysis.getType()),
+                () -> assertNull(analysis.getTitle()),
+                () -> assertNull(analysis.getDetail()),
+                () -> assertFalse(analysis.hasCause())
             );
-            // @formatter:on
+        }
+
+        @Test
+        @Order(3)
+        void andFailureTypeIsExplicitlyGenericThenAnalysisHasGenericTypeTitleAndEmptyDetails()
+        {
+            // Given
+            var analysis = new FailureAnalysis(FailureAnalysis.GenericFailureType.GENERIC, null, null, null);
+
+            // Then
+            assertAll(
+                () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC, analysis.getType()),
+                () -> assertNull(analysis.getTitle()),
+                () -> assertNull(analysis.getDetail()),
+                () -> assertFalse(analysis.hasCause())
+            );
         }
 
         @Nested
@@ -129,7 +141,8 @@ class FailureAnalysisCreationTest
                 assertAll("FailureAnalysis",
                     () -> assertEquals(providedTitle, failureAnalysis.getTitle(), "has provided title"),
                     () -> assertEquals("", failureAnalysis.getDetail(), "has empty detail"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNull(failureAnalysis.getCause(), "has no cause"),
+                    () -> assertFalse(failureAnalysis.hasCause(), "has no cause")
                 );
                 // @formatter:on
             }
@@ -148,7 +161,8 @@ class FailureAnalysisCreationTest
                 assertAll("FailureAnalysis",
                     () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
                     () -> assertEquals("Provided template is NotSupplied", failureAnalysis.getDetail(), "has detail from provided template"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNull(failureAnalysis.getCause(), "has no cause"),
+                    () -> assertFalse(failureAnalysis.hasCause(), "has no cause")
                 );
                 // @formatter:on
             }
@@ -168,7 +182,8 @@ class FailureAnalysisCreationTest
                 assertAll("FailureAnalysis",
                     () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
                     () -> assertEquals(providedDetail, failureAnalysis.getDetail(), "has provided detail"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNull(failureAnalysis.getCause(), "has no cause"),
+                    () -> assertFalse(failureAnalysis.hasCause(), "has no cause")
                 );
                 // @formatter:on
             }
@@ -189,7 +204,8 @@ class FailureAnalysisCreationTest
                 assertAll("FailureAnalysis",
                     () -> assertEquals(providedTitle, failureAnalysis.getTitle(), "has provided title"),
                     () -> assertEquals("Provided template is NotSupplied", failureAnalysis.getDetail(), "has detail from provided template"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNull(failureAnalysis.getCause(), "has no cause"),
+                    () -> assertFalse(failureAnalysis.hasCause(), "has no cause")
                 );
                 // @formatter:on
             }
@@ -210,7 +226,8 @@ class FailureAnalysisCreationTest
                 assertAll("FailureAnalysis",
                     () -> assertEquals(providedTitle, failureAnalysis.getTitle(), "has provided title"),
                     () -> assertEquals(providedDetail, failureAnalysis.getDetail(), "has provided detail"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNull(failureAnalysis.getCause(), "has no cause"),
+                    () -> assertFalse(failureAnalysis.hasCause(), "has no cause")
                 );
                 // @formatter:on
             }
@@ -234,7 +251,8 @@ class FailureAnalysisCreationTest
                 assertAll("FailureAnalysis",
                     () -> assertEquals(providedTitle, failureAnalysis.getTitle(), "has provided title"),
                     () -> assertEquals(providedDetail, failureAnalysis.getDetail(), "has detail from provided template"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNull(failureAnalysis.getCause(), "has no cause"),
+                    () -> assertFalse(failureAnalysis.hasCause(), "has no cause")
                 );
                 // @formatter:on
             }
@@ -261,7 +279,8 @@ class FailureAnalysisCreationTest
             assertAll("FailureAnalysis",
                     () -> assertEquals(CustomFailureType.SINGULAR_ERROR.getTitle(), failureAnalysis.getTitle(), "has failure type title"),
                     () -> assertEquals("Looks like it had something to do with THING", failureAnalysis.getDetail(), "has detail from failure type template"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNull(failureAnalysis.getCause(), "has no cause"),
+                    () -> assertFalse(failureAnalysis.hasCause(), "has no cause")
             );
             // @formatter:on
         }
@@ -285,7 +304,8 @@ class FailureAnalysisCreationTest
                 assertAll("FailureAnalysis",
                     () -> assertEquals(providedTitle, failureAnalysis.getTitle(), "has provided title"),
                     () -> assertEquals("", failureAnalysis.getDetail(), "has empty detail"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNull(failureAnalysis.getCause(), "has no cause"),
+                    () -> assertFalse(failureAnalysis.hasCause(), "has no cause")
                 );
                 // @formatter:on
             }
@@ -304,7 +324,8 @@ class FailureAnalysisCreationTest
                 assertAll("FailureAnalysis",
                     () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
                     () -> assertEquals("Provided template is NotSupplied", failureAnalysis.getDetail(), "has detail from provided template"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNull(failureAnalysis.getCause(), "has no cause"),
+                    () -> assertFalse(failureAnalysis.hasCause(), "has no cause")   
                 );
                 // @formatter:on
             }
@@ -345,7 +366,8 @@ class FailureAnalysisCreationTest
                 assertAll("FailureAnalysis",
                     () -> assertEquals(providedTitle, failureAnalysis.getTitle(), "has provided title"),
                     () -> assertEquals("Provided template is NotSupplied", failureAnalysis.getDetail(), "has detail from provided template"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNull(failureAnalysis.getCause(), "has no cause"),
+                    () -> assertFalse(failureAnalysis.hasCause(), "has no cause")   
                 );
                 // @formatter:on
             }
@@ -366,7 +388,8 @@ class FailureAnalysisCreationTest
                 assertAll("FailureAnalysis",
                     () -> assertEquals(providedTitle, failureAnalysis.getTitle(), "has provided title"),
                     () -> assertEquals(providedDetail, failureAnalysis.getDetail(), "has provided detail"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNull(failureAnalysis.getCause(), "has no cause"),
+                    () -> assertFalse(failureAnalysis.hasCause(), "has no cause")   
                 );
                 // @formatter:on
             }
@@ -390,7 +413,8 @@ class FailureAnalysisCreationTest
                 assertAll("FailureAnalysis",
                     () -> assertEquals(providedTitle, failureAnalysis.getTitle(), "has provided title"),
                     () -> assertEquals(providedDetail, failureAnalysis.getDetail(), "has detail from provided template"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNull(failureAnalysis.getCause(), "has no cause"),
+                    () -> assertFalse(failureAnalysis.hasCause(), "has no cause")
                 );
                 // @formatter:on
             }
@@ -419,7 +443,8 @@ class FailureAnalysisCreationTest
             assertAll("FailureAnalysis",
                 () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC_EXCEPTION.getTitle(), failureAnalysis.getTitle(), "has type title"),
                 () -> assertEquals(providedErrorMessage, failureAnalysis.getDetail(), "has cause detail"),
-                () -> assertNotNull(failureAnalysis.getCause(), "has cause")
+                () -> assertNotNull(failureAnalysis.getCause(), "has cause"),
+                () -> assertTrue(failureAnalysis.hasCause(), "has cause")
             );
             // @formatter:on
         }
@@ -431,38 +456,47 @@ class FailureAnalysisCreationTest
         {
             @Test
             @Order(1)
-            void titleThenAnalysisHasProvidedTitleAndEmptyDetails()
+            void titleThenAnalysisHasProvidedTitleAndDetailFromCause()
             {
                 var providedTitle = "Provided title";
 
+                var providedErrorMessage = "Dang!";
+
                 var failureAnalysis = FailureAnalysis.of()
-                    .title(providedTitle)
-                    .build();
+                        .type(null)
+                        .cause(new RuntimeException(providedErrorMessage))
+                        .title(providedTitle)
+                        .build();
 
                 // @formatter:off
                 assertAll("FailureAnalysis",
                     () -> assertEquals(providedTitle, failureAnalysis.getTitle(), "has provided title"),
-                    () -> assertEquals("", failureAnalysis.getDetail(), "has empty detail"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertEquals(providedErrorMessage, failureAnalysis.getDetail(), "has cause detail"),
+                    () -> assertNotNull(failureAnalysis.getCause(), "has cause"),
+                    () -> assertTrue(failureAnalysis.hasCause(), "has cause")
                 );
                 // @formatter:on
             }
 
             @Test
             @Order(2)
-            void templateThenAnalysisHasDefaultGenericFailureTypeTitleAndDetailFromProvidedTemplate()
+            void templateThenAnalysisHasDefaultGenericExceptionFailureTypeTitleAndDetailFromProvidedTemplate()
             {
                 var providedTemplate = "Provided template is {}";
+                var providedErrorMessage = "Dang!";
 
                 var failureAnalysis = FailureAnalysis.of()
-                    .template(providedTemplate)
-                    .build();   
+                        .type(null)
+                        .cause(new RuntimeException(providedErrorMessage))
+                        .template(providedTemplate)
+                        .build();
                     
                 // @formatter:off
                 assertAll("FailureAnalysis",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
+                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC_EXCEPTION.getTitle(), failureAnalysis.getTitle(), "has default title"),
                     () -> assertEquals("Provided template is NotSupplied", failureAnalysis.getDetail(), "has detail from provided template"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNotNull(failureAnalysis.getCause(), "has cause"),
+                    () -> assertTrue(failureAnalysis.hasCause(), "has cause")
                 );
                 // @formatter:on
             }
@@ -473,16 +507,20 @@ class FailureAnalysisCreationTest
             void detailThenAnalysisHasDefaultGenericFailureTypeTitleAndProvidedDetail()
             {
                 var providedDetail = "Provided detail";
+                var providedErrorMessage = "Dang!";
 
                 var failureAnalysis = FailureAnalysis.of()
-                    .detail(providedDetail)
-                    .build();   
+                        .type(null)
+                        .cause(new RuntimeException(providedErrorMessage))
+                        .detail(providedDetail)
+                        .build();
                     
                 // @formatter:off
                 assertAll("FailureAnalysis",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
+                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC_EXCEPTION.getTitle(), failureAnalysis.getTitle(), "has default title"),
                     () -> assertEquals(providedDetail, failureAnalysis.getDetail(), "has provided detail"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNotNull(failureAnalysis.getCause(), "has cause"),
+                    () -> assertTrue(failureAnalysis.hasCause(), "has cause")
                 );
                 // @formatter:on
             }
@@ -493,17 +531,21 @@ class FailureAnalysisCreationTest
             {
                 var providedTitle = "Provided title";
                 var providedTemplate = "Provided template is {}";       
+                var providedErrorMessage = "Dang!";
 
                 var failureAnalysis = FailureAnalysis.of()
-                    .title(providedTitle)
-                    .template(providedTemplate)
-                    .build();
+                        .type(null)
+                        .cause(new RuntimeException(providedErrorMessage))
+                        .title(providedTitle)
+                        .template(providedTemplate)
+                        .build();
 
                 // @formatter:off
                 assertAll("FailureAnalysis",
                     () -> assertEquals(providedTitle, failureAnalysis.getTitle(), "has provided title"),
                     () -> assertEquals("Provided template is NotSupplied", failureAnalysis.getDetail(), "has detail from provided template"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNotNull(failureAnalysis.getCause(), "has cause"),
+                    () -> assertTrue(failureAnalysis.hasCause(), "has cause")
                 );
                 // @formatter:on
             }
@@ -514,17 +556,21 @@ class FailureAnalysisCreationTest
             {
                 var providedTitle = "Provided title";
                 var providedDetail = "Provided detail";       
+                var providedErrorMessage = "Dang!";
 
                 var failureAnalysis = FailureAnalysis.of()
-                    .title(providedTitle)
-                    .detail(providedDetail)
-                    .build();
+                        .type(null)
+                        .cause(new RuntimeException(providedErrorMessage))
+                        .title(providedTitle)
+                        .detail(providedDetail)
+                        .build();
 
                 // @formatter:off
                 assertAll("FailureAnalysis",
                     () -> assertEquals(providedTitle, failureAnalysis.getTitle(), "has provided title"),
                     () -> assertEquals(providedDetail, failureAnalysis.getDetail(), "has provided detail"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNotNull(failureAnalysis.getCause(), "has cause"),
+                    () -> assertTrue(failureAnalysis.hasCause(), "has cause")
                 );
                 // @formatter:on
             }
@@ -536,25 +582,26 @@ class FailureAnalysisCreationTest
                 var providedTitle = "Provided title";
                 var providedTemplate = "Provided template is {}";       
                 var providedDetail = "Provided detail";       
+                var providedErrorMessage = "Dang!";
 
                 var failureAnalysis = FailureAnalysis.of()
-                    .title(providedTitle)
-                    .template(providedTemplate)
-                    .detail(providedDetail)
-                    .args("THING")
-                    .build();
+                        .type(null)
+                        .cause(new RuntimeException(providedErrorMessage))
+                        .title(providedTitle)
+                        .template(providedTemplate)
+                        .detail(providedDetail)
+                        .args("THING")
+                        .build();
 
                 // @formatter:off
                 assertAll("FailureAnalysis",
                     () -> assertEquals(providedTitle, failureAnalysis.getTitle(), "has provided title"),
                     () -> assertEquals(providedDetail, failureAnalysis.getDetail(), "has detail from provided template"),
-                    () -> assertNull(failureAnalysis.getCause(), "has no cause")
+                    () -> assertNotNull(failureAnalysis.getCause(), "has cause"),
+                    () -> assertTrue(failureAnalysis.hasCause(), "has cause")
                 );
                 // @formatter:on
             }
-
-
-
         }
 
     }

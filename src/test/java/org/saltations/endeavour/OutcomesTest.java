@@ -259,6 +259,43 @@ public class OutcomesTest
                     () -> assertNotNull(failure.getCause(), "Cause")
             );
         }
+
+        @Test
+        @Order(28)
+        void canCreateCausedFailureWithTemplate()
+        {
+            var cause = new Exception();
+            var template = "This is a template message";
+            var result = Outcomes.causedFail(cause, ExemplarFailure.GENERAL, template);
+
+            var failure = assertOutcomeIsFailure(result);
+
+            assertAll("Failure",
+                    () -> assertEquals(ExemplarFailure.GENERAL, failure.getType(), "Type"),
+                    () -> assertEquals(template, failure.getDetail(), "Detail"),
+                    () -> assertNotNull(failure.getCause(), "Cause")
+            );
+        }
+
+        @Test
+        @Order(30)
+        void canCreateCausedFailureWithArgs()
+        {
+            var providedExceptionMessage = "This is a provided exception message";
+
+            var cause = new Exception(providedExceptionMessage);
+            var result = Outcomes.causedFail(cause, ExemplarFailure.NOT_REALLY_SO_BAD, "widget1", "widget2");
+
+            var failure = assertOutcomeIsFailure(result);
+
+            // @formatter:off
+            assertAll("Failure",
+                    () -> assertEquals(ExemplarFailure.NOT_REALLY_SO_BAD, failure.getType(), "Type"),
+                    () -> assertEquals(providedExceptionMessage, failure.getDetail(), "Detail contains provided exception message"),
+                    () -> assertNotNull(failure.getCause(), "Cause")
+            );
+            // @formatter:on
+        }
     }
 
     @Nested

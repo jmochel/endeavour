@@ -301,6 +301,15 @@ public class OutcomeTest
             assertEquals("Partial Success", result, "Transformed to 'Success'");
         }
 
+        @Test
+        @Order(110)
+        void whenCallingToStringThenReturnsExpectedFormat() {
+            var result = partialSuccess.toString();
+            assertTrue(result.contains("XPartialSuccess"));
+            assertTrue(result.contains("1111"));
+            assertTrue(result.contains("FailureAnalysis"));
+        }
+
         String outcomeToString(Outcome<FailureAnalysis, Long> outcome)
         {
             return switch (outcome)
@@ -434,6 +443,121 @@ public class OutcomeTest
                 case PartialSuccess out -> "Partial Success";
                 case Failure out -> "Failure";
             };
+        }
+    }
+
+    @Nested
+    @Order(7)
+    @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+    class TransmuteTests {
+        private final Outcome<FailureAnalysis, Long> success = Outcomes.succeed(1111L);
+        private final Outcome<FailureAnalysis, Long> failure = Outcomes.fail();
+        private final Outcome<FailureAnalysis, Long> partialSuccess = Outcomes.partialSucceed(FailureAnalysis.of().build(), 1111L);
+
+        @Test
+        @Order(10)
+        void whenTransmutingSuccessThenReturnsTransformedValue() {
+            // Given a success outcome and a transform function
+            var result = success.transmute(outcome -> {
+                if (outcome.hasSuccessPayload()) {
+                    return outcome.get() * 2;
+                }
+                return 0L;
+            });
+
+            // Then the result should be the transformed value
+            assertEquals(2222L, result);
+        }
+
+        @Test
+        @Order(20)
+        void whenTransmutingFailureThenReturnsTransformedValue() {
+            // Given a failure outcome and a transform function
+            var result = failure.transmute(outcome -> {
+                if (outcome.hasFailurePayload()) {
+                    return "Failed";
+                }
+                return "Success";
+            });
+
+            // Then the result should be the transformed value
+            assertEquals("Failed", result);
+        }
+
+        @Test
+        @Order(30)
+        void whenTransmutingPartialSuccessThenReturnsTransformedValue() {
+            // Given a partial success outcome and a transform function
+            var result = partialSuccess.transmute(outcome -> {
+                if (outcome.hasSuccessPayload() && outcome.hasFailurePayload()) {
+                    return "Partial";
+                }
+                return "Not Partial";
+            });
+
+            // Then the result should be the transformed value
+            assertEquals("Partial", result);
+        }
+
+        @Test
+        @Order(40)
+        void whenTransmutingWithNullTransformThenThrowsException() {
+            // Given a success outcome and a null transform function
+            assertThrows(NullPointerException.class, () -> {
+                success.transmute(null);
+            });
+        }
+
+        @Test
+        @Order(50)
+        void whenTransmutingWithThrowingTransformThenThrowsException() {
+            // Given a success outcome and a transform function that throws
+            assertThrows(RuntimeException.class, () -> {
+                success.transmute(outcome -> {
+                    throw new RuntimeException("Transform failed");
+                });
+            });
+        }
+
+        @Test
+        @Order(60)
+        void whenTransmutingWithComplexTransformThenReturnsExpectedResult() {
+            // Given a success outcome and a complex transform function
+            var result = success.transmute(outcome -> {
+                if (outcome.hasSuccessPayload()) {
+                    var value = outcome.get();
+                    return new ComplexResult(value, value * 2, value * 3);
+                }
+                return new ComplexResult(0L, 0L, 0L);
+            });
+
+            // Then the result should be the complex transformed value
+            assertEquals(1111L, result.value1);
+            assertEquals(2222L, result.value2);
+            assertEquals(3333L, result.value3);
+        }
+
+        private static class ComplexResult {
+            final long value1;
+            final long value2;
+            final long value3;
+
+            ComplexResult(long value1, long value2, long value3) {
+                this.value1 = value1;
+                this.value2 = value2;
+                this.value3 = value3;
+            }
+        }
+    }
+
+    @Nested
+    @Order(8)
+    @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+    class OutcomesConstructorTest {
+        @Test
+        @Order(10)
+        void whenCreatingNewInstanceThenSucceeds() {
+            new Outcomes();
         }
     }
 

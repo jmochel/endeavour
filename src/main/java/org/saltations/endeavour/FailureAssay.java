@@ -256,15 +256,14 @@ public class FailureAssay
 
         private String expandAsNecessary()
         {
-            if (isNull(template)) {
-                return "";
-            }
-            
             // If the template is not provided, use the type's template
             var templateToUse = nonNull(this.template) ? this.template : this.type.getTemplate();
+            
+            if (isNull(templateToUse)) {
+                return "";
+            }
 
             // Count the number of {} in the template
-
             var expectedNumOfArgs = countOccurrences(templateToUse, "{}");
 
             // Initialize args to empty array if null
@@ -282,7 +281,7 @@ public class FailureAssay
                 args = paddedArgs;
             }
 
-            return MessageFormatter.basicArrayFormat(template, args);
+            return MessageFormatter.basicArrayFormat(templateToUse, args);
         }
 
     }

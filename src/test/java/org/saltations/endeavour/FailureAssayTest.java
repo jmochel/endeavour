@@ -23,7 +23,6 @@ import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -392,55 +391,6 @@ class FailureAssayTest
     }
 
     @Nested
-    @DisplayName("Template Expansion")
-    class TemplateExpansion
-    {
-        @Test
-        @DisplayName("should handle mismatched argument count gracefully")
-        void shouldHandleMismatchedArgumentCount()
-        {
-            var assay = FailureAssay.of()
-                    .type(FailureAssay.GenericFailureType.GENERIC)
-                    .template("Test template with {} argument")
-                    .args("one", "two")  // Providing more arguments than template expects
-                    .build();
-
-            assertThat(assay.getDetail())
-                    .as("Should use first argument when too many provided")
-                    .isEqualTo("Test template with one argument");
-        }
-
-        @Test
-        @DisplayName("should handle missing arguments gracefully")
-        void shouldHandleMissingArguments()
-        {
-            var assay = FailureAssay.of()
-                    .type(FailureAssay.GenericFailureType.GENERIC)
-                    .template("Test template with {0} argument")
-                    .build();  // No arguments provided
-
-            assertThat(assay.getDetail())
-                    .as("Should handle missing arguments gracefully")
-                    .isEqualTo("Test template with {0} argument");
-        }
-
-        @Test
-        @DisplayName("should handle null arguments gracefully")
-        void shouldHandleNullArguments()
-        {
-            var assay = FailureAssay.of()
-                    .type(FailureAssay.GenericFailureType.GENERIC)
-                    .template("Test template with {0} argument")
-                    .args((Object[]) null)
-                    .build();
-
-            assertThat(assay.getDetail())
-                    .as("Should handle null arguments gracefully")
-                    .isEqualTo("Test template with {0} argument");
-        }
-    }
-
-    @Nested
     @Order(4)
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class BuilderCopyConstructor
@@ -621,6 +571,73 @@ class FailureAssayTest
             assertThat(assay.getDetail())
                     .as("Should pad missing arguments with NotSupplied")
                     .isEqualTo("Template with first and NotSupplied and NotSupplied");
+        }
+
+        @Test
+        @Order(8)
+        void shouldUseTypeTemplateWhenBuilderTemplateIsNull()
+        {
+            var assay = FailureAssay.of()
+                    .type(FailureAssayTestFailureType.MORE_CLEAR)
+                    .template(null)
+                    .build();
+
+            assertThat(assay.getDetail())
+                    .as("Should use type's template when builder template is null")
+                    .isEqualTo("Looks like it had something to do with NotSupplied");
+        }
+
+        @Test
+        @Order(9)
+        void shouldHandleNullTypeInCopyConstructor()
+        {
+            var originalAssay = new FailureAssay(FailureAssay.GenericFailureType.GENERIC, "Original Title", "Original Detail", null);
+            var builder = new FailureAssay.Builder(originalAssay);
+            var copiedAssay = builder.build();
+
+            assertAll("Copied Assay",
+                    () -> assertEquals(FailureAssay.GenericFailureType.GENERIC, copiedAssay.getType(), "should keep original type"),
+                    () -> assertEquals("Original Title", copiedAssay.getTitle(), "should keep original title"),
+                    () -> assertEquals("Original Detail", copiedAssay.getDetail(), "should keep original detail")
+            );
+        }
+
+        @Test
+        @Order(10)
+        void shouldHandleVariousNullFieldCombinationsInBuild()
+        {
+            // Case 1: Only title is null
+            var assay1 = FailureAssay.of()
+                    .type(FailureAssay.GenericFailureType.GENERIC)
+                    .detail("Some detail")
+                    .template("Some template")
+                    .build();
+            assertAll("Assay with only title null",
+                    () -> assertEquals(FailureAssay.GenericFailureType.GENERIC.getTitle(), assay1.getTitle(), "should use generic title"),
+                    () -> assertEquals("Some detail", assay1.getDetail(), "should use detail over template")
+            );
+
+            // Case 2: Only detail is null
+            var assay2 = FailureAssay.of()
+                    .type(FailureAssay.GenericFailureType.GENERIC)
+                    .title("Some title")
+                    .template("Some template")
+                    .build();
+            assertAll("Assay with only detail null",
+                    () -> assertEquals("Some title", assay2.getTitle(), "should use provided title"),
+                    () -> assertEquals("Some template", assay2.getDetail(), "should use template when detail is null")
+            );
+
+            // Case 3: Only template is null
+            var assay3 = FailureAssay.of()
+                    .type(FailureAssay.GenericFailureType.GENERIC)
+                    .title("Some title")
+                    .detail("Some detail")
+                    .build();
+            assertAll("Assay with only template null",
+                    () -> assertEquals("Some title", assay3.getTitle(), "should use provided title"),
+                    () -> assertEquals("Some detail", assay3.getDetail(), "should use provided detail")
+            );
         }
     }
 

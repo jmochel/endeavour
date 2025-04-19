@@ -43,7 +43,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author Jim Mochel
  */
 
-public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Success, PartialSuccess
+public sealed interface Outcome<FV extends FailureAnalysis, SV> permits Failure, Success, PartialSuccess
 {
     /**
      * Returns <em>true</em> if this outcome has a success payload.
@@ -193,7 +193,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
 
     void on(Consumer<Outcome<FV,SV>> successAction, Consumer<Outcome<FV,SV>> failureAction);
 
-    <FV extends FailureAssay, SV2> Outcome<FV,SV2> map(@NonNull Function<SV,SV2> transform);
+    <FV extends FailureAnalysis, SV2> Outcome<FV,SV2> map(@NonNull Function<SV,SV2> transform);
 
     <SV2> Outcome<FV,SV2> flatMap(@NonNull Function<SV,Outcome<FV,SV2>> transform);
 
@@ -212,7 +212,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
      * @param <SV2> Type of the supplied value
      */
 
-    static <FV extends FailureAssay, SV2> Outcome<FV, SV2> attempt(@NonNull ExceptionalSupplier<SV2> supplier)
+    static <FV extends FailureAnalysis, SV2> Outcome<FV, SV2> attempt(@NonNull ExceptionalSupplier<SV2> supplier)
     {
         checkNotNull(supplier, "Supplier cannot be null");
 
@@ -222,7 +222,7 @@ public sealed interface Outcome<FV extends FailureAssay, SV> permits Failure, Su
         }
         catch (Exception e)
         {
-            return new Failure<>((FV) FailureAssay.of()
+            return new Failure<>((FV) FailureAnalysis.of()
                     .cause(e)
                     .build());
         }

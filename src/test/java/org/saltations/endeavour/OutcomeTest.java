@@ -58,7 +58,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenSuccess {
 
-        private final Outcome<FailureAssay, Long> success = Outcomes.succeed(1111L);
+        private final Outcome<FailureAnalysis, Long> success = Outcomes.succeed(1111L);
 
         @Test
         @Order(10)
@@ -171,7 +171,7 @@ public class OutcomeTest
             assertEquals("Success", result, "Transformed to 'Success'");
         }
 
-        String outcomeToString(Outcome<FailureAssay, Long> outcome)
+        String outcomeToString(Outcome<FailureAnalysis, Long> outcome)
         {
             return switch (outcome)
             {
@@ -188,7 +188,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenPartialSuccess {
 
-        private final Outcome<FailureAssay, Long> partialSuccess = Outcomes.partialSucceed(FailureAssay.of().build(),1111L);
+        private final Outcome<FailureAnalysis, Long> partialSuccess = Outcomes.partialSucceed(FailureAnalysis.of().build(),1111L);
 
         @Test
         @Order(10)
@@ -301,7 +301,7 @@ public class OutcomeTest
             assertEquals("Partial Success", result, "Transformed to 'Success'");
         }
 
-        String outcomeToString(Outcome<FailureAssay, Long> outcome)
+        String outcomeToString(Outcome<FailureAnalysis, Long> outcome)
         {
             return switch (outcome)
             {
@@ -317,7 +317,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenFailure {
 
-        private final Outcome<FailureAssay, Long> failure = Outcomes.fail();
+        private final Outcome<FailureAnalysis, Long> failure = Outcomes.fail();
 
         @Test
         @Order(10)
@@ -426,7 +426,7 @@ public class OutcomeTest
             assertEquals("Failure", result, "Transformed to 'Success'");
         }
 
-        String outcomeToString(Outcome<FailureAssay, Long> outcome)
+        String outcomeToString(Outcome<FailureAnalysis, Long> outcome)
         {
             return switch (outcome)
             {

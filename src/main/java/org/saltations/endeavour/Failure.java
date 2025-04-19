@@ -6,13 +6,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Represents an Outcome that is a full failure of an operation. Carries information about the failure.
+ * Represents an full failure Outcome of an operation.
  *
- * @param <FV> The class of Failure value that is being carried.
+ * @param <FV> The class of Failure analysis value that is being carried.
  * @param <SV> The class of the unrealized Success value.
  */
 
-public record Failure<FV extends FailureAssay, SV>(FV fail) implements Outcome<FV, SV>
+public record Failure<FV extends FailureAnalysis, SV>(FV fail) implements Outcome<FV, SV>
 {
 
     @Override
@@ -98,7 +98,7 @@ public record Failure<FV extends FailureAssay, SV>(FV fail) implements Outcome<F
     }
 
     @Override
-    public <FV extends FailureAssay, SV2> Outcome<FV, SV2> map(Function<SV, SV2> transform)
+    public <FV extends FailureAnalysis, SV2> Outcome<FV, SV2> map(Function<SV, SV2> transform)
     {
         return new Failure<FV, SV2>((FV) fail);
     }

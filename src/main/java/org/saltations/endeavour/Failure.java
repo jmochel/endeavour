@@ -12,7 +12,7 @@ import java.util.function.Supplier;
  * @param <SV> The class of the unrealized Success value.
  */
 
-public record Failure<FV extends FailureAnalysis, SV>(FV fail) implements Outcome<FV, SV>
+public record Failure<FV extends FailureDescription, SV>(FV fail) implements Outcome<FV, SV>
 {
 
     @Override
@@ -98,7 +98,7 @@ public record Failure<FV extends FailureAnalysis, SV>(FV fail) implements Outcom
     }
 
     @Override
-    public <FV extends FailureAnalysis, SV2> Outcome<FV, SV2> map(Function<SV, SV2> transform)
+    public <FV extends FailureDescription, SV2> Outcome<FV, SV2> map(Function<SV, SV2> transform)
     {
         return new Failure<FV, SV2>((FV) fail);
     }

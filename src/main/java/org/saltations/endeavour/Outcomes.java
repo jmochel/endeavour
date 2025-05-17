@@ -25,7 +25,7 @@ public class Outcomes
      *
      */
 
-    public static <FV extends FailureAnalysis, SV> Outcome<FV,SV> succeed()
+    public static <FV extends FailureDescription, SV> Outcome<FV,SV> succeed()
     {
         return (Outcome<FV, SV>) new Success<>(Boolean.TRUE);
     }
@@ -46,7 +46,7 @@ public class Outcomes
      * </pre>
      *
      */
-    public static <FV extends FailureAnalysis, SV> Outcome<FV,SV> succeed(SV value)
+    public static <FV extends FailureDescription, SV> Outcome<FV,SV> succeed(SV value)
     {
         requireNonNull(value, "Result must have a non-null value to return");
 
@@ -69,7 +69,7 @@ public class Outcomes
      * </pre>
      *
      */
-    public static <FV extends FailureAnalysis, SV> Outcome<FV,SV> partialSucceed(FV failureValue , SV successValue)
+    public static <FV extends FailureDescription, SV> Outcome<FV,SV> partialSucceed(FV failureValue , SV successValue)
     {
         requireNonNull(successValue, "Result must have a non-null success value to return");
         requireNonNull(failureValue, "Result must have a non-null failure value to return");
@@ -92,11 +92,11 @@ public class Outcomes
      * }
      * </pre>
      */
-    public static <FV extends FailureAnalysis, SV> Outcome<FV,SV> fail()
+    public static <FV extends FailureDescription, SV> Outcome<FV,SV> fail()
     {
-        var type = FailureAnalysis.GenericFailureType.GENERIC;
+        var type = FailureDescription.GenericFailureType.GENERIC;
 
-        return new Failure(FailureAnalysis.of()
+        return new Failure(FailureDescription.of()
                 .type(type)
                 .build());
     }
@@ -122,13 +122,13 @@ public class Outcomes
      * </pre>
      */
 
-    public static <FV extends FailureAnalysis, SV> Outcome<FV,SV> failWithDetails(String template, Object...args)
+    public static <FV extends FailureDescription, SV> Outcome<FV,SV> failWithDetails(String template, Object...args)
     {
         requireNonNull(template, "Failure needs a non-null template");
 
-        var failureType = FailureAnalysis.GenericFailureType.GENERIC;
+        var failureType = FailureDescription.GenericFailureType.GENERIC;
 
-        var fail = FailureAnalysis.of()
+        var fail = FailureDescription.of()
                 .type(failureType)
                 .template(template)
                 .args(args)
@@ -153,11 +153,11 @@ public class Outcomes
      * }
      * </pre>
      */
-    public static <FV extends FailureAnalysis, SV> Outcome<FV,SV> titledFail(String title)
+    public static <FV extends FailureDescription, SV> Outcome<FV,SV> titledFail(String title)
     {
-        var failureType = FailureAnalysis.GenericFailureType.GENERIC;
+        var failureType = FailureDescription.GenericFailureType.GENERIC;
 
-        var fail = FailureAnalysis.of()
+        var fail = FailureDescription.of()
                 .type(failureType)
                 .title(title)
                 .build();
@@ -181,11 +181,11 @@ public class Outcomes
      * }
      * </pre>
      */
-    public static <FV extends FailureAnalysis, SV> Outcome<FV,SV> titledFailWithDetails(String title, String template, Object...args)
+    public static <FV extends FailureDescription, SV> Outcome<FV,SV> titledFailWithDetails(String title, String template, Object...args)
     {
-        var failureType = FailureAnalysis.GenericFailureType.GENERIC;
+        var failureType = FailureDescription.GenericFailureType.GENERIC;
 
-        var fail = FailureAnalysis.of()
+        var fail = FailureDescription.of()
                 .type(failureType)
                 .title(title)
                 .template(template)
@@ -196,11 +196,11 @@ public class Outcomes
     }
 
 
-    public static <FV extends FailureAnalysis, SV> Outcome<FV,SV> typedFail(FailureType failureType, Object...args)
+    public static <FV extends FailureDescription, SV> Outcome<FV,SV> typedFail(FailureType failureType, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
 
-        var builder = FailureAnalysis.of().type(failureType);
+        var builder = FailureDescription.of().type(failureType);
 
         if (failureType.templateParameterCount() == 0 && args.length == 1)
         {
@@ -216,11 +216,11 @@ public class Outcomes
     }
 
 
-    public static <FV extends FailureAnalysis, SV> Outcome<FV,SV> typedFailWithDetails(FailureType failureType, String template, Object...args)
+    public static <FV extends FailureDescription, SV> Outcome<FV,SV> typedFailWithDetails(FailureType failureType, String template, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
 
-        var fail = FailureAnalysis.of()
+        var fail = FailureDescription.of()
                 .type(failureType)
                 .template(template)
                 .args(args)
@@ -229,11 +229,11 @@ public class Outcomes
         return new Failure(fail);
     }
 
-    public static <FV extends FailureAnalysis, SV> Outcome<FV,SV> causedFail(Exception cause)
+    public static <FV extends FailureDescription, SV> Outcome<FV,SV> causedFail(Exception cause)
     {
-        var failureType = FailureAnalysis.GenericFailureType.GENERIC;
+        var failureType = FailureDescription.GenericFailureType.GENERIC;
 
-        var fail = FailureAnalysis.of()
+        var fail = FailureDescription.of()
                 .type(failureType)
                 .cause(cause)
                 .build();
@@ -241,11 +241,11 @@ public class Outcomes
         return new Failure(fail);
     }
 
-    public static <FV extends FailureAnalysis, SV> Outcome<FV,SV> causedFail(Exception cause, FailureType failureType, Object...args)
+    public static <FV extends FailureDescription, SV> Outcome<FV,SV> causedFail(Exception cause, FailureType failureType, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
 
-        var builder = FailureAnalysis.of().type(failureType).cause(cause);
+        var builder = FailureDescription.of().type(failureType).cause(cause);
 
         if (failureType.templateParameterCount() == 0 && args.length == 1)
         {
@@ -260,11 +260,11 @@ public class Outcomes
         return new Failure(fail);
     }
 
-    public static <FV extends FailureAnalysis, SV> Outcome<FV,SV> causedFailWithDetails(Exception cause, String template, Object...args)
+    public static <FV extends FailureDescription, SV> Outcome<FV,SV> causedFailWithDetails(Exception cause, String template, Object...args)
     {
-        var failureType = FailureAnalysis.GenericFailureType.GENERIC;
+        var failureType = FailureDescription.GenericFailureType.GENERIC;
 
-        var fail = FailureAnalysis.of()
+        var fail = FailureDescription.of()
                 .type(failureType)
                 .cause(cause)
                 .template(template)

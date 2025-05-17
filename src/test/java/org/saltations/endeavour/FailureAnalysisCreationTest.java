@@ -48,7 +48,7 @@ class FailureAnalysisCreationTest
     @BeforeAll
     public void setupLogCapture()
     {
-        var logger = (Logger) LoggerFactory.getLogger(FailureAnalysis.class);
+        var logger = (Logger) LoggerFactory.getLogger(FailureDescription.class);
         memoryAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
 
         logger.setLevel(Level.WARN);
@@ -79,11 +79,11 @@ class FailureAnalysisCreationTest
         void andFailureTypeIsExplicitlyNullThenAnalysisHasDefaultGenericTypeTitleAndEmptyDetails()
         {
             // Given
-            var analysis = new FailureAnalysis(null, null, null, null);
+            var analysis = new FailureDescription(null, null, null, null);
 
             // Then
             assertAll(
-                () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC, analysis.getType()),
+                () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, analysis.getType()),
                 () -> assertNull(analysis.getTitle()),
                 () -> assertNull(analysis.getDetail()),
                 () -> assertFalse(analysis.hasCause())
@@ -95,11 +95,11 @@ class FailureAnalysisCreationTest
         void andNothingElseThenAnalysisHasDefaultGenericTypeTitleAndEmptyDetails()
         {
             // Given
-            var analysis = new FailureAnalysis(null, null, null, null);
+            var analysis = new FailureDescription(null, null, null, null);
 
             // Then
             assertAll(
-                () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC, analysis.getType()),
+                () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, analysis.getType()),
                 () -> assertNull(analysis.getTitle()),
                 () -> assertNull(analysis.getDetail()),
                 () -> assertFalse(analysis.hasCause())
@@ -111,11 +111,11 @@ class FailureAnalysisCreationTest
         void andFailureTypeIsExplicitlyGenericThenAnalysisHasGenericTypeTitleAndEmptyDetails()
         {
             // Given
-            var analysis = new FailureAnalysis(FailureAnalysis.GenericFailureType.GENERIC, null, null, null);
+            var analysis = new FailureDescription(FailureDescription.GenericFailureType.GENERIC, null, null, null);
 
             // Then
             assertAll(
-                () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC, analysis.getType()),
+                () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, analysis.getType()),
                 () -> assertNull(analysis.getTitle()),
                 () -> assertNull(analysis.getDetail()),
                 () -> assertFalse(analysis.hasCause())
@@ -133,7 +133,7 @@ class FailureAnalysisCreationTest
             {
                 var providedTitle = "Provided title";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .title(providedTitle)
                     .build();
 
@@ -153,13 +153,13 @@ class FailureAnalysisCreationTest
             {
                 var providedTemplate = "Provided template is {}";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .template(providedTemplate)
                     .build();   
                     
                 // @formatter:off
                 assertAll("FailureAnalysis",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
                     () -> assertEquals("Provided template is NotSupplied", failureAnalysis.getDetail(), "has detail from provided template"),
                     () -> assertNull(failureAnalysis.getCause(), "has no cause"),
                     () -> assertFalse(failureAnalysis.hasCause(), "has no cause")
@@ -174,13 +174,13 @@ class FailureAnalysisCreationTest
             {
                 var providedDetail = "Provided detail";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .detail(providedDetail)
                     .build();   
                     
                 // @formatter:off
                 assertAll("FailureAnalysis",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
                     () -> assertEquals(providedDetail, failureAnalysis.getDetail(), "has provided detail"),
                     () -> assertNull(failureAnalysis.getCause(), "has no cause"),
                     () -> assertFalse(failureAnalysis.hasCause(), "has no cause")
@@ -195,7 +195,7 @@ class FailureAnalysisCreationTest
                 var providedTitle = "Provided title";
                 var providedTemplate = "Provided template is {}";       
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .title(providedTitle)
                     .template(providedTemplate)
                     .build();
@@ -217,7 +217,7 @@ class FailureAnalysisCreationTest
                 var providedTitle = "Provided title";
                 var providedDetail = "Provided detail";       
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .title(providedTitle)
                     .detail(providedDetail)
                     .build();
@@ -240,7 +240,7 @@ class FailureAnalysisCreationTest
                 var providedTemplate = "Provided template is {}";       
                 var providedDetail = "Provided detail";       
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .title(providedTitle)
                     .template(providedTemplate)
                     .detail(providedDetail)
@@ -270,7 +270,7 @@ class FailureAnalysisCreationTest
         @Order(1)
         void andNothingElseThenHasFailureTypeTitleAndDetails()
         {
-            var failureAnalysis = FailureAnalysis.of()
+            var failureAnalysis = FailureDescription.of()
                     .type(CustomFailureType.SINGULAR_ERROR)
                     .args("THING")
                     .build();
@@ -296,7 +296,7 @@ class FailureAnalysisCreationTest
             {
                 var providedTitle = "Provided title";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .title(providedTitle)
                     .build();
 
@@ -316,13 +316,13 @@ class FailureAnalysisCreationTest
             {
                 var providedTemplate = "Provided template is {}";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .template(providedTemplate)
                     .build();   
                     
                 // @formatter:off
                 assertAll("FailureAnalysis",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
                     () -> assertEquals("Provided template is NotSupplied", failureAnalysis.getDetail(), "has detail from provided template"),
                     () -> assertNull(failureAnalysis.getCause(), "has no cause"),
                     () -> assertFalse(failureAnalysis.hasCause(), "has no cause")   
@@ -337,13 +337,13 @@ class FailureAnalysisCreationTest
             {
                 var providedDetail = "Provided detail";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .detail(providedDetail)
                     .build();   
                     
                 // @formatter:off
                 assertAll("FailureAnalysis",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
                     () -> assertEquals(providedDetail, failureAnalysis.getDetail(), "has provided detail"),
                     () -> assertNull(failureAnalysis.getCause(), "has no cause")
                 );
@@ -357,7 +357,7 @@ class FailureAnalysisCreationTest
                 var providedTitle = "Provided title";
                 var providedTemplate = "Provided template is {}";       
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .title(providedTitle)
                     .template(providedTemplate)
                     .build();
@@ -379,7 +379,7 @@ class FailureAnalysisCreationTest
                 var providedTitle = "Provided title";
                 var providedDetail = "Provided detail";       
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .title(providedTitle)
                     .detail(providedDetail)
                     .build();
@@ -402,7 +402,7 @@ class FailureAnalysisCreationTest
                 var providedTemplate = "Provided template is {}";       
                 var providedDetail = "Provided detail";       
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .title(providedTitle)
                     .template(providedTemplate)
                     .detail(providedDetail)
@@ -434,14 +434,14 @@ class FailureAnalysisCreationTest
         {
                 var providedErrorMessage = "Dang!";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                         .type(null)
                         .cause(new RuntimeException(providedErrorMessage))
                         .build();
 
             // @formatter:off
             assertAll("FailureAnalysis",
-                () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC_EXCEPTION.getTitle(), failureAnalysis.getTitle(), "has type title"),
+                () -> assertEquals(FailureDescription.GenericFailureType.GENERIC_EXCEPTION.getTitle(), failureAnalysis.getTitle(), "has type title"),
                 () -> assertEquals(providedErrorMessage, failureAnalysis.getDetail(), "has cause detail"),
                 () -> assertNotNull(failureAnalysis.getCause(), "has cause"),
                 () -> assertTrue(failureAnalysis.hasCause(), "has cause")
@@ -462,7 +462,7 @@ class FailureAnalysisCreationTest
 
                 var providedErrorMessage = "Dang!";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                         .type(null)
                         .cause(new RuntimeException(providedErrorMessage))
                         .title(providedTitle)
@@ -485,7 +485,7 @@ class FailureAnalysisCreationTest
                 var providedTemplate = "Provided template is {}";
                 var providedErrorMessage = "Dang!";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                         .type(null)
                         .cause(new RuntimeException(providedErrorMessage))
                         .template(providedTemplate)
@@ -493,7 +493,7 @@ class FailureAnalysisCreationTest
                     
                 // @formatter:off
                 assertAll("FailureAnalysis",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC_EXCEPTION.getTitle(), failureAnalysis.getTitle(), "has default title"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC_EXCEPTION.getTitle(), failureAnalysis.getTitle(), "has default title"),
                     () -> assertEquals("Provided template is NotSupplied", failureAnalysis.getDetail(), "has detail from provided template"),
                     () -> assertNotNull(failureAnalysis.getCause(), "has cause"),
                     () -> assertTrue(failureAnalysis.hasCause(), "has cause")
@@ -509,7 +509,7 @@ class FailureAnalysisCreationTest
                 var providedDetail = "Provided detail";
                 var providedErrorMessage = "Dang!";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                         .type(null)
                         .cause(new RuntimeException(providedErrorMessage))
                         .detail(providedDetail)
@@ -517,7 +517,7 @@ class FailureAnalysisCreationTest
                     
                 // @formatter:off
                 assertAll("FailureAnalysis",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC_EXCEPTION.getTitle(), failureAnalysis.getTitle(), "has default title"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC_EXCEPTION.getTitle(), failureAnalysis.getTitle(), "has default title"),
                     () -> assertEquals(providedDetail, failureAnalysis.getDetail(), "has provided detail"),
                     () -> assertNotNull(failureAnalysis.getCause(), "has cause"),
                     () -> assertTrue(failureAnalysis.hasCause(), "has cause")
@@ -533,7 +533,7 @@ class FailureAnalysisCreationTest
                 var providedTemplate = "Provided template is {}";       
                 var providedErrorMessage = "Dang!";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                         .type(null)
                         .cause(new RuntimeException(providedErrorMessage))
                         .title(providedTitle)
@@ -558,7 +558,7 @@ class FailureAnalysisCreationTest
                 var providedDetail = "Provided detail";       
                 var providedErrorMessage = "Dang!";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                         .type(null)
                         .cause(new RuntimeException(providedErrorMessage))
                         .title(providedTitle)
@@ -584,7 +584,7 @@ class FailureAnalysisCreationTest
                 var providedDetail = "Provided detail";       
                 var providedErrorMessage = "Dang!";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                         .type(null)
                         .cause(new RuntimeException(providedErrorMessage))
                         .title(providedTitle)
@@ -617,7 +617,7 @@ class FailureAnalysisCreationTest
         @Order(1)
         void andCauseHasNotMessageThenAnalysisHasProvidedFailureTypeTitleAndEmptyDetail()
         {
-            var failureAnalysis = FailureAnalysis.of()
+            var failureAnalysis = FailureDescription.of()
                     .type(CustomFailureType.SINGULAR_ERROR)
                     .cause(new RuntimeException())
                     .build();
@@ -638,7 +638,7 @@ class FailureAnalysisCreationTest
         {
             String providedExceptionMessage = "Dang!";
 
-            var failureAnalysis = FailureAnalysis.of()
+            var failureAnalysis = FailureDescription.of()
                     .type(CustomFailureType.SINGULAR_ERROR)
                     .cause(new RuntimeException(providedExceptionMessage))
                     .build();
@@ -664,7 +664,7 @@ class FailureAnalysisCreationTest
             {
                 var providedTitle = "Provided title";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .title(providedTitle)
                     .build();
 
@@ -683,13 +683,13 @@ class FailureAnalysisCreationTest
             {
                 var providedTemplate = "Provided template is {}";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .template(providedTemplate)
                     .build();   
                     
                 // @formatter:off
                 assertAll("FailureAnalysis",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
                     () -> assertEquals("Provided template is NotSupplied", failureAnalysis.getDetail(), "has detail from provided template"),
                     () -> assertNull(failureAnalysis.getCause(), "has no cause")
                 );
@@ -703,13 +703,13 @@ class FailureAnalysisCreationTest
             {
                 var providedDetail = "Provided detail";
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .detail(providedDetail)
                     .build();   
                     
                 // @formatter:off
                 assertAll("FailureAnalysis",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC.getTitle(), failureAnalysis.getTitle(), "has default title"),
                     () -> assertEquals(providedDetail, failureAnalysis.getDetail(), "has provided detail"),
                     () -> assertNull(failureAnalysis.getCause(), "has no cause")
                 );
@@ -723,7 +723,7 @@ class FailureAnalysisCreationTest
                 var providedTitle = "Provided title";
                 var providedTemplate = "Provided template is {}";       
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .title(providedTitle)
                     .template(providedTemplate)
                     .build();
@@ -744,7 +744,7 @@ class FailureAnalysisCreationTest
                 var providedTitle = "Provided title";
                 var providedDetail = "Provided detail";       
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .title(providedTitle)
                     .detail(providedDetail)
                     .build();
@@ -766,7 +766,7 @@ class FailureAnalysisCreationTest
                 var providedTemplate = "Provided template is {}";       
                 var providedDetail = "Provided detail";       
 
-                var failureAnalysis = FailureAnalysis.of()
+                var failureAnalysis = FailureDescription.of()
                     .title(providedTitle)
                     .template(providedTemplate)
                     .detail(providedDetail)
@@ -796,14 +796,14 @@ class FailureAnalysisCreationTest
         @Order(1)
         void shouldCopyAllFieldsFromExistingAnalysis()
         {
-            var originalAnalysis = FailureAnalysis.of()
+            var originalAnalysis = FailureDescription.of()
                     .type(FailureAnalysisTestFailureType.MORE_CLEAR)
                     .title("Original Title")
                     .detail("Original Detail")
                     .cause(new RuntimeException("Original Cause"))
                     .build();
 
-            var builder = new FailureAnalysis.Builder(originalAnalysis);
+            var builder = new FailureDescription.Builder(originalAnalysis);
             var copiedAnalysis = builder.build();
 
             assertAll("Copied Analysis",
@@ -820,7 +820,7 @@ class FailureAnalysisCreationTest
     @MethodSource("templateExpansionTestData")
     void templateExpansion(String scenarioName,String template, Object[] args, String expectedExpansion)
     {
-        var analysis = FailureAnalysis.of()
+        var analysis = FailureDescription.of()
                 .template(template)
                 .args(args)
                 .build();

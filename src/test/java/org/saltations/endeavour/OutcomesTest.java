@@ -80,7 +80,7 @@ public class OutcomesTest
 
             var failure = assertOutcomeIsFailure(result);
 
-            assertAll("Failure", () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC, failure.getType(), "Type"), () -> assertNull(failure.getCause(), "Cause"));
+            assertAll("Failure", () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"), () -> assertNull(failure.getCause(), "Cause"));
 
             assertEquals("", failure.getDetail(), "Detail");
         }
@@ -94,7 +94,7 @@ public class OutcomesTest
             var failure = assertOutcomeIsFailure(result);
 
             assertAll("Failure",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC, failure.getType(), "Type"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
                     () -> assertNull(failure.getCause(), "Cause"),
                     () -> assertEquals("Bozo did it", failure.getDetail(), "Detail")
             );
@@ -116,7 +116,7 @@ public class OutcomesTest
             var failure = assertOutcomeIsFailure(result);
 
             assertAll("Failure",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC, failure.getType(), "Type"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
                     () -> assertNull(failure.getCause(), "Cause")
             );
 
@@ -133,7 +133,7 @@ public class OutcomesTest
             var failure = assertOutcomeIsFailure(result);
 
             assertAll("Failure",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC, failure.getType(), "Type"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
                     () -> assertNull(failure.getCause(), "Cause")
             );
 
@@ -204,7 +204,7 @@ public class OutcomesTest
             var failure = assertOutcomeIsFailure(result);
 
             assertAll("Failure",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC, failure.getType(), "Type"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
                     () -> assertEquals("", failure.getDetail(), "Detail"),
                     () -> assertNotNull(failure.getCause(), "Cause")
             );
@@ -254,7 +254,7 @@ public class OutcomesTest
             var failure = assertOutcomeIsFailure(result);
 
             assertAll("Failure",
-                    () -> assertEquals(FailureAnalysis.GenericFailureType.GENERIC, failure.getType(), "Type"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
                     () -> assertEquals(detail, failure.getDetail(), "Detail"),
                     () -> assertNotNull(failure.getCause(), "Cause")
             );
@@ -319,7 +319,7 @@ public class OutcomesTest
             var value = result.get();
         }
 
-        Outcome<FailureAnalysis, String> simpleReturnOfOKString()
+        Outcome<FailureDescription, String> simpleReturnOfOKString()
         {
             return Outcomes.succeed("OK");
         }
@@ -340,7 +340,7 @@ public class OutcomesTest
             assertThrows(Exception.class, () -> result.get(), "Cannot get value from a failure");
         }
 
-        Outcome<FailureAnalysis, Object> simpleReturnOfFailure()
+        Outcome<FailureDescription, Object> simpleReturnOfFailure()
         {
             return Outcomes.typedFail(ExemplarFailure.NOT_REALLY_SO_BAD);
         }

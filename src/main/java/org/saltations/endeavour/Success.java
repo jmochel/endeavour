@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public record Success<FV extends FailureAnalysis, SV>(SV value) implements Outcome<FV, SV>
+public record Success<FV extends FailureDescription, SV>(SV value) implements Outcome<FV, SV>
 {
     @Override
     public boolean hasSuccessPayload()
@@ -67,7 +67,7 @@ public record Success<FV extends FailureAnalysis, SV>(SV value) implements Outco
     }
 
     @Override
-    public <FV extends FailureAnalysis, SV2> Outcome<FV, SV2> map(Function<SV, SV2> transform)
+    public <FV extends FailureDescription, SV2> Outcome<FV, SV2> map(Function<SV, SV2> transform)
     {
         return new Success<FV, SV2>(transform.apply(value));
     }

@@ -6,7 +6,8 @@ import java.util.function.BiConsumer;
  * This is similar to the Java Supplier function type. It has a checked exception on it to allow it to
  * be used in lambda expressions on the outcome methods.
  *
- * @param <T> Type of the supplied value
+ * @param <T> Type of the first supplied value
+ * @param <U> Type of the second supplied value
  */
 
 @FunctionalInterface

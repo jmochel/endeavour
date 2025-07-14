@@ -166,7 +166,7 @@ public class OutcomeTest
         @Order(100)
         void whenTransformingThenGivesTransformedResult()
         {
-            var result = success.transmute(this::outcomeToString);
+            var result = success.transform(this::outcomeToString);
 
             assertEquals("Success", result, "Transformed to 'Success'");
         }
@@ -296,7 +296,7 @@ public class OutcomeTest
         @Order(100)
         void whenTransformingThenGivesTransformedResult()
         {
-            var result = partialSuccess.transmute(this::outcomeToString);
+            var result = partialSuccess.transform(this::outcomeToString);
 
             assertEquals("Partial Success", result, "Transformed to 'Success'");
         }
@@ -430,7 +430,7 @@ public class OutcomeTest
         @Order(100)
         void whenTransformingThenGivesTransformedResult()
         {
-            var result = failure.transmute(this::outcomeToString);
+            var result = failure.transform(this::outcomeToString);
 
             assertEquals("Failure", result, "Transformed to 'Success'");
         }
@@ -458,7 +458,7 @@ public class OutcomeTest
         @Order(10)
         void whenTransmutingSuccessThenReturnsTransformedValue() {
             // Given a success outcome and a transform function
-            var result = success.transmute(outcome -> {
+            var result = success.transform(outcome -> {
                 if (outcome.hasSuccessPayload()) {
                     return outcome.get() * 2;
                 }
@@ -473,7 +473,7 @@ public class OutcomeTest
         @Order(20)
         void whenTransmutingFailureThenReturnsTransformedValue() {
             // Given a failure outcome and a transform function
-            var result = failure.transmute(outcome -> {
+            var result = failure.transform(outcome -> {
                 if (outcome.hasFailurePayload()) {
                     return "Failed";
                 }
@@ -488,7 +488,7 @@ public class OutcomeTest
         @Order(30)
         void whenTransmutingPartialSuccessThenReturnsTransformedValue() {
             // Given a partial success outcome and a transform function
-            var result = partialSuccess.transmute(outcome -> {
+            var result = partialSuccess.transform(outcome -> {
                 if (outcome.hasSuccessPayload() && outcome.hasFailurePayload()) {
                     return "Partial";
                 }
@@ -504,7 +504,7 @@ public class OutcomeTest
         void whenTransmutingWithNullTransformThenThrowsException() {
             // Given a success outcome and a null transform function
             assertThrows(NullPointerException.class, () -> {
-                success.transmute(null);
+                success.transform(null);
             });
         }
 
@@ -513,7 +513,7 @@ public class OutcomeTest
         void whenTransmutingWithThrowingTransformThenThrowsException() {
             // Given a success outcome and a transform function that throws
             assertThrows(RuntimeException.class, () -> {
-                success.transmute(outcome -> {
+                success.transform(outcome -> {
                     throw new RuntimeException("Transform failed");
                 });
             });
@@ -523,7 +523,7 @@ public class OutcomeTest
         @Order(60)
         void whenTransmutingWithComplexTransformThenReturnsExpectedResult() {
             // Given a success outcome and a complex transform function
-            var result = success.transmute(outcome -> {
+            var result = success.transform(outcome -> {
                 if (outcome.hasSuccessPayload()) {
                     var value = outcome.get();
                     return new ComplexResult(value, value * 2, value * 3);

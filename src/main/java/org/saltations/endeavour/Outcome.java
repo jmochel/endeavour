@@ -197,10 +197,49 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
 
     <SV2> Outcome<FV,SV2> flatMap(@NonNull Function<SV,Outcome<FV,SV2>> transform);
 
-    default <RT> RT transmute(@NonNull Function<Outcome<FV,SV>, RT> transform)
+    default <RT> RT transform(@NonNull Function<Outcome<FV,SV>, RT> transform)
     {
       return transform.apply(this);
     }
+
+    default <RT> RT transform(@NonNull Function<Success<FV,SV>, RT> successTransform, @NonNull Function<Failure<FV,SV>, RT> failureTransform)
+    {
+        if (this instanceof Success<FV,SV> success)
+        {
+            return successTransform.apply(success);
+        }
+
+
+        if (this instanceof Failure<FV,SV> failure)
+        {
+            return failureTransform.apply(failure);
+        }
+
+        // This CAN NEVER happen
+        throw new IllegalStateException("Outcome is not a success or failure");
+    }
+
+    default <RT> RT transform(@NonNull Function<Success<FV,SV>, RT> successTransform, @NonNull Function<Failure<FV,SV>, RT> failureTransform, @NonNull Function<PartialSuccess<FV,SV>, RT> partialSuccessTransform)
+    {
+        if (this instanceof Success<FV,SV> success)
+        {
+            return successTransform.apply(success);
+        }
+
+        if (this instanceof Failure<FV,SV> failure)
+        {
+            return failureTransform.apply(failure);
+        }
+
+        if (this instanceof PartialSuccess<FV,SV> partialSuccess)
+        {
+            return partialSuccessTransform.apply(partialSuccess);
+        }
+
+        // This CAN NEVER happen
+        throw new IllegalStateException("Outcome is not a success, failure, or partial success");
+    }
+
 
     /**
      * Attempt to execute the given supplier and return the outcome

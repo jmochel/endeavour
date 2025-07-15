@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 
 @Order(10)
-//@DisplayNameGeneration(ReplaceBDDCamelCase.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
 public class OutcomeTest
@@ -73,7 +72,7 @@ public class OutcomeTest
         @Order(20)
         void whenSupplyingOutcomeOnSuccessThenReturnsSuppliedValue() throws Throwable
         {
-            var outcome = success.ifSuccess(() -> Outcomes.succeed(2222L));
+            var outcome = success.onSuccess(() -> Outcomes.succeed(2222L));
             assertEquals(2222L, outcome.get(), "Success Value");
         }
 
@@ -81,7 +80,7 @@ public class OutcomeTest
         @Order(30)
         void whenTransformingOutcomeOnSuccessThenReturnsTransformedOutcomeToNewSuccess() throws Throwable
         {
-            var outcome = success.ifSuccess(x -> Outcomes.succeed(x * 3));
+            var outcome = success.onSuccess(x -> Outcomes.succeed(x * 3));
             assertEquals(3333L, outcome.get(), "Transformed Outcome");
         }
 
@@ -89,7 +88,7 @@ public class OutcomeTest
         @Order(32)
         void whenTransformingOutcomeOnSuccessThenReturnsTransformedOutcomeToNewFailure() throws Throwable
         {
-            var outcome = success.ifSuccess(x -> Outcomes.fail());
+            var outcome = success.onSuccess(x -> Outcomes.fail());
             assertTrue(outcome.hasFailurePayload(), "Now a Failure");
         }
 
@@ -99,7 +98,7 @@ public class OutcomeTest
         {
             final AtomicBoolean applied = new AtomicBoolean(false);
 
-            success.onSuccess(x -> applied.getAndSet(true));
+            success.consumeSuccess(x -> applied.getAndSet(true));
             assertTrue(applied.get(), "Action taken");
         }
 
@@ -108,7 +107,7 @@ public class OutcomeTest
         @Order(50)
         void whenSupplyingOutcomeOnFailureThenReturnsExistingSuccess() throws Throwable
         {
-            var outcome = success.ifFailure(() -> Outcomes.succeed(2222L));
+            var outcome = success.onFailure(() -> Outcomes.succeed(2222L));
             assertSame(outcome, success, "Existing Success");
         }
 
@@ -116,7 +115,7 @@ public class OutcomeTest
         @Order(60)
         void whenTransformingOutcomeOnFailureThenReturnsExistingSuccess() throws Throwable
         {
-            var outcome = success.ifFailure(x -> Outcomes.succeed(x.get() * 3));
+            var outcome = success.onFailure(x -> Outcomes.succeed(x.get() * 3));
             assertSame(outcome, success, "Existing Success");
         }
 
@@ -127,7 +126,7 @@ public class OutcomeTest
         {
             final AtomicBoolean applied = new AtomicBoolean(false);
 
-            success.onFailure(x -> applied.getAndSet(true));
+            success.consumeFailure(x -> applied.getAndSet(true));
             assertFalse(applied.get(), "Action taken");
         }
 
@@ -138,7 +137,7 @@ public class OutcomeTest
             final AtomicBoolean appliedForFailure = new AtomicBoolean(false);
             final AtomicBoolean appliedForSuccess = new AtomicBoolean(false);
 
-            success.on(x -> appliedForSuccess.getAndSet(true), x -> appliedForFailure.getAndSet(true));
+            success.consume(x -> appliedForSuccess.getAndSet(true), x -> appliedForFailure.getAndSet(true));
 
             assertTrue(appliedForSuccess.get(), "Success Action taken");
             assertFalse(appliedForFailure.get(), "Failure Action taken");
@@ -208,7 +207,7 @@ public class OutcomeTest
         @Order(20)
         void whenSupplyingOutcomeOnSuccessThenReturnsTheExistingFailure() throws Throwable
         {
-            var outcome = failure.ifSuccess(() -> Outcomes.succeed(2222L));
+            var outcome = failure.onSuccess(() -> Outcomes.succeed(2222L));
             assertSame(outcome, failure, "Same failure");
         }
 
@@ -216,7 +215,7 @@ public class OutcomeTest
         @Order(30)
         void whenTransformingOutcomeOnSuccessThenReturnsTheExistingFailure()
         {
-            var outcome = failure.ifSuccess(x -> Outcomes.succeed(x * 3));
+            var outcome = failure.onSuccess(x -> Outcomes.succeed(x * 3));
             assertSame(outcome, failure, "Same failure");
         }
 
@@ -225,7 +224,7 @@ public class OutcomeTest
         void whenTakingActionOnSuccessThenDoesNotTakeAction()
         {
             final AtomicBoolean applied = new AtomicBoolean(false);
-            failure.onSuccess(x -> applied.getAndSet(true));
+            failure.consumeSuccess(x -> applied.getAndSet(true));
             assertFalse(applied.get(), "Action taken");
         }
 
@@ -233,7 +232,7 @@ public class OutcomeTest
         @Order(50)
         void whenSupplyingValueOnFailureThenReturnsNewOutcome() throws Throwable
         {
-            var outcome = failure.ifFailure(() -> Outcomes.succeed(2222L));
+            var outcome = failure.onFailure(() -> Outcomes.succeed(2222L));
             assertEquals(2222L, outcome.get(),"New Outcome");
         }
 
@@ -241,7 +240,7 @@ public class OutcomeTest
         @Order(60)
         void whenTransformingOutcomeOnFailureThenReturnsNewOutcome() throws Throwable
         {
-            var outcome = failure.ifFailure(x -> Outcomes.fail());
+            var outcome = failure.onFailure(x -> Outcomes.fail());
             assertNotSame(outcome, failure, "New Outcome");
         }
 
@@ -250,7 +249,7 @@ public class OutcomeTest
         void whenTakingActionOnFailureThenTakesAction()
         {
             final AtomicBoolean applied = new AtomicBoolean(false);
-            failure.onFailure(x -> applied.getAndSet(true));
+            failure.consumeFailure(x -> applied.getAndSet(true));
             assertTrue(applied.get(), "Action taken");
         }
 
@@ -259,7 +258,7 @@ public class OutcomeTest
         void whenTakingActionOnFailureThenTakesActionThatThrowsException()
         {
             final AtomicBoolean applied = new AtomicBoolean(false);
-            assertThrows(IllegalArgumentException.class, () -> failure.onFailure(x -> {throw new IllegalArgumentException("Test"); }));
+            assertThrows(IllegalArgumentException.class, () -> failure.consumeFailure(x -> {throw new IllegalArgumentException("Test"); }));
         }
 
         @Test
@@ -269,7 +268,7 @@ public class OutcomeTest
             final AtomicBoolean appliedForFailure = new AtomicBoolean(false);
             final AtomicBoolean appliedForSuccess = new AtomicBoolean(false);
 
-            failure.on(x -> appliedForSuccess.getAndSet(true), x -> appliedForFailure.getAndSet(true));
+            failure.consume(x -> appliedForSuccess.getAndSet(true), x -> appliedForFailure.getAndSet(true));
 
             assertFalse(appliedForSuccess.get(), "Success Action taken");
             assertTrue(appliedForFailure.get(), "Failure Action taken");

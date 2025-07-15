@@ -13,26 +13,22 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * A generic interface for outcomes of operations.
  * <p>
  * An <code>Result</code> is a container (AKA Monad) that represents the result of an operation.
- * It is a container that allows us to handle the effects that are outside the function’s scope, so that
+ * It is a container that allows us to handle the effects that are outside the function’s scope so that
  * we don't mess up the functions handling the effects, thus keeping the function code clean.
  * Often explained as a "box with a special way to open it", it can be used to chain operations
  * together while isolating potential complications within the computation.
  * <p>
- * An Result can represent success or failure. As a result, it can contain typed payloads for success and failure.
- * Failure payloads are of type {@code FailureDescription} and success payloads are of type {@code <SV>}.
- *
  * <h4>Success</h4>
- * A <code>Success</code> represents the successful completion of an operation. It may contain a <code>value</code> of type {@code <SV>} that is the computed
- * result of the operation. If a success is not guaranteed to have a <code>value</code> when the operation is successful I would recommend
- * having {@code <SV>} be an {@code Optional<VT>} where {@code VT} is the type of the value. A <code>Success</code> will not have any a failure payload.
+ * A <code>Success</code> represents the successful completion of an operation. Successes may be either a {@code Value} (It is guaranteed to have a payload of type <V>)
+ * or it will be a {@code NoValue} which is guaranteed not to have a payload of type <V> associated with it.
  *
  * <h4>Failure</h4>
- * A <code>Failure</code> represents a wholly unsuccessful completion of an operation. It <em>will</em> contain a failure payload of type {@code FailureDescription}
- * that describes the failure. It will not contain a success payload.
+ * A <code>Failure</code> represents an unsuccessful completion of an operation. It <em>will</em> contain a description of the failure of type {@code FailureDescription}
+ * It will not contain a success payload.
  *
  * @param <V> Success payload type. Accessible in successes.
  *
- * @see Success
+ * @see Value
  * @see Failure
  *
  * @author Jim Mochel
@@ -194,15 +190,6 @@ public sealed interface Result<V> permits Failure, Success
 
     Result<V> onFailure(@NonNull Function<Result<V>, Result<V>> failureTransform);
 
-    default <RT> RT transform(@NonNull Function<Success<V>, RT> successTransform, @NonNull Function<Failure<V>, RT> failureTransform)
-    {
-        return switch (this) {
-            case Success<V> success -> successTransform.apply(success);
-            case Failure<V> failure -> failureTransform.apply(failure);
-            // default -> throw new IllegalStateException("Result is not a success or failure");
-        };      
-    }
-
     <V2> Result<V2> map(@NonNull Function<V,V2> transform);
 
     <V2> Result<V2> flatMap(@NonNull Function<V,Result<V2>> transform);
@@ -228,7 +215,7 @@ public sealed interface Result<V> permits Failure, Success
 
         try
         {
-            return new Success<>(supplier.get());
+            return new Value<>(supplier.get());
         }
         catch (Exception e)
         {

@@ -369,7 +369,7 @@ public class ResultsTest
 
     private Failure<?> assertResultIsFailure(Result<?> result)
     {
-        if (result instanceof Success<?>)
+        if (result instanceof Value<?>)
         {
             fail("Result should be a Failure");
         }

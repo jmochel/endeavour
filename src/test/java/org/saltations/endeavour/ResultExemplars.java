@@ -32,7 +32,7 @@ public class ResultExemplars
         // Demonstrate the use of a functional to convert a success result to a REST response
         //
 
-        var success = new Success<>(21);
+        var success = new Value<>(21);
         var result = success.get();
     }
 

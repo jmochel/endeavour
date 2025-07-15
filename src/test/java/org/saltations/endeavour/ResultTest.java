@@ -55,7 +55,7 @@ public class ResultTest
     @Nested
     @Order(2)
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-    class GivenSuccess {
+    class GivenValue {
 
         private final Result<Long> success = Try.succeed(1111L);
 
@@ -167,7 +167,7 @@ public class ResultTest
         {
             var result = success.transform(this::outcomeToString);
 
-            assertEquals("Success", result, "Transformed to 'Success'");
+            assertEquals("Success with value", result, "Transformed to 'Success with value'");
         }
 
         @Test
@@ -182,7 +182,8 @@ public class ResultTest
         {
             return switch (outcome)
             {
-                case Success out -> "Success";
+                case Value out -> "Success with value";
+                case NoValue out -> "Success with no value";
                 case Failure out -> "Failure";
             };
         }
@@ -314,7 +315,8 @@ public class ResultTest
         {
             return switch (outcome)
             {
-                case Success out -> "Success";
+                case Value out -> "Success with value";
+                case NoValue out -> "Success with no value";
                 case Failure out -> "Failure";
             };
         }

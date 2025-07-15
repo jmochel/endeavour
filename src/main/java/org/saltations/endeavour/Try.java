@@ -24,7 +24,7 @@ public class Try
 
     public static Result<Boolean> succeed()
     {
-        return new Success<>(Boolean.TRUE);
+        return new Value<>(Boolean.TRUE);
     }
 
     /**
@@ -46,7 +46,7 @@ public class Try
     {
         requireNonNull(value, "Result must have a non-null value to return");
 
-        return new Success<>(value);
+        return new Value<>(value);
     }
 
     /**

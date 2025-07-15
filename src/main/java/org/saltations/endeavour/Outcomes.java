@@ -52,29 +52,6 @@ public class Outcomes
     }
 
     /**
-     * Construct a successful result with given value
-     *
-     * @param <SV> class of the contained success value
-     *
-     * @return An XSuccess result of {@code XResult<XFail,SV>}
-     *
-     * <p>
-     * <b>Example:</b>
-     * <pre>{@code
-     *   return XResults.succeed("Success!");
-     * }
-     * </pre>
-     *
-     */
-    public static <SV> Outcome<SV> partialSucceed(FailureDescription failureValue , SV successValue)
-    {
-        requireNonNull(successValue, "Result must have a non-null success value to return");
-        requireNonNull(failureValue, "Result must have a non-null failure value to return");
-
-        return new PartialSuccess<>(failureValue, successValue);
-    }
-
-    /**
      * Construct a failed generic result
      *
      * @param <SV> class of the contained success value

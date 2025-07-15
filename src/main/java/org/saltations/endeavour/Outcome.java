@@ -43,7 +43,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author Jim Mochel
  */
 
-public sealed interface Outcome<SV> permits Failure, Success, PartialSuccess
+public sealed interface Outcome<SV> permits Failure, Success
 {
     /**
      * Returns <em>true</em> if this outcome has a success payload.
@@ -217,27 +217,6 @@ public sealed interface Outcome<SV> permits Failure, Success, PartialSuccess
 
         // This CAN NEVER happen
         throw new IllegalStateException("Outcome is not a success or failure");
-    }
-
-    default <RT> RT transform(@NonNull Function<Success<SV>, RT> successTransform, @NonNull Function<Failure<SV>, RT> failureTransform, @NonNull Function<PartialSuccess<SV>, RT> partialSuccessTransform)
-    {
-        if (this instanceof Success<SV> success)
-        {
-            return successTransform.apply(success);
-        }
-
-        if (this instanceof Failure<SV> failure)
-        {
-            return failureTransform.apply(failure);
-        }
-
-        if (this instanceof PartialSuccess<SV> partialSuccess)
-        {
-            return partialSuccessTransform.apply(partialSuccess);
-        }
-
-        // This CAN NEVER happen
-        throw new IllegalStateException("Outcome is not a success, failure, or partial success");
     }
 
 

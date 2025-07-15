@@ -142,7 +142,7 @@ public sealed interface Outcome<V> permits Failure, Success
      * <b>Example 1</b>
      * {@snippet :
      *   // Return a new Success with value 21 if the current outcome is a Success
-     *   var newOutcome = outcome.ifSuccess(() -> Outcomes.succeed(21));
+     *   var newOutcome = outcome.ifSuccess(() -> Try.succeed(21));
      * }
      */
 
@@ -151,13 +151,11 @@ public sealed interface Outcome<V> permits Failure, Success
     /**
      * Returns the supplied outcome if this outcome is a failure, otherwise returns the existing outcome.
      *
-     * @param outcomeSupplier the function that supplies a new outcome. Not null.
-     *
      * @return the existing outcome if success, new Outcome if failure.
      *
      * <h4>Example:</h4>
      * {@snippet :
-     *   var newOutcome = outcome.ifFailure(() -> Outcomes.succeed(21));
+     *   var newOutcome = outcome.ifFailure(() -> Try.succeed(21));
      * }
      *
      */

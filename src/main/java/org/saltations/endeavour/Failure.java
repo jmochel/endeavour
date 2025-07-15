@@ -4,6 +4,7 @@ package org.saltations.endeavour;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.Optional;
 
 /**
  * Represents an full failure outcome.
@@ -106,6 +107,11 @@ public record Failure<SV>(FailureDescription fail) implements Outcome<SV>
     public <U> Outcome<U> flatMap(Function<SV, Outcome<U>> transform)
     {
         return new Failure<U>(fail);
+    }
+
+    @Override
+    public Optional<SV> opt() {
+        return Optional.empty();
     }
 
     @Override

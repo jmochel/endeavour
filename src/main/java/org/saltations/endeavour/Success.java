@@ -3,6 +3,7 @@ package org.saltations.endeavour;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.Optional;
 
 public record Success<SV>(SV value) implements Outcome<SV>
 {
@@ -76,6 +77,11 @@ public record Success<SV>(SV value) implements Outcome<SV>
     public <U> Outcome<U> flatMap(Function<SV, Outcome<U>> transform)
     {
         return transform.apply(value);
+    }
+
+    @Override
+    public Optional<SV> opt() {
+        return Optional.ofNullable(value);
     }
 
     public String toString()

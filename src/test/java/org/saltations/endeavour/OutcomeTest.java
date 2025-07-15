@@ -171,6 +171,14 @@ public class OutcomeTest
             assertEquals("Success", result, "Transformed to 'Success'");
         }
 
+        @Test
+        @Order(110)
+        void optReturnsOptionalWithValueForSuccess() {
+            var opt = success.opt();
+            assertTrue(opt.isPresent(), "Optional should be present for Success");
+            assertEquals(1111L, opt.get(), "Optional value should match Success value");
+        }
+
         String outcomeToString(Outcome<Long> outcome)
         {
             return switch (outcome)
@@ -294,6 +302,13 @@ public class OutcomeTest
             var result = failure.transform(this::outcomeToString);
 
             assertEquals("Failure", result, "Transformed to 'Success'");
+        }
+
+        @Test
+        @Order(110)
+        void optReturnsEmptyOptionalForFailure() {
+            var opt = failure.opt();
+            assertTrue(opt.isEmpty(), "Optional should be empty for Failure");
         }
 
         String outcomeToString(Outcome<Long> outcome)

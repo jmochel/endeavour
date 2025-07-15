@@ -7,8 +7,8 @@ import lombok.Getter;
 
 /**
  * A business domain error. This is an unchecked exception that indicates that an exceptional event has happened.
- * This exists separately from the Outcomes that are used to indicate the result of a business operation.
- * They may be carried by the Outcomes but the two should not have any dependencies on each other.
+ * This exists separately from the Try that are used to indicate the result of a business operation.
+ * They may be carried by the Try but the two should not have any dependencies on each other.
  * This primary purpose of this class is to provide a an exception that can be used to carry a trace id in layers that require exceptions.
  * It is expected that the exception will primarily used in the service layer.
  */

@@ -30,7 +30,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * A <code>Failure</code> represents a wholly unsuccessful completion of an operation. It <em>will</em> contain a failure payload of type {@code FailureDescription}
  * that describes the failure. It will not contain a success payload.
  *
- * @param <V> Success payload class. Accessible in successes.
+ * @param <V> Success payload type. Accessible in successes.
  *
  * @see Success
  * @see Failure
@@ -99,7 +99,7 @@ public sealed interface Outcome<V> permits Failure, Success
      *
      * <p><b>Example:</b>
      * {@snippet :
-     *   var newOutcome = outcome.onSuccess(x -> log.info("{}", x.get()));
+     *   var newOutcome = outcome.consumeSuccess(x -> log.info("{}", x.get()));
      * }
      */
 
@@ -112,7 +112,7 @@ public sealed interface Outcome<V> permits Failure, Success
      *
      * <p><b>Example:</b>
      * {@snippet :
-     *   var newOutcome = outcome.onFailure(x -> log.info("{}", x.get()));
+     *   var newOutcome = outcome.consumeFailure(x -> log.info("{}", x.get()));
      * }
      */
 
@@ -126,7 +126,7 @@ public sealed interface Outcome<V> permits Failure, Success
       *
       * <p><b>Example:</b>
       * {@snippet :
-      *   var newOutcome = outcome.on(x -> log.info("{}", x.get()), y -> log.error("Nope!"));
+      *   var newOutcome = outcome.consume(x -> log.info("{}", x.get()), y -> log.error("Nope!"));
       * }
       */
  

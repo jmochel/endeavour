@@ -57,7 +57,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenSuccess {
 
-        private final Outcome<Long> success = Outcomes.succeed(1111L);
+        private final Outcome<Long> success = Try.succeed(1111L);
 
         @Test
         @Order(10)
@@ -72,7 +72,7 @@ public class OutcomeTest
         @Order(20)
         void whenSupplyingOutcomeOnSuccessThenReturnsSuppliedValue() throws Throwable
         {
-            var outcome = success.onSuccess(() -> Outcomes.succeed(2222L));
+            var outcome = success.onSuccess(() -> Try.succeed(2222L));
             assertEquals(2222L, outcome.get(), "Success Value");
         }
 
@@ -80,7 +80,7 @@ public class OutcomeTest
         @Order(30)
         void whenTransformingOutcomeOnSuccessThenReturnsTransformedOutcomeToNewSuccess() throws Throwable
         {
-            var outcome = success.onSuccess(x -> Outcomes.succeed(x * 3));
+            var outcome = success.onSuccess(x -> Try.succeed(x * 3));
             assertEquals(3333L, outcome.get(), "Transformed Outcome");
         }
 
@@ -88,7 +88,7 @@ public class OutcomeTest
         @Order(32)
         void whenTransformingOutcomeOnSuccessThenReturnsTransformedOutcomeToNewFailure() throws Throwable
         {
-            var outcome = success.onSuccess(x -> Outcomes.fail());
+            var outcome = success.onSuccess(x -> Try.fail());
             assertTrue(outcome.hasFailurePayload(), "Now a Failure");
         }
 
@@ -107,7 +107,7 @@ public class OutcomeTest
         @Order(50)
         void whenSupplyingOutcomeOnFailureThenReturnsExistingSuccess() throws Throwable
         {
-            var outcome = success.onFailure(() -> Outcomes.succeed(2222L));
+            var outcome = success.onFailure(() -> Try.succeed(2222L));
             assertSame(outcome, success, "Existing Success");
         }
 
@@ -115,7 +115,7 @@ public class OutcomeTest
         @Order(60)
         void whenTransformingOutcomeOnFailureThenReturnsExistingSuccess() throws Throwable
         {
-            var outcome = success.onFailure(x -> Outcomes.succeed(x.get() * 3));
+            var outcome = success.onFailure(x -> Try.succeed(x.get() * 3));
             assertSame(outcome, success, "Existing Success");
         }
 
@@ -156,7 +156,7 @@ public class OutcomeTest
         @Order(90)
         void whenFlatMappingThenTakesSuccessAction()
         {
-            var outcome = success.flatMap(x -> Outcomes.succeed(x * 3));
+            var outcome = success.flatMap(x -> Try.succeed(x * 3));
 
             assertEquals(3333L, outcome.get(), "Mapped Outcome");
         }
@@ -194,7 +194,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenFailure {
 
-        private final Outcome<Long> failure = Outcomes.fail();
+        private final Outcome<Long> failure = Try.fail();
 
         @Test
         @Order(10)
@@ -207,7 +207,7 @@ public class OutcomeTest
         @Order(20)
         void whenSupplyingOutcomeOnSuccessThenReturnsTheExistingFailure() throws Throwable
         {
-            var outcome = failure.onSuccess(() -> Outcomes.succeed(2222L));
+            var outcome = failure.onSuccess(() -> Try.succeed(2222L));
             assertSame(outcome, failure, "Same failure");
         }
 
@@ -215,7 +215,7 @@ public class OutcomeTest
         @Order(30)
         void whenTransformingOutcomeOnSuccessThenReturnsTheExistingFailure()
         {
-            var outcome = failure.onSuccess(x -> Outcomes.succeed(x * 3));
+            var outcome = failure.onSuccess(x -> Try.succeed(x * 3));
             assertSame(outcome, failure, "Same failure");
         }
 
@@ -232,7 +232,7 @@ public class OutcomeTest
         @Order(50)
         void whenSupplyingValueOnFailureThenReturnsNewOutcome() throws Throwable
         {
-            var outcome = failure.onFailure(() -> Outcomes.succeed(2222L));
+            var outcome = failure.onFailure(() -> Try.succeed(2222L));
             assertEquals(2222L, outcome.get(),"New Outcome");
         }
 
@@ -240,7 +240,7 @@ public class OutcomeTest
         @Order(60)
         void whenTransformingOutcomeOnFailureThenReturnsNewOutcome() throws Throwable
         {
-            var outcome = failure.onFailure(x -> Outcomes.fail());
+            var outcome = failure.onFailure(x -> Try.fail());
             assertNotSame(outcome, failure, "New Outcome");
         }
 
@@ -288,7 +288,7 @@ public class OutcomeTest
         @Order(90)
         void whenFlatMappingThenTakesSuccessAction()
         {
-            var outcome = failure.flatMap(x -> Outcomes.succeed(x * 3));
+            var outcome = failure.flatMap(x -> Try.succeed(x * 3));
 
             assertFalse(outcome.hasSuccessPayload(), "Has Success");
             assertTrue(outcome.hasFailurePayload(), "Has Failure");
@@ -324,8 +324,8 @@ public class OutcomeTest
     @Order(7)
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class TransmuteTests {
-        private final Outcome<Long> success = Outcomes.succeed(1111L);
-        private final Outcome<Long> failure = Outcomes.fail();
+        private final Outcome<Long> success = Try.succeed(1111L);
+        private final Outcome<Long> failure = Try.fail();
 
         @Test
         @Order(10)
@@ -415,7 +415,7 @@ public class OutcomeTest
         @Test
         @Order(10)
         void whenCreatingNewInstanceThenSucceeds() {
-            new Outcomes();
+            new Try();
         }
     }
 

@@ -22,7 +22,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 @Order(30)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
-public class OutcomeExemplars
+public class ResultExemplars
 {
     @Test
     @Order(10)

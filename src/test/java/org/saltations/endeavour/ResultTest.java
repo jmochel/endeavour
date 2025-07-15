@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Order(10)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
-public class OutcomeTest
+public class ResultTest
 {
     @Nested
     @Order(1)
@@ -35,7 +35,7 @@ public class OutcomeTest
         @Order(1)
         void whenAttemptingWithSuccessThenReturnsSuccess()
         {
-            var result = Outcome.attempt(() -> 1111L);
+            var result = Result.attempt(() -> 1111L);
             assertTrue(result.hasSuccessPayload());
             assertEquals(1111L, result.get(), "Success Value");
         }
@@ -44,7 +44,7 @@ public class OutcomeTest
         @Order(2)
         void whenAttemptingWithExceptionThenReturnsFailure()
         {
-            var result = Outcome.attempt(() -> {throw new Exception("Test");});
+            var result = Result.attempt(() -> {throw new Exception("Test");});
             assertFalse(result.hasSuccessPayload());
             assertTrue(result.hasFailurePayload());
         }
@@ -57,7 +57,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenSuccess {
 
-        private final Outcome<Long> success = Try.succeed(1111L);
+        private final Result<Long> success = Try.succeed(1111L);
 
         @Test
         @Order(10)
@@ -70,7 +70,7 @@ public class OutcomeTest
 
         @Test
         @Order(20)
-        void whenSupplyingOutcomeOnSuccessThenReturnsSuppliedValue() throws Throwable
+        void whenSupplyingResultOnSuccessThenReturnsSuppliedValue() throws Throwable
         {
             var outcome = success.onSuccess(() -> Try.succeed(2222L));
             assertEquals(2222L, outcome.get(), "Success Value");
@@ -78,15 +78,15 @@ public class OutcomeTest
 
         @Test
         @Order(30)
-        void whenTransformingOutcomeOnSuccessThenReturnsTransformedOutcomeToNewSuccess() throws Throwable
+        void whenTransformingResultOnSuccessThenReturnsTransformedResultToNewSuccess() throws Throwable
         {
             var outcome = success.onSuccess(x -> Try.succeed(x * 3));
-            assertEquals(3333L, outcome.get(), "Transformed Outcome");
+            assertEquals(3333L, outcome.get(), "Transformed Result");
         }
 
         @Test
         @Order(32)
-        void whenTransformingOutcomeOnSuccessThenReturnsTransformedOutcomeToNewFailure() throws Throwable
+        void whenTransformingResultOnSuccessThenReturnsTransformedResultToNewFailure() throws Throwable
         {
             var outcome = success.onSuccess(x -> Try.fail());
             assertTrue(outcome.hasFailurePayload(), "Now a Failure");
@@ -105,7 +105,7 @@ public class OutcomeTest
 
         @Test
         @Order(50)
-        void whenSupplyingOutcomeOnFailureThenReturnsExistingSuccess() throws Throwable
+        void whenSupplyingResultOnFailureThenReturnsExistingSuccess() throws Throwable
         {
             var outcome = success.onFailure(() -> Try.succeed(2222L));
             assertSame(outcome, success, "Existing Success");
@@ -113,7 +113,7 @@ public class OutcomeTest
 
         @Test
         @Order(60)
-        void whenTransformingOutcomeOnFailureThenReturnsExistingSuccess() throws Throwable
+        void whenTransformingResultOnFailureThenReturnsExistingSuccess() throws Throwable
         {
             var outcome = success.onFailure(x -> Try.succeed(x.get() * 3));
             assertSame(outcome, success, "Existing Success");
@@ -149,7 +149,7 @@ public class OutcomeTest
         {
             var outcome = success.map(x -> x * 3);
 
-            assertEquals(3333L, outcome.get(), "Mapped Outcome");
+            assertEquals(3333L, outcome.get(), "Mapped Result");
         }
 
         @Test
@@ -158,7 +158,7 @@ public class OutcomeTest
         {
             var outcome = success.flatMap(x -> Try.succeed(x * 3));
 
-            assertEquals(3333L, outcome.get(), "Mapped Outcome");
+            assertEquals(3333L, outcome.get(), "Mapped Result");
         }
 
         @Test
@@ -178,7 +178,7 @@ public class OutcomeTest
             assertEquals(1111L, opt.get(), "Optional value should match Success value");
         }
 
-        String outcomeToString(Outcome<Long> outcome)
+        String outcomeToString(Result<Long> outcome)
         {
             return switch (outcome)
             {
@@ -194,7 +194,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenFailure {
 
-        private final Outcome<Long> failure = Try.fail();
+        private final Result<Long> failure = Try.fail();
 
         @Test
         @Order(10)
@@ -205,7 +205,7 @@ public class OutcomeTest
 
         @Test
         @Order(20)
-        void whenSupplyingOutcomeOnSuccessThenReturnsTheExistingFailure() throws Throwable
+        void whenSupplyingResultOnSuccessThenReturnsTheExistingFailure() throws Throwable
         {
             var outcome = failure.onSuccess(() -> Try.succeed(2222L));
             assertSame(outcome, failure, "Same failure");
@@ -213,7 +213,7 @@ public class OutcomeTest
 
         @Test
         @Order(30)
-        void whenTransformingOutcomeOnSuccessThenReturnsTheExistingFailure()
+        void whenTransformingResultOnSuccessThenReturnsTheExistingFailure()
         {
             var outcome = failure.onSuccess(x -> Try.succeed(x * 3));
             assertSame(outcome, failure, "Same failure");
@@ -230,18 +230,18 @@ public class OutcomeTest
 
         @Test
         @Order(50)
-        void whenSupplyingValueOnFailureThenReturnsNewOutcome() throws Throwable
+        void whenSupplyingValueOnFailureThenReturnsNewResult() throws Throwable
         {
             var outcome = failure.onFailure(() -> Try.succeed(2222L));
-            assertEquals(2222L, outcome.get(),"New Outcome");
+            assertEquals(2222L, outcome.get(),"New Result");
         }
 
         @Test
         @Order(60)
-        void whenTransformingOutcomeOnFailureThenReturnsNewOutcome() throws Throwable
+        void whenTransformingResultOnFailureThenReturnsNewResult() throws Throwable
         {
             var outcome = failure.onFailure(x -> Try.fail());
-            assertNotSame(outcome, failure, "New Outcome");
+            assertNotSame(outcome, failure, "New Result");
         }
 
         @Test
@@ -310,7 +310,7 @@ public class OutcomeTest
             assertTrue(opt.isEmpty(), "Optional should be empty for Failure");
         }
 
-        String outcomeToString(Outcome<Long> outcome)
+        String outcomeToString(Result<Long> outcome)
         {
             return switch (outcome)
             {
@@ -324,8 +324,8 @@ public class OutcomeTest
     @Order(7)
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class TransmuteTests {
-        private final Outcome<Long> success = Try.succeed(1111L);
-        private final Outcome<Long> failure = Try.fail();
+        private final Result<Long> success = Try.succeed(1111L);
+        private final Result<Long> failure = Try.fail();
 
         @Test
         @Order(10)
@@ -411,7 +411,7 @@ public class OutcomeTest
     @Nested
     @Order(8)
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-    class OutcomesConstructorTest {
+    class ResultsConstructorTest {
         @Test
         @Order(10)
         void whenCreatingNewInstanceThenSucceeds() {

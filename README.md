@@ -194,7 +194,7 @@ Some cases where you might NOT want to use operation results:
 
 ## Implementation of the Operational Result Pattern
 
-The operational result is represented in _Endeavour_ by the sealed interface `Outcome`. 
+The operational result is represented in _Endeavour_ by the sealed interface `Result`. 
 This interface has three implementations, `Success`, `PartialSuccess` and `Failure`.
 Each one of these act as a monad: it wraps a value that may or may not be present and provides methods to perform computations on 
 that value in a safe manner. 
@@ -455,9 +455,9 @@ This is a basic example, but it demonstrates the core idea of the Operational Re
 a failure, allowing for more robust error handling.
 
 
-# Operation Outcomes
+# Operation Results
 
-* Outcome
+* Result
     * Success
         * Has success value
             * May be supplied
@@ -476,7 +476,7 @@ a failure, allowing for more robust error handling.
 
 * Events
     * Create
-        * Outcome
+        * Result
             * from Fxn
             * from throwing Fxn
         * Success

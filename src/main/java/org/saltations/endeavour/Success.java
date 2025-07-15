@@ -5,7 +5,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.Optional;
 
-public record Success<V>(V value) implements Outcome<V>
+public record Success<V>(V value) implements Result<V>
 {
     @Override
     public boolean hasSuccessPayload()
@@ -26,56 +26,56 @@ public record Success<V>(V value) implements Outcome<V>
     }
 
     @Override
-    public Outcome<V> onSuccess(Supplier<Outcome<V>> supplier)
+    public Result<V> onSuccess(Supplier<Result<V>> supplier)
     {
         return supplier.get();
     }
 
     @Override
-    public Outcome<V> onSuccess(Function<V, Outcome<V>> transform)
+    public Result<V> onSuccess(Function<V, Result<V>> transform)
     {
         return transform.apply(get());
     }
 
     @Override
-    public Outcome<V> consumeSuccess(Consumer<Outcome<V>> action)
+    public Result<V> consumeSuccess(Consumer<Result<V>> action)
     {
         action.accept(this);
         return this;
     }
 
     @Override
-    public Outcome<V> onFailure(Supplier<Outcome<V>> supplier)
+    public Result<V> onFailure(Supplier<Result<V>> supplier)
     {
         return this;
     }
 
     @Override
-    public Outcome<V> onFailure(Function<Outcome<V>, Outcome<V>> transform)
+    public Result<V> onFailure(Function<Result<V>, Result<V>> transform)
     {
         return this;
     }
 
     @Override
-    public Outcome<V> consumeFailure(Consumer<Failure<V>> action)
+    public Result<V> consumeFailure(Consumer<Failure<V>> action)
     {
         return this;
     }
 
     @Override
-    public void consume(Consumer<Outcome<V>> successAction, Consumer<Outcome<V>> failureAction)
+    public void consume(Consumer<Result<V>> successAction, Consumer<Result<V>> failureAction)
     {
         successAction.accept(this);
     }
 
     @Override
-    public <V2> Outcome<V2> map(Function<V, V2> transform)
+    public <V2> Result<V2> map(Function<V, V2> transform)
     {
         return new Success<V2>(transform.apply(value));
     }
 
     @Override
-    public <U> Outcome<U> flatMap(Function<V, Outcome<U>> transform)
+    public <U> Result<U> flatMap(Function<V, Result<U>> transform)
     {
         return transform.apply(value);
     }

@@ -12,13 +12,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * A generic interface for outcomes of operations.
  * <p>
- * An <code>Outcome</code> is a container (AKA Monad) that represents the result of an operation.
+ * An <code>Result</code> is a container (AKA Monad) that represents the result of an operation.
  * It is a container that allows us to handle the effects that are outside the function’s scope, so that
  * we don't mess up the functions handling the effects, thus keeping the function code clean.
  * Often explained as a "box with a special way to open it", it can be used to chain operations
  * together while isolating potential complications within the computation.
  * <p>
- * An Outcome can represent success or failure. As a result, it can contain typed payloads for success and failure.
+ * An Result can represent success or failure. As a result, it can contain typed payloads for success and failure.
  * Failure payloads are of type {@code FailureDescription} and success payloads are of type {@code <SV>}.
  *
  * <h4>Success</h4>
@@ -38,7 +38,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author Jim Mochel
  */
 
-public sealed interface Outcome<V> permits Failure, Success
+public sealed interface Result<V> permits Failure, Success
 {
     /**
      * Returns <em>true</em> if this outcome has a success payload.
@@ -99,11 +99,11 @@ public sealed interface Outcome<V> permits Failure, Success
      *
      * <p><b>Example:</b>
      * {@snippet :
-     *   var newOutcome = outcome.consumeSuccess(x -> log.info("{}", x.get()));
+     *   var newResult = outcome.consumeSuccess(x -> log.info("{}", x.get()));
      * }
      */
 
-     Outcome<V> consumeSuccess(Consumer<Outcome<V>> successConsumer);
+     Result<V> consumeSuccess(Consumer<Result<V>> successConsumer);
 
     /**
      * Executes action if this outcome is a failure, takes no action otherwise.
@@ -112,11 +112,11 @@ public sealed interface Outcome<V> permits Failure, Success
      *
      * <p><b>Example:</b>
      * {@snippet :
-     *   var newOutcome = outcome.consumeFailure(x -> log.info("{}", x.get()));
+     *   var newResult = outcome.consumeFailure(x -> log.info("{}", x.get()));
      * }
      */
 
-     Outcome<V> consumeFailure(@NonNull Consumer<Failure<V>> failureConsumer);
+     Result<V> consumeFailure(@NonNull Consumer<Failure<V>> failureConsumer);
 
      /**
       * If this outcome is a failure execute the failure action, if success execute the success action.
@@ -126,41 +126,41 @@ public sealed interface Outcome<V> permits Failure, Success
       *
       * <p><b>Example:</b>
       * {@snippet :
-      *   var newOutcome = outcome.consume(x -> log.info("{}", x.get()), y -> log.error("Nope!"));
+      *   var newResult = outcome.consume(x -> log.info("{}", x.get()), y -> log.error("Nope!"));
       * }
       */
  
-     void consume(Consumer<Outcome<V>> successConsumer, Consumer<Outcome<V>> failureConsumer);
+     void consume(Consumer<Result<V>> successConsumer, Consumer<Result<V>> failureConsumer);
 
     /**
      * Return supplied outcome if this outcome is a success, otherwise return the existing outcome
      *
      * @param supplyOnSuccess function that supplies a new outcome. Not null.
      *
-     * @return populated Outcome.
+     * @return populated Result.
      *
      * <b>Example 1</b>
      * {@snippet :
      *   // Return a new Success with value 21 if the current outcome is a Success
-     *   var newOutcome = outcome.ifSuccess(() -> Try.succeed(21));
+     *   var newResult = outcome.ifSuccess(() -> Try.succeed(21));
      * }
      */
 
-    Outcome<V> onSuccess(Supplier<Outcome<V>> supplyOnSuccess);
+    Result<V> onSuccess(Supplier<Result<V>> supplyOnSuccess);
 
     /**
      * Returns the supplied outcome if this outcome is a failure, otherwise returns the existing outcome.
      *
-     * @return the existing outcome if success, new Outcome if failure.
+     * @return the existing outcome if success, new Result if failure.
      *
      * <h4>Example:</h4>
      * {@snippet :
-     *   var newOutcome = outcome.ifFailure(() -> Try.succeed(21));
+     *   var newResult = outcome.ifFailure(() -> Try.succeed(21));
      * }
      *
      */
 
-     Outcome<V> onFailure(Supplier<Outcome<V>> supplyOnFailure);
+     Result<V> onFailure(Supplier<Result<V>> supplyOnFailure);
 
     /**
      * If this outcome is a success transform to a new outcome
@@ -171,12 +171,12 @@ public sealed interface Outcome<V> permits Failure, Success
      *
      * <p><b>Example:</b>
      * {@snippet :
-     *   var newOutcome = outcome.ifSuccessApply(this::outcomeTransform);
+     *   var newResult = outcome.ifSuccessApply(this::outcomeTransform);
      * }
      *
      */
 
-    Outcome<V> onSuccess(Function<V, Outcome<V>> successTransform);
+    Result<V> onSuccess(Function<V, Result<V>> successTransform);
 
     /**
      * Returns a transformed outcome if this outcome is a failure
@@ -187,27 +187,27 @@ public sealed interface Outcome<V> permits Failure, Success
      *
      * <p><h4>Example:</h4>
      * {@snippet :
-     *   var newOutcome = outcome.ifFailureTransform(this::outcomeTransform);
+     *   var newResult = outcome.ifFailureTransform(this::outcomeTransform);
      * }
      *
      */
 
-    Outcome<V> onFailure(@NonNull Function<Outcome<V>, Outcome<V>> failureTransform);
+    Result<V> onFailure(@NonNull Function<Result<V>, Result<V>> failureTransform);
 
     default <RT> RT transform(@NonNull Function<Success<V>, RT> successTransform, @NonNull Function<Failure<V>, RT> failureTransform)
     {
         return switch (this) {
             case Success<V> success -> successTransform.apply(success);
             case Failure<V> failure -> failureTransform.apply(failure);
-            // default -> throw new IllegalStateException("Outcome is not a success or failure");
+            // default -> throw new IllegalStateException("Result is not a success or failure");
         };      
     }
 
-    <V2> Outcome<V2> map(@NonNull Function<V,V2> transform);
+    <V2> Result<V2> map(@NonNull Function<V,V2> transform);
 
-    <V2> Outcome<V2> flatMap(@NonNull Function<V,Outcome<V2>> transform);
+    <V2> Result<V2> flatMap(@NonNull Function<V,Result<V2>> transform);
 
-    default <RT> RT transform(@NonNull Function<Outcome<V>, RT> transform)
+    default <RT> RT transform(@NonNull Function<Result<V>, RT> transform)
     {
       return transform.apply(this);
     }
@@ -222,7 +222,7 @@ public sealed interface Outcome<V> permits Failure, Success
      * @param <V2> Type of the supplied value
      */
 
-    static <V2> Outcome<V2> attempt(@NonNull ExceptionalSupplier<V2> supplier)
+    static <V2> Result<V2> attempt(@NonNull ExceptionalSupplier<V2> supplier)
     {
         checkNotNull(supplier, "Supplier cannot be null");
 

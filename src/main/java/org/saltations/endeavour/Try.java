@@ -3,7 +3,7 @@ package org.saltations.endeavour;
 import static java.util.Objects.requireNonNull;
 
 /**
- * A utility class for creating outcomes of operations.
+ *
  */
 
 public class Try
@@ -22,7 +22,7 @@ public class Try
      *
      */
 
-    public static Outcome<Boolean> succeed()
+    public static Result<Boolean> succeed()
     {
         return new Success<>(Boolean.TRUE);
     }
@@ -42,7 +42,7 @@ public class Try
      * </pre>
      *
      */
-    public static <SV> Outcome<SV> succeed(SV value)
+    public static <SV> Result<SV> succeed(SV value)
     {
         requireNonNull(value, "Result must have a non-null value to return");
 
@@ -63,7 +63,7 @@ public class Try
      * }
      * </pre>
      */
-    public static <SV> Outcome<SV> fail()
+    public static <SV> Result<SV> fail()
     {
         var type = FailureDescription.GenericFailureType.GENERIC;
 
@@ -92,7 +92,7 @@ public class Try
      * </pre>
      */
 
-    public static <SV> Outcome<SV> failWithDetails(String template, Object...args)
+    public static <SV> Result<SV> failWithDetails(String template, Object...args)
     {
         requireNonNull(template, "Failure needs a non-null template");
 
@@ -122,7 +122,7 @@ public class Try
      * }
      * </pre>
      */
-    public static <SV> Outcome<SV> titledFail(String title)
+    public static <SV> Result<SV> titledFail(String title)
     {
         var failureType = FailureDescription.GenericFailureType.GENERIC;
 
@@ -149,7 +149,7 @@ public class Try
      * }
      * </pre>
      */
-    public static <SV> Outcome<SV> titledFailWithDetails(String title, String template, Object...args)
+    public static <SV> Result<SV> titledFailWithDetails(String title, String template, Object...args)
     {
         var failureType = FailureDescription.GenericFailureType.GENERIC;
 
@@ -164,7 +164,7 @@ public class Try
     }
 
 
-    public static <SV> Outcome<SV> typedFail(FailureType failureType, Object...args)
+    public static <SV> Result<SV> typedFail(FailureType failureType, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
 
@@ -184,7 +184,7 @@ public class Try
     }
 
 
-    public static <SV> Outcome<SV> typedFailWithDetails(FailureType failureType, String template, Object...args)
+    public static <SV> Result<SV> typedFailWithDetails(FailureType failureType, String template, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
 
@@ -197,7 +197,7 @@ public class Try
         return new Failure<>(fail);
     }
 
-    public static <SV> Outcome<SV> causedFail(Exception cause)
+    public static <SV> Result<SV> causedFail(Exception cause)
     {
         var failureType = FailureDescription.GenericFailureType.GENERIC;
 
@@ -209,7 +209,7 @@ public class Try
         return new Failure<>(fail);
     }
 
-    public static <SV> Outcome<SV> causedFail(Exception cause, FailureType failureType, Object...args)
+    public static <SV> Result<SV> causedFail(Exception cause, FailureType failureType, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
 
@@ -228,7 +228,7 @@ public class Try
         return new Failure<>(fail);
     }
 
-    public static <SV> Outcome<SV> causedFailWithDetails(Exception cause, String template, Object...args)
+    public static <SV> Result<SV> causedFailWithDetails(Exception cause, String template, Object...args)
     {
         var failureType = FailureDescription.GenericFailureType.GENERIC;
 

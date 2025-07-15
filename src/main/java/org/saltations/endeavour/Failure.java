@@ -12,7 +12,7 @@ import java.util.Optional;
  * @param <V> The class of the unrealized Success value.
  */
 
-public record Failure<V>(FailureDescription fail) implements Outcome<V>
+public record Failure<V>(FailureDescription fail) implements Result<V>
 {
 
     @Override
@@ -54,14 +54,14 @@ public record Failure<V>(FailureDescription fail) implements Outcome<V>
     }
 
     @Override
-    public Outcome<V> consumeSuccess(Consumer<Outcome<V>> successConsumer)
+    public Result<V> consumeSuccess(Consumer<Result<V>> successConsumer)
     {
         // Do Nothing
         return this;    
     }
 
     @Override
-    public Outcome<V> consumeFailure(Consumer<Failure<V>> failureConsumer)
+    public Result<V> consumeFailure(Consumer<Failure<V>> failureConsumer)
     {
         failureConsumer.accept(this);
 
@@ -69,43 +69,43 @@ public record Failure<V>(FailureDescription fail) implements Outcome<V>
     }
 
     @Override
-    public void consume(Consumer<Outcome<V>> successConsumer, Consumer<Outcome<V>> failureConsumer)
+    public void consume(Consumer<Result<V>> successConsumer, Consumer<Result<V>> failureConsumer)
     {
         failureConsumer.accept(this);
     }
 
     @Override
-    public Outcome<V> onSuccess(Supplier<Outcome<V>> supplier)
+    public Result<V> onSuccess(Supplier<Result<V>> supplier)
     {
         return this;
     }
 
     @Override
-    public Outcome<V> onFailure(Supplier<Outcome<V>> supplier)
+    public Result<V> onFailure(Supplier<Result<V>> supplier)
     {
         return supplier.get();
     }
 
     @Override
-    public Outcome<V> onSuccess(Function<V, Outcome<V>> transform)
+    public Result<V> onSuccess(Function<V, Result<V>> transform)
     {
         return this;
     }
 
     @Override
-    public Outcome<V> onFailure(Function<Outcome<V>, Outcome<V>> transform)
+    public Result<V> onFailure(Function<Result<V>, Result<V>> transform)
     {
         return transform.apply(this);
     }
 
     @Override
-    public <V2> Outcome<V2> map(Function<V, V2> transform)
+    public <V2> Result<V2> map(Function<V, V2> transform)
     {
         return new Failure<V2>(fail);
     }
 
     @Override
-    public <U> Outcome<U> flatMap(Function<V, Outcome<U>> transform)
+    public <U> Result<U> flatMap(Function<V, Result<U>> transform)
     {
         return new Failure<U>(fail);
     }

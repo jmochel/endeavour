@@ -7,7 +7,6 @@ import java.util.function.Supplier;
 
 import lombok.NonNull;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A generic interface for outcomes of operations.
@@ -146,6 +145,9 @@ public sealed interface Result<T> permits Failure, Success
 
      Result<T> actOnFailure(@NonNull Consumer<Failure<T>> action);
 
+
+
+
     /**
      * Return supplied outcome if this outcome is a success, otherwise return the existing outcome
      *
@@ -215,29 +217,4 @@ public sealed interface Result<T> permits Failure, Success
       return transform.apply(this);
     }
 
-    /**
-     * Attempt to execute the given supplier and return the outcome
-     *
-     * @param supplier function that supplies a new value. Not null.
-     *
-     * @return populated Success if success, Failure if failure.
-     *
-     * @param <U> Type of the supplied value
-     */
-
-    static <U> Result<U> attempt(@NonNull ExceptionalSupplier<U> supplier)
-    {
-        checkNotNull(supplier, "Supplier cannot be null");
-
-        try
-        {
-            return new Value<>(supplier.get());
-        }
-        catch (Exception e)
-        {
-            return new Failure<>(FailureDescription.of()
-                    .cause(e)
-                    .build());
-        }
-    }
 }

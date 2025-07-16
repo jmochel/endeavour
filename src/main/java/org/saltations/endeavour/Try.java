@@ -1,6 +1,9 @@
 package org.saltations.endeavour;
 
 import static java.util.Objects.requireNonNull;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import lombok.NonNull;
 
 /**
  *
@@ -134,7 +137,6 @@ public class Try
         return new Failure<>(fail);
     }
 
-
     /**
      * Construct a failed result with title and expanded details
      *
@@ -240,5 +242,31 @@ public class Try
                 .build();
 
         return new Failure<>(fail);
+    }
+
+    /**
+     * Attempt to execute the given supplier and return the outcome
+     *
+     * @param supplier function that supplies a new value. Not null.
+     *
+     * @return populated Success if success, Failure if failure.
+     *
+     * @param <U> Type of the supplied value
+     */
+
+    public static <U> Result<U> attempt(@NonNull ExceptionalSupplier<U> supplier)
+    {
+        checkNotNull(supplier, "Supplier cannot be null");
+
+        try
+        {
+            return new Value<>(supplier.get());
+        }
+        catch (Exception e)
+        {
+            return new Failure<>(FailureDescription.of()
+                    .cause(e)
+                    .build());
+        }
     }
 }

@@ -37,7 +37,7 @@ public class ResultTest
         @Order(1)
         void whenAttemptingWithSuccessThenReturnsSuccess()
         {
-            var result = Result.attempt(() -> 1111L);
+            var result = Try.attempt(() -> 1111L);
             assertTrue(result.hasPayload());
             assertEquals(1111L, result.get(), "Success Value");
         }
@@ -46,7 +46,7 @@ public class ResultTest
         @Order(2)
         void whenAttemptingWithExceptionThenReturnsFailure()
         {
-            var result = Result.attempt(() -> {throw new Exception("Test");});
+            var result = Try.attempt(() -> {throw new Exception("Test");});
             assertFalse(result.hasPayload());
         }
 

@@ -1,6 +1,8 @@
 package org.saltations.endeavour;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.ClassOrderer;
 import org.junit.jupiter.api.MethodOrderer;
@@ -36,7 +38,7 @@ public class ResultTest
         void whenAttemptingWithSuccessThenReturnsSuccess()
         {
             var result = Result.attempt(() -> 1111L);
-            assertTrue(result.hasSuccessPayload());
+            assertTrue(result.hasPayload());
             assertEquals(1111L, result.get(), "Success Value");
         }
 
@@ -45,8 +47,7 @@ public class ResultTest
         void whenAttemptingWithExceptionThenReturnsFailure()
         {
             var result = Result.attempt(() -> {throw new Exception("Test");});
-            assertFalse(result.hasSuccessPayload());
-            assertTrue(result.hasFailurePayload());
+            assertFalse(result.hasPayload());
         }
 
     }
@@ -57,22 +58,21 @@ public class ResultTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenValue {
 
-        private final Result<Long> success = Try.succeed(1111L);
+        private final Result<Long> value = Try.succeed(1111L);
 
         @Test
         @Order(10)
-        void whenGettingValueThenReturnsSuccessValue() throws Throwable
+        void whenGettingValueThenReturnsPayload() throws Throwable
         {
-            var value = success.get();
+            var value = this.value.get();
             assertEquals(1111L, value, "Success Value");
         }
 
-
         @Test
         @Order(20)
-        void whenSupplyingResultOnSuccessThenReturnsSuppliedValue() throws Throwable
+        void whenSupplyingResultOnSuccessThenReturnsSuppliedPayload() throws Throwable
         {
-            var outcome = success.onSuccess(() -> Try.succeed(2222L));
+            var outcome = value.onSuccess(() -> Try.succeed(2222L));
             assertEquals(2222L, outcome.get(), "Success Value");
         }
 
@@ -80,7 +80,7 @@ public class ResultTest
         @Order(30)
         void whenTransformingResultOnSuccessThenReturnsTransformedResultToNewSuccess() throws Throwable
         {
-            var outcome = success.onSuccess(x -> Try.succeed(x * 3));
+            var outcome = value.onSuccess(x -> Try.succeed(x * 3));
             assertEquals(3333L, outcome.get(), "Transformed Result");
         }
 
@@ -88,8 +88,7 @@ public class ResultTest
         @Order(32)
         void whenTransformingResultOnSuccessThenReturnsTransformedResultToNewFailure() throws Throwable
         {
-            var outcome = success.onSuccess(x -> Try.fail());
-            assertTrue(outcome.hasFailurePayload(), "Now a Failure");
+            var outcome = value.onSuccess(x -> Try.fail());
         }
 
         @Test
@@ -98,7 +97,7 @@ public class ResultTest
         {
             final AtomicBoolean applied = new AtomicBoolean(false);
 
-            success.consumeSuccess(x -> applied.getAndSet(true));
+            value.actOnSuccess(x -> applied.getAndSet(true));
             assertTrue(applied.get(), "Action taken");
         }
 
@@ -107,16 +106,16 @@ public class ResultTest
         @Order(50)
         void whenSupplyingResultOnFailureThenReturnsExistingSuccess() throws Throwable
         {
-            var outcome = success.onFailure(() -> Try.succeed(2222L));
-            assertSame(outcome, success, "Existing Success");
+            var outcome = value.onFailure(() -> Try.succeed(2222L));
+            assertSame(outcome, value, "Existing Success");
         }
 
         @Test
         @Order(60)
         void whenTransformingResultOnFailureThenReturnsExistingSuccess() throws Throwable
         {
-            var outcome = success.onFailure(x -> Try.succeed(x.get() * 3));
-            assertSame(outcome, success, "Existing Success");
+            var outcome = value.onFailure(x -> Try.succeed(x.get() * 3));
+            assertSame(outcome, value, "Existing Success");
         }
 
 
@@ -126,7 +125,7 @@ public class ResultTest
         {
             final AtomicBoolean applied = new AtomicBoolean(false);
 
-            success.consumeFailure(x -> applied.getAndSet(true));
+            value.actOnFailure(x -> applied.getAndSet(true));
             assertFalse(applied.get(), "Action taken");
         }
 
@@ -137,7 +136,13 @@ public class ResultTest
             final AtomicBoolean appliedForFailure = new AtomicBoolean(false);
             final AtomicBoolean appliedForSuccess = new AtomicBoolean(false);
 
-            success.consume(x -> appliedForSuccess.getAndSet(true), x -> appliedForFailure.getAndSet(true));
+            value.act(x -> {
+                switch (x)
+                {
+                    case Failure out -> appliedForFailure.getAndSet(true);
+                    case Success out -> appliedForSuccess.getAndSet(true);
+                }
+            });
 
             assertTrue(appliedForSuccess.get(), "Success Action taken");
             assertFalse(appliedForFailure.get(), "Failure Action taken");
@@ -147,7 +152,7 @@ public class ResultTest
         @Order(80)
         void whenMappingThenTakesSuccessAction()
         {
-            var outcome = success.map(x -> x * 3);
+            var outcome = value.map(x -> x * 3);
 
             assertEquals(3333L, outcome.get(), "Mapped Result");
         }
@@ -156,7 +161,7 @@ public class ResultTest
         @Order(90)
         void whenFlatMappingThenTakesSuccessAction()
         {
-            var outcome = success.flatMap(x -> Try.succeed(x * 3));
+            var outcome = value.flatMap(x -> Try.succeed(x * 3));
 
             assertEquals(3333L, outcome.get(), "Mapped Result");
         }
@@ -165,7 +170,7 @@ public class ResultTest
         @Order(100)
         void whenTransformingThenGivesTransformedResult()
         {
-            var result = success.transform(this::outcomeToString);
+            var result = value.transform(this::outcomeToString);
 
             assertEquals("Success with value", result, "Transformed to 'Success with value'");
         }
@@ -173,7 +178,7 @@ public class ResultTest
         @Test
         @Order(110)
         void optReturnsOptionalWithValueForSuccess() {
-            var opt = success.opt();
+            var opt = value.opt();
             assertTrue(opt.isPresent(), "Optional should be present for Success");
             assertEquals(1111L, opt.get(), "Optional value should match Success value");
         }
@@ -225,7 +230,7 @@ public class ResultTest
         void whenTakingActionOnSuccessThenDoesNotTakeAction()
         {
             final AtomicBoolean applied = new AtomicBoolean(false);
-            failure.consumeSuccess(x -> applied.getAndSet(true));
+            failure.actOnSuccess(x -> applied.getAndSet(true));
             assertFalse(applied.get(), "Action taken");
         }
 
@@ -250,7 +255,7 @@ public class ResultTest
         void whenTakingActionOnFailureThenTakesAction()
         {
             final AtomicBoolean applied = new AtomicBoolean(false);
-            failure.consumeFailure(x -> applied.getAndSet(true));
+            failure.actOnFailure(x -> applied.getAndSet(true));
             assertTrue(applied.get(), "Action taken");
         }
 
@@ -259,7 +264,7 @@ public class ResultTest
         void whenTakingActionOnFailureThenTakesActionThatThrowsException()
         {
             final AtomicBoolean applied = new AtomicBoolean(false);
-            assertThrows(IllegalArgumentException.class, () -> failure.consumeFailure(x -> {throw new IllegalArgumentException("Test"); }));
+            assertThrows(IllegalArgumentException.class, () -> failure.actOnFailure(x -> {throw new IllegalArgumentException("Test"); }));
         }
 
         @Test
@@ -269,7 +274,13 @@ public class ResultTest
             final AtomicBoolean appliedForFailure = new AtomicBoolean(false);
             final AtomicBoolean appliedForSuccess = new AtomicBoolean(false);
 
-            failure.consume(x -> appliedForSuccess.getAndSet(true), x -> appliedForFailure.getAndSet(true));
+            failure.act(x -> {
+              switch (x)
+              {
+                  case Failure out -> appliedForFailure.getAndSet(true);
+                  case Success out -> appliedForSuccess.getAndSet(true);
+              }
+            });
 
             assertFalse(appliedForSuccess.get(), "Success Action taken");
             assertTrue(appliedForFailure.get(), "Failure Action taken");
@@ -281,18 +292,17 @@ public class ResultTest
         {
             var outcome = failure.map(x -> x * 3);
 
-            assertFalse(outcome.hasSuccessPayload(), "Has Success");
-            assertTrue(outcome.hasFailurePayload(), "Has Failure");
+            assertFalse(outcome.hasPayload(), "Has Success");
         }
 
         @Test
         @Order(90)
         void whenFlatMappingThenTakesSuccessAction()
         {
-            var outcome = failure.flatMap(x -> Try.succeed(x * 3));
+            Function<Long,Result<Long>> mapping = (x) -> { return Try.succeed( 3L); };
 
-            assertFalse(outcome.hasSuccessPayload(), "Has Success");
-            assertTrue(outcome.hasFailurePayload(), "Has Failure");
+            var outcome = failure.flatMap(mapping);
+            assertTrue(outcome.hasPayload(), "Has Success");
         }
 
         @Test
@@ -334,7 +344,7 @@ public class ResultTest
         void whenTransmutingSuccessThenReturnsTransformedValue() {
             // Given a success outcome and a transform function
             var result = success.transform(outcome -> {
-                if (outcome.hasSuccessPayload()) {
+                if (outcome.hasPayload()) {
                     return outcome.get() * 2;
                 }
                 return 0L;
@@ -349,10 +359,13 @@ public class ResultTest
         void whenTransmutingFailureThenReturnsTransformedValue() {
             // Given a failure outcome and a transform function
             var result = failure.transform(outcome -> {
-                if (outcome.hasFailurePayload()) {
-                    return "Failed";
-                }
-                return "Success";
+
+                return switch (outcome)
+                {
+                    case Value out -> "Success";
+                    case NoValue out -> "Success";
+                    case Failure out -> "Failed";
+                };
             });
 
             // Then the result should be the transformed value
@@ -384,7 +397,7 @@ public class ResultTest
         void whenTransmutingWithComplexTransformThenReturnsExpectedResult() {
             // Given a success outcome and a complex transform function
             var result = success.transform(outcome -> {
-                if (outcome.hasSuccessPayload()) {
+                if (outcome.hasPayload()) {
                     var value = outcome.get();
                     return new ComplexResult(value, value * 2, value * 3);
                 }

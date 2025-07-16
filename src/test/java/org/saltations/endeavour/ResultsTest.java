@@ -375,8 +375,7 @@ public class ResultsTest
         }
 
         assertAll("Result",
-                () -> assertFalse(result.hasSuccessPayload(),"Is Not Success"),
-                () -> assertTrue(result.hasFailurePayload(),"Is Failure")
+                () -> assertFalse(result.hasPayload(),"Is Not Success")
         );
 
         return (Failure<?>) result;
@@ -391,8 +390,7 @@ public class ResultsTest
         }
 
         assertAll("Result",
-                () -> assertTrue(result.hasSuccessPayload(),"Has Success value"),
-                () -> assertFalse(result.hasFailurePayload(),"Does not have Failure value")
+                () -> assertTrue(result.hasPayload(),"Has Success value")
         );
 
     }

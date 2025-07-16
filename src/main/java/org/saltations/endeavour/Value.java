@@ -1,88 +1,90 @@
 package org.saltations.endeavour;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.Optional;
 
-public record Value<V>(V value) implements Success<V> {
+public record Value<T>(T value) implements Success<T> {
+
     @Override
-    public boolean hasSuccessPayload()
+    public boolean hasPayload()
     {
         return true;
     }
 
     @Override
-    public boolean hasFailurePayload()
-    {
-        return false;
-    }
-
-    @Override
-    public V get()
+    public T get()
     {
         return value;
     }
 
     @Override
-    public Result<V> onSuccess(Supplier<Result<V>> supplier)
-    {
-        return supplier.get();
+    public Optional<T> opt() {
+        return Optional.of(value);
     }
 
     @Override
-    public Result<V> onSuccess(Function<V, Result<V>> transform)
+    public <U> Result<U> map(Function<T, U> mapping)
     {
-        return transform.apply(get());
+        // If the mapping transforms a payload into a null, we are returning a NoValue of an appropriate type,
+        // otherwise we are returning a Value with the new payload
+
+        var newValue = mapping.apply(get());
+        return Objects.isNull(newValue) ? new NoValue<U>() : new Value<U>(newValue);
     }
 
     @Override
-    public Result<V> consumeSuccess(Consumer<Result<V>> action)
+    public <U> Result<U> flatMap(Function<T, Result<U>> mapping)
+    {
+        return mapping.apply(value);
+    }
+
+    @Override
+    public void act(Consumer<Result<T>> action)
+    {
+        action.accept(this);
+    }
+
+    @Override
+    public Result<T> actOnSuccess(Consumer<Success<T>> action)
     {
         action.accept(this);
         return this;
     }
 
     @Override
-    public Result<V> onFailure(Supplier<Result<V>> supplier)
+    public Result<T> actOnFailure(Consumer<Failure<T>> action)
+    {
+        return this;
+    }
+
+
+    @Override
+    public Result<T> onSuccess(Supplier<Result<T>> supplier)
+    {
+        return supplier.get();
+    }
+
+    @Override
+    public Result<T> onSuccess(Function<T, Result<T>> transform)
+    {
+        return transform.apply(get());
+    }
+
+    @Override
+    public Result<T> onFailure(Supplier<Result<T>> supplier)
     {
         return this;
     }
 
     @Override
-    public Result<V> onFailure(Function<Result<V>, Result<V>> transform)
+    public Result<T> onFailure(Function<Result<T>, Result<T>> transform)
     {
         return this;
     }
 
-    @Override
-    public Result<V> consumeFailure(Consumer<Failure<V>> action)
-    {
-        return this;
-    }
-
-    @Override
-    public void consume(Consumer<Result<V>> successAction, Consumer<Result<V>> failureAction)
-    {
-        successAction.accept(this);
-    }
-
-    @Override
-    public <V2> Result<V2> map(Function<V, V2> transform)
-    {
-        return new Value<V2>(transform.apply(value));
-    }
-
-    @Override
-    public <U> Result<U> flatMap(Function<V, Result<U>> transform)
-    {
-        return transform.apply(value);
-    }
-
-    @Override
-    public Optional<V> opt() {
-        return Optional.ofNullable(value);
-    }
 
     public String toString()
     {

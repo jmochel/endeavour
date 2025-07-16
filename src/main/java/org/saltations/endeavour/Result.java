@@ -19,14 +19,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * together while isolating potential complications within the computation.
  * <p>
  * <h4>Success</h4>
- * A <code>Success</code> represents the successful completion of an operation. Successes may be either a {@code Value} (It is guaranteed to have a payload of type <V>)
+ * A <code>Success</code> represents the successful completion of an operation. Successes may be either a {@code Value} (guaranteed to have a payload of type <V>)
  * or it will be a {@code NoValue} which is guaranteed not to have a payload of type <V> associated with it.
  *
  * <h4>Failure</h4>
  * A <code>Failure</code> represents an unsuccessful completion of an operation. It <em>will</em> contain a description of the failure of type {@code FailureDescription}
  * It will not contain a success payload.
  *
- * @param <V> Success payload type. Accessible in successes.
+ * @param <T> Success payload type. Accessible in successes.
  *
  * @see Value
  * @see Failure
@@ -34,38 +34,27 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author Jim Mochel
  */
 
-public sealed interface Result<V> permits Failure, Success
+public sealed interface Result<T> permits Failure, Success
 {
     /**
      * Returns <em>true</em> if this outcome has a success payload.
      * <p>
      * Having a success payload is distinct from being a success.
-     * A success will <b>always</b>  have a success payload.
-     * A failure will <b>never</b> have a success payload.
+     * A {@code Value} will <b>always</b> have a payload.
+     * A {@code NoValue} will <b>never</b> have a payload.
+     * A {@code Failure}  will <b>never</b> have a success payload.
      *
      * @return <em>true</em> if this outcome has a success payload,<em>false</em> otherwise.
      */
 
-    boolean hasSuccessPayload();
+    boolean hasPayload();
 
     /**
-     * Returns <em>true</em> if this outcome has a failure payload.
-     * <p>
-     * Having a failure payload is distinct from being a failure.
-     * A failure will <b>always</b> have a failure payload.
-     * A success will <b>never</b> have a failure payload.
+     * Returns the payload if this outcome has one.
      *
-     * @return <em>true</em> if this outcome has a failure payload,<em>false</em> otherwise.
-     */
-
-    boolean hasFailurePayload();
-
-    /**
-     * Returns the success payload if this outcome has one.
+     * @return payload associated with the success if a {@code Value}, a null if the result is {@code NoValue}.
      *
-     * @return payload associated with the success. FIXIT May be null?
-     *
-     * @throws UnsupportedOperationException if there is no success payload available
+     * @throws UnsupportedOperationException If called on a {@code Failure}
      *
      * <p>
      * <b>Example:</b>
@@ -75,7 +64,7 @@ public sealed interface Result<V> permits Failure, Success
      * </pre>
      */
 
-    V get();
+    T get();
 
     /**
      * Returns an Optional containing the success payload if this outcome is a success, otherwise returns an empty Optional.
@@ -83,50 +72,79 @@ public sealed interface Result<V> permits Failure, Success
      * @return Optional containing the success payload if this outcome is a success, otherwise an empty Optional.
      */
 
-    default Optional<V> opt()
+    default Optional<T> opt()
     {
         return Optional.ofNullable(get());
     }
 
     /**
-     * Executes action if this outcome is a success, takes no action otherwise.
+     * Maps {@code Result<T>} to  {@code Result<U>} by mapping {@code <T>} to {@code <U>}
+     * <p>
+     * <h4>Note</h4>
+     * Any mapping function must handle nulls as one of the values.
      *
-     * @param successConsumer the function that takes action based on success. Not null.
+     * @param mapping a mapping function for T to U
+     *
+     * @return mapped result
+     *
+     * @param <U>
+     */
+
+    <U> Result<U> map(@NonNull Function<T,U> mapping);
+
+    /**
+     * Maps the unwrapped payload of type {@code T} to {@code Result<U>}
+     * <p>
+     * <h4>Note</h4>
+     * Any mapping function used within the flat map must handle nulls as one of the values.
+     *
+     * @param mapping a mapping function for T to  {@code Result<U>}
+     *
+     * @return mapped result
+     *
+     * @param <U>
+     */
+
+    <U> Result<U> flatMap(@NonNull Function<T,Result<U>> mapping);
+
+    /**
+     * Consumes any {@code Result}
+     *
+     * @param action the action to execute
      *
      * <p><b>Example:</b>
      * {@snippet :
-     *   var newResult = outcome.consumeSuccess(x -> log.info("{}", x.get()));
+     *   var newResult = outcome.act(x -> log.info("{}", x.get()));
      * }
      */
 
-     Result<V> consumeSuccess(Consumer<Result<V>> successConsumer);
+    void act(Consumer<Result<T>> action);
+
+    /**
+     * Executes action if this outcome is a success, takes no action otherwise.
+     *
+     * @param action the function that takes action based on success. Not null.
+     *
+     * <p><b>Example:</b>
+     * {@snippet :
+     *   var newResult = outcome.actOnSuccess(x -> log.info("{}", x.get()));
+     * }
+     */
+
+     Result<T> actOnSuccess(Consumer<Success<T>> action);
 
     /**
      * Executes action if this outcome is a failure, takes no action otherwise.
      *
-     * @param failureConsumer the function that takes action based on failure. Not null.
+     * @param action the function that takes action based on failure. Not null.
      *
      * <p><b>Example:</b>
      * {@snippet :
-     *   var newResult = outcome.consumeFailure(x -> log.info("{}", x.get()));
+     *   var newResult = outcome.actOnFailure(x -> log.info("{}", x.get()));
      * }
      */
 
-     Result<V> consumeFailure(@NonNull Consumer<Failure<V>> failureConsumer);
-
-     /**
-      * If this outcome is a failure execute the failure action, if success execute the success action.
-      *
-      * @param successConsumer the action to execute if this is a success
-      * @param failureConsumer the action to execute if this is a failure
-      *
-      * <p><b>Example:</b>
-      * {@snippet :
-      *   var newResult = outcome.consume(x -> log.info("{}", x.get()), y -> log.error("Nope!"));
-      * }
-      */
- 
-     void consume(Consumer<Result<V>> successConsumer, Consumer<Result<V>> failureConsumer);
+     Result<T> actOnFailure(@NonNull Consumer<Failure<T>> action);
 
     /**
      * Return supplied outcome if this outcome is a success, otherwise return the existing outcome
@@ -142,7 +160,7 @@ public sealed interface Result<V> permits Failure, Success
      * }
      */
 
-    Result<V> onSuccess(Supplier<Result<V>> supplyOnSuccess);
+    Result<T> onSuccess(Supplier<Result<T>> supplyOnSuccess);
 
     /**
      * Returns the supplied outcome if this outcome is a failure, otherwise returns the existing outcome.
@@ -156,7 +174,7 @@ public sealed interface Result<V> permits Failure, Success
      *
      */
 
-     Result<V> onFailure(Supplier<Result<V>> supplyOnFailure);
+     Result<T> onFailure(Supplier<Result<T>> supplyOnFailure);
 
     /**
      * If this outcome is a success transform to a new outcome
@@ -172,12 +190,12 @@ public sealed interface Result<V> permits Failure, Success
      *
      */
 
-    Result<V> onSuccess(Function<V, Result<V>> successTransform);
+    Result<T> onSuccess(Function<T, Result<T>> successTransform);
 
     /**
      * Returns a transformed outcome if this outcome is a failure
      *
-     * @param faiulureTransform the function that creates a new outcome from the existing outcome. Not null.
+     * @param failureTransform the function that creates a new outcome from the existing outcome. Not null.
      *
      * @return the existing outcome if not a failure, a new outcome otherwise.
      *
@@ -188,13 +206,11 @@ public sealed interface Result<V> permits Failure, Success
      *
      */
 
-    Result<V> onFailure(@NonNull Function<Result<V>, Result<V>> failureTransform);
+    Result<T> onFailure(@NonNull Function<Result<T>, Result<T>> failureTransform);
 
-    <V2> Result<V2> map(@NonNull Function<V,V2> transform);
 
-    <V2> Result<V2> flatMap(@NonNull Function<V,Result<V2>> transform);
 
-    default <RT> RT transform(@NonNull Function<Result<V>, RT> transform)
+    default <RT> RT transform(@NonNull Function<Result<T>, RT> transform)
     {
       return transform.apply(this);
     }
@@ -206,10 +222,10 @@ public sealed interface Result<V> permits Failure, Success
      *
      * @return populated Success if success, Failure if failure.
      *
-     * @param <V2> Type of the supplied value
+     * @param <U> Type of the supplied value
      */
 
-    static <V2> Result<V2> attempt(@NonNull ExceptionalSupplier<V2> supplier)
+    static <U> Result<U> attempt(@NonNull ExceptionalSupplier<U> supplier)
     {
         checkNotNull(supplier, "Supplier cannot be null");
 

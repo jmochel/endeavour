@@ -3,27 +3,28 @@ package org.saltations.endeavour;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.junit.jupiter.api.ClassOrderer;
+import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestClassOrder;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.saltations.endeavour.fixture.ReplaceBDDCamelCase;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Order(20)
-//@DisplayNameGeneration(ReplaceBDDCamelCase.class)
+@DisplayNameGeneration(ReplaceBDDCamelCase.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
-public class ResultsTest
+public class TryTest
 {
     @Getter
     @AllArgsConstructor
@@ -45,7 +46,7 @@ public class ResultsTest
         @Order(1)
         void canCreateSuccessWithValue()
         {
-            var result = Try.succeed("OK");
+            var result = Try.success("OK");
             assertResultIsSuccess(result);
             assertAll("Success",
                     () -> assertEquals("OK",result.get(), "Value")
@@ -56,7 +57,7 @@ public class ResultsTest
         @Order(2)
         void canCreateSuccessWithoutValue()
         {
-            var result = Try.succeed();
+            var result = Try.success();
 
             assertResultIsSuccess(result);
 
@@ -76,7 +77,7 @@ public class ResultsTest
         @Order(2)
         void canCreateSimplestFailure()
         {
-            var result = Try.fail();
+            var result = Try.failure();
 
             var failure = assertResultIsFailure(result);
 
@@ -89,7 +90,7 @@ public class ResultsTest
         @Order(4)
         void canCreateFailureWithDetails()
         {
-            var result = Try.failWithDetails("{} did it", "Bozo");
+            var result = Try.failureWithDetails("{} did it", "Bozo");
 
             var failure = assertResultIsFailure(result);
 
@@ -111,7 +112,7 @@ public class ResultsTest
         @Order(2)
         void canCreateTitledFailure()
         {
-            var result = Try.titledFail("Strange Category");
+            var result = Try.titledFailure("Strange Category");
 
             var failure = assertResultIsFailure(result);
 
@@ -128,7 +129,7 @@ public class ResultsTest
         void canCreateTitledFailureWithDetail()
         {
             var detail = "This went really bad";
-            var result = Try.titledFailWithDetails("Really Bad", "Details: {} Bad", "Really Really");
+            var result = Try.titledFailureWithDetails("Really Bad", "Details: {} Bad", "Really Really");
 
             var failure = assertResultIsFailure(result);
 
@@ -152,7 +153,7 @@ public class ResultsTest
         @Order(2)
         void canCreateTypedFailure()
         {
-            var result = Try.typedFail(ExemplarFailure.POTENTIALLY_FATAL);
+            var result = Try.typedFailure(ExemplarFailure.POTENTIALLY_FATAL);
 
             var failure = assertResultIsFailure(result);
 
@@ -166,7 +167,7 @@ public class ResultsTest
         void canCreateTypedFailureWithDetail()
         {
             var detail = "This went really bad";
-            var result = Try.typedFail(ExemplarFailure.POTENTIALLY_FATAL, detail);
+            var result = Try.typedFailure(ExemplarFailure.POTENTIALLY_FATAL, detail);
 
             var failure = assertResultIsFailure(result);
 
@@ -179,7 +180,7 @@ public class ResultsTest
         @Order(8)
         void canCreateTypedFailureWithDetails()
         {
-            var result = Try.typedFailWithDetails(ExemplarFailure.NOT_REALLY_SO_BAD, "Details: {} Bad", "Really Really");
+            var result = Try.typedFailureWithDetails(ExemplarFailure.NOT_REALLY_SO_BAD, "Details: {} Bad", "Really Really");
             var failure = assertResultIsFailure(result);
 
             assertAll("Failure",
@@ -199,7 +200,7 @@ public class ResultsTest
         void canCreateCausedFailure()
         {
             var cause = new Exception();
-            var result = Try.causedFail(cause);
+            var result = Try.causedFailure(cause);
 
             var failure = assertResultIsFailure(result);
 
@@ -215,7 +216,7 @@ public class ResultsTest
         void canCreateCausedFailureWithExceptionAndType()
         {
             var cause = new Exception();
-            var result = Try.causedFail(cause, ExemplarFailure.POTENTIALLY_FATAL);
+            var result = Try.causedFailure(cause, ExemplarFailure.POTENTIALLY_FATAL);
 
             var failure = assertResultIsFailure(result);
 
@@ -232,7 +233,7 @@ public class ResultsTest
         {
             var cause = new Exception();
             var detail = "This went really bad";
-            var result = Try.causedFail(cause, ExemplarFailure.POTENTIALLY_FATAL, detail);
+            var result = Try.causedFailure(cause, ExemplarFailure.POTENTIALLY_FATAL, detail);
 
             var failure = assertResultIsFailure(result);
 
@@ -249,7 +250,7 @@ public class ResultsTest
         {
             var cause = new Exception();
             var detail = "This went really bad";
-            var result = Try.causedFailWithDetails(cause, detail);
+            var result = Try.causedFailureWithDetails(cause, detail);
 
             var failure = assertResultIsFailure(result);
 
@@ -266,7 +267,7 @@ public class ResultsTest
         {
             var cause = new Exception();
             var template = "This is a template message";
-            var result = Try.causedFail(cause, ExemplarFailure.GENERAL, template);
+            var result = Try.causedFailure(cause, ExemplarFailure.GENERAL, template);
 
             var failure = assertResultIsFailure(result);
 
@@ -284,7 +285,7 @@ public class ResultsTest
             var providedExceptionMessage = "This is a provided exception message";
 
             var cause = new Exception(providedExceptionMessage);
-            var result = Try.causedFail(cause, ExemplarFailure.NOT_REALLY_SO_BAD, "widget1", "widget2");
+            var result = Try.causedFailure(cause, ExemplarFailure.NOT_REALLY_SO_BAD, "widget1", "widget2");
 
             var failure = assertResultIsFailure(result);
 
@@ -321,7 +322,7 @@ public class ResultsTest
 
         Result<String> simpleReturnOfOKString()
         {
-            return Try.succeed("OK");
+            return Try.success("OK");
         }
     }
 
@@ -337,12 +338,12 @@ public class ResultsTest
         {
             var result = simpleReturnOfFailure();
 
-            assertThrows(Exception.class, () -> result.get(), "Cannot get value from a failure");
+            assertEquals(null, result.get(), "Cannot get value from a failure");
         }
 
         Result<Object> simpleReturnOfFailure()
         {
-            return Try.typedFail(ExemplarFailure.NOT_REALLY_SO_BAD);
+            return Try.typedFailure(ExemplarFailure.NOT_REALLY_SO_BAD);
         }
     }
 
@@ -356,14 +357,14 @@ public class ResultsTest
         @Order(2)
         void canShowSuccess()
         {
-            assertEquals("Success[Jake]", Try.succeed("Jake").toString());
+            assertEquals("Success[Jake]", Try.success("Jake").toString());
         }
 
         @Test
         @Order(4)
         void canShowFailure()
         {
-            assertEquals("Failure[GENERIC:generic-failure:]", Try.fail().toString());
+            assertEquals("Failure[GENERIC:generic-failure:]", Try.failure().toString());
         }
     }
 

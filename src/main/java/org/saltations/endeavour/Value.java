@@ -1,10 +1,7 @@
 package org.saltations.endeavour;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.Optional;
 
 public record Value<T>(T value) implements Success<T> {
 
@@ -18,11 +15,6 @@ public record Value<T>(T value) implements Success<T> {
     public T get()
     {
         return value;
-    }
-
-    @Override
-    public Optional<T> opt() {
-        return Optional.of(value);
     }
 
     @Override
@@ -40,51 +32,6 @@ public record Value<T>(T value) implements Success<T> {
     {
         return mapping.apply(value);
     }
-
-    @Override
-    public void act(Consumer<Result<T>> action)
-    {
-        action.accept(this);
-    }
-
-    @Override
-    public Result<T> actOnSuccess(Consumer<Success<T>> action)
-    {
-        action.accept(this);
-        return this;
-    }
-
-    @Override
-    public Result<T> actOnFailure(Consumer<Failure<T>> action)
-    {
-        return this;
-    }
-
-
-    @Override
-    public Result<T> onSuccess(Supplier<Result<T>> supplier)
-    {
-        return supplier.get();
-    }
-
-    @Override
-    public Result<T> onSuccess(Function<T, Result<T>> transform)
-    {
-        return transform.apply(get());
-    }
-
-    @Override
-    public Result<T> onFailure(Supplier<Result<T>> supplier)
-    {
-        return this;
-    }
-
-    @Override
-    public Result<T> onFailure(Function<Result<T>, Result<T>> transform)
-    {
-        return this;
-    }
-
 
     public String toString()
     {

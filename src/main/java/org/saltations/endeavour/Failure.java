@@ -1,10 +1,7 @@
 package org.saltations.endeavour;
 
 
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.Optional;
 
 /**
  * Represents a failed result.
@@ -41,17 +38,6 @@ public record Failure<T>(FailureDescription fail) implements Result<T>
     }
 
     @Override
-    public T get()
-    {
-        throw new IllegalStateException(fail.getTotalMessage());
-    }
-
-    @Override
-    public Optional<T> opt() {
-        return Optional.empty();
-    }
-
-    @Override
     public <U> Result<U> map(Function<T, U> mapping)
     {
         return new Failure<U>(fail);
@@ -64,47 +50,39 @@ public record Failure<T>(FailureDescription fail) implements Result<T>
     }
 
     @Override
-    public void act(Consumer<Result<T>> action)
-    {
-        action.accept(this);
-    }
-
-    @Override
-    public Result<T> actOnSuccess(Consumer<Success<T>> action)
+    public Result<T> actOnSuccess(ExceptionalConsumer<Success<T>> action)
     {
         // Do Nothing
         return this;    
     }
 
     @Override
-    public Result<T> actOnFailure(Consumer<Failure<T>> action)
+    public Result<T> actOnFailure(ExceptionalConsumer<Failure<T>> action)
     {
         action.accept(this);
-
         return this;
     }
 
-
     @Override
-    public Result<T> onSuccess(Supplier<Result<T>> supplier)
+    public Result<T> supplyOnSuccess(ExceptionalSupplier<Result<T>> supplier)
     {
         return this;
     }
 
     @Override
-    public Result<T> onFailure(Supplier<Result<T>> supplier)
+    public Result<T> supplyOnFailure(ExceptionalSupplier<Result<T>> supplier)
     {
         return supplier.get();
     }
 
     @Override
-    public Result<T> onSuccess(Function<T, Result<T>> transform)
+    public Result<T> mapOnSuccess(ExceptionalFunction<T, Result<T>> transform)
     {
         return this;
     }
 
     @Override
-    public Result<T> onFailure(Function<Result<T>, Result<T>> transform)
+    public Result<T> mapOnFailure(ExceptionalFunction<Result<T>, Result<T>> transform)
     {
         return transform.apply(this);
     }

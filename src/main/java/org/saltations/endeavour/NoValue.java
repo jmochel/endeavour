@@ -1,10 +1,7 @@
 package org.saltations.endeavour;
 
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 
 /**
@@ -18,18 +15,7 @@ public record NoValue<T>() implements Success<T> {
     @Override
     public boolean hasPayload()
     {
-        return true;
-    }
-
-    @Override
-    public T get()
-    {
-        return null;
-    }
-
-    @Override
-    public Optional<T> opt() {
-        return Optional.empty();
+        return false;
     }
 
     @Override
@@ -49,54 +35,9 @@ public record NoValue<T>() implements Success<T> {
         return mapping.apply(null);
     }
 
-    @Override
-    public void act(Consumer<Result<T>> action)
-    {
-        action.accept(this);
-    }
-
-    @Override
-    public Result<T> actOnSuccess(Consumer<Success<T>> action)
-    {
-        action.accept(this);
-        return this;
-    }
-
-    @Override
-    public Result<T> actOnFailure(Consumer<Failure<T>> action)
-    {
-        return this;
-    }
-
-    @Override
-    public Result<T> onSuccess(Supplier<Result<T>> supplier)
-    {
-        return supplier.get();
-    }
-
-    @Override
-    public Result<T> onSuccess(Function<T, Result<T>> transform)
-    {
-        return transform.apply(get());
-    }
-
-    @Override
-    public Result<T> onFailure(Supplier<Result<T>> supplier)
-    {
-        return this;
-    }
-
-    @Override
-    public Result<T> onFailure(Function<Result<T>, Result<T>> transform)
-    {
-        return this;
-    }
-
-
-
     public String toString()
     {
         return new StringBuffer("Success").append("[No value]")
-                                           .toString();
+                                          .toString();
     }
 }

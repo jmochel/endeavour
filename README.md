@@ -69,22 +69,22 @@ And even in the cases of exceptional failure, we convert these into a result tha
 
 ## Library Intentions 
 
-Intention is to identify success or failure of an operation is a compact, and hopefully typesafe,
+Intention is to identify value or failure of an operation is a compact, and hopefully typesafe,
 representation that allows 
 
 * Create exceptions with some strong domain level typing when useful
     *  Wrap and invoke functions that might blow up and catch their errors
 * Easy access to the values returned including complex results
 * Creating successes or failures from methods that throw exceptions
-* Handle both success and failure whenever we want
-* Transform a failure in the called operation to a success in our current operations
-* Be able to map from one success type to another across data boundaries, ie from domain to presentation
-    * Transform a success in the called operation to a failure in our current operations
+* Handle both value and failure whenever we want
+* Transform a failure in the called operation to a value in our current operations
+* Be able to map from one value type to another across data boundaries, ie from domain to presentation
+    * Transform a value in the called operation to a failure in our current operations
 * Be able to map errors from one type to another, perhaps converting a Throwable to something more useful to the presentation layer
 * Play well with code that uses java Exceptions as part of their flow control.
 * Ideally, we’d be able to chain or combine a bunch of these operations together, and only handle the error state at the end of the computation
 
-A failure in any result that is not a success in the context of the method.
+A failure in any result that is not a value in the context of the method.
 
 . If your not sure if something should be an exception or a failure you could ask yourself “Would the user understand what to do with this failure message?”
 Typically a user doesn’t know what to do with exception messages, they are intended for a technical person to do a more in depth troubleshooting of
@@ -103,9 +103,9 @@ Most outcomes in apis can be broken up into Successes, Partial Successes and Fai
     * Failure with a category/title and detail
 
 Wrap and invoke functions that might blow up and catch their errors
-Be able to map from one success type to another across data boundaries, ie from domain to presentation
+Be able to map from one value type to another across data boundaries, ie from domain to presentation
 Be able to map errors from one type to another, perhaps converting a Throwable to something more useful to the presentation layer
-Handle both success and failure whenever we want
+Handle both value and failure whenever we want
 Ideally, we’d be able to chain or combine a bunch of these operations together, and only handle the error state at the end of the computation
 
 
@@ -116,7 +116,7 @@ Ideally, we’d be able to chain or combine a bunch of these operations together
     * Should not impose excessive ceremony in order to write idiomatic code
     * Cognitively familiar to our target audience.
 * Performant.
-    * The common case needs to be extremely fast. That means as close to zero overhead as possible for success paths.
+    * The common case needs to be extremely fast. That means as close to zero overhead as possible for value paths.
     * Any added costs for failure paths must be entirely “pay-for-play.”
 * Diagnosable.
     * Debugging failures, either interactively or after-the-fact, needs to be productive and easy.
@@ -125,14 +125,14 @@ Ideally, we’d be able to chain or combine a bunch of these operations together
 
 # Operation Result Pattern
 
-Return a Union of an OK Result (success or failure without error) OR an error result.
+Return a Union of an OK Result (value or failure without error) OR an error result.
 
 OK, fulfilled.
 
 accomplishment
 achievement
 realization
-success
+value
 attainment
 consummation
 actualization
@@ -153,7 +153,7 @@ Should provide
 
 Creating Result Objects
 
-* Results.success
+* Results.value
 * Results.ofNullable creates a new result based on the given possibly-null value.
 * Results.ofOptional creates a new result based on the given possibly-empty optional.
 * Results.ofCallable creates a new result based on the given possibly-throwing task.
@@ -221,7 +221,7 @@ Monads can be used to handle side effects, manage state, handle exceptions, and 
 
 A Monad is any class (data type), which represents a specific calculation
 
-* Yes, it encapsulated a mechanism for performing actions on results of either success or failure safely without
+* Yes, it encapsulated a mechanism for performing actions on results of either value or failure safely without
   causing a null pointer exception It must implement at least these two functions:
   * A function to wrap any basic value, creating a new monad. Also called the return function.  ofThrowable()
   * And a function that allows you to perform operations on a wrapped data type (monad). Also called the bind function. (flatMap)
@@ -300,7 +300,7 @@ It's a design pattern that allows you to structure your programs in a way that's
 Specifically
 
 In Java, there isn't a built-in `Try` Monad, but it can be implemented using standard Java features. The idea is to wrap a computation in a `Try` object, and then provide methods
-to handle both the success and failure cases.
+to handle both the value and failure cases.
 
 Here's a simple example of how you might define and use a `Try` Monad:
 
@@ -373,7 +373,7 @@ allowing for more robust error handling.
 ## Either
 
 The `either` concept in Erlang is not a built-in feature of the language, but it's a common pattern used in functional programming languages. It's often used to handle computations
-that can result in two different types of values, typically representing success and failure cases.
+that can result in two different types of values, typically representing value and failure cases.
 
 In Erlang, this pattern can be implemented using tuples. A common convention is to use a tuple where the first element is an atom such as `ok` or `error`, and the second element is
 the actual value or error information.
@@ -383,7 +383,7 @@ Here's a simple example of how you might use this pattern in Erlang:
 ```erlang
 case some_function() of
     {ok, Value} ->
-        %% Handle the success case
+        %% Handle the value case
         io:format("Success: ~p~n", [Value]);
     {error, Reason} ->
         %% Handle the error case
@@ -392,7 +392,7 @@ end.
 ```
 
 In this snippet, `some_function()` is expected to return either `{ok, Value}` or `{error, Reason}`. The `case` statement is then used to handle these two possible return values.
-If `some_function()` returns `{ok, Value}`, the success case is handled and the value is printed. If `some_function()` returns `{error, Reason}`, the error case is handled and the
+If `some_function()` returns `{ok, Value}`, the value case is handled and the value is printed. If `some_function()` returns `{error, Reason}`, the error case is handled and the
 reason for the error is printed.
 
 This is a basic example, but it illustrates the core idea of the `either` pattern: it's a way to handle computations that can result in two different types of values, allowing for
@@ -400,11 +400,11 @@ more robust error handling.
 
 ## Operational Result
 
-The Operational Result pattern is a software design pattern often used in functional programming. It's a way to handle computations that can result in either a success or a
+The Operational Result pattern is a software design pattern often used in functional programming. It's a way to handle computations that can result in either a value or a
 failure, and it's particularly useful for error handling. This pattern is similar to the `Either` type in some functional programming languages, or the `Try` Monad in others.
 
-In Java, this pattern can be implemented using a class that encapsulates the result of an operation, which can be either a success or a failure. This class typically provides
-methods to check if the operation was successful, retrieve the result in case of success, or retrieve the error in case of failure.
+In Java, this pattern can be implemented using a class that encapsulates the result of an operation, which can be either a value or a failure. This class typically provides
+methods to check if the operation was successful, retrieve the result in case of value, or retrieve the error in case of failure.
 
 Here's a simple example of how you might define and use an `OperationalResult` class:
 
@@ -418,7 +418,7 @@ public class OperationalResult<T> {
         this.error = error;
     }
 
-    public static <T> OperationalResult<T> success(T result) {
+    public static <T> OperationalResult<T> value(T result) {
         return new OperationalResult<>(result, null);
     }
 
@@ -439,7 +439,7 @@ public class OperationalResult<T> {
     }
 }
 
-OperationalResult<Integer> result = OperationalResult.success(123);
+OperationalResult<Integer> result = OperationalResult.value(123);
 if (result.isSuccess()) {
     System.out.println(result.getResult());
 } else {
@@ -447,11 +447,11 @@ if (result.isSuccess()) {
 }
 ```
 
-In this example, `OperationalResult.success(123)` creates an `OperationalResult` that represents a successful operation with a result of 123. The `isSuccess()` method is then used
+In this example, `OperationalResult.value(123)` creates an `OperationalResult` that represents a successful operation with a result of 123. The `isSuccess()` method is then used
 to check if the operation was successful. If it was, `getResult()` is used to retrieve the result. If the operation was not successful, `getError().getMessage()` is used to
 retrieve the error message.
 
-This is a basic example, but it demonstrates the core idea of the Operational Result pattern: it's a way to encapsulate the result of an operation, which can be either a success or
+This is a basic example, but it demonstrates the core idea of the Operational Result pattern: it's a way to encapsulate the result of an operation, which can be either a value or
 a failure, allowing for more robust error handling.
 
 
@@ -459,7 +459,7 @@ a failure, allowing for more robust error handling.
 
 * Result
     * Success
-        * Has success value
+        * Has value value
             * May be supplied
     * Failure
         * Has Failure value
@@ -471,7 +471,7 @@ a failure, allowing for more robust error handling.
             * Has Cause
             * Has category/title
             * Has detail
-        * Has success value
+        * Has value value
             * May be supplied ?
 
 * Events

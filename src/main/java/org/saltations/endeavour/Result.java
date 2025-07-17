@@ -51,9 +51,10 @@ public sealed interface Result<T> permits Failure, Success
     /**
      * Returns the payload if this outcome has one.
      *
-     * @return payload associated with the success if a {@code Value}, a null if the result is {@code NoValue}.
-     *
-     * @throws UnsupportedOperationException If called on a {@code Failure}
+     * @return payload associated with the success if a {@code Value}, a null if the result is {@code NoValue} or {@code Failure}.
+     * 
+     * @implNote :
+     * This method must return null rather than throwing an exception when a value is not available.
      *
      * <p>
      * <b>Example:</b>
@@ -63,12 +64,15 @@ public sealed interface Result<T> permits Failure, Success
      * </pre>
      */
 
-    T get();
+    default T get()
+    {
+        return null;
+    }
 
     /**
-     * Returns an Optional containing the success payload if this outcome is a success, otherwise returns an empty Optional.
+     * Returns an {@code Optional} containing the success payload if this outcome is a {@code Value}, otherwise returns an empty {@code Optional}.
      *
-     * @return Optional containing the success payload if this outcome is a success, otherwise an empty Optional.
+     * @return {@code Optional} containing the success payload if this outcome is a {@code Value}, otherwise an empty {@code Optional}.
      */
 
     default Optional<T> opt()
@@ -77,12 +81,9 @@ public sealed interface Result<T> permits Failure, Success
     }
 
     /**
-     * Maps {@code Result<T>} to  {@code Result<U>} by mapping {@code <T>} to {@code <U>}
-     * <p>
-     * <h4>Note</h4>
-     * Any mapping function must handle nulls as one of the values.
+     * Maps a internal payload to {@code Result<U>} by mapping payload of type {@code <T>} to payload of type {@code <U>}
      *
-     * @param mapping a mapping function for T to U
+     * @param mapping a mapping function for T to U. <b>Not null.</b> <b>Must handle nulls from the {@code Result#get()}. method</b>
      *
      * @return mapped result
      *
@@ -93,11 +94,8 @@ public sealed interface Result<T> permits Failure, Success
 
     /**
      * Maps the unwrapped payload of type {@code T} to {@code Result<U>}
-     * <p>
-     * <h4>Note</h4>
-     * Any mapping function used within the flat map must handle nulls as one of the values.
      *
-     * @param mapping a mapping function for T to  {@code Result<U>}
+     * @param mapping a mapping function for T to  {@code Result<U>}.  <b>Not null.</b> <b>Must handle nulls.</b>
      *
      * @return mapped result
      *
@@ -105,6 +103,21 @@ public sealed interface Result<T> permits Failure, Success
      */
 
     <U> Result<U> flatMap(@NonNull Function<T,Result<U>> mapping);
+
+    /**
+     * Reduces the {@code Result<T>} to a single value of type {@code V} by mapping the {@code Result<T>} to an {@code V}
+     *
+     * @param mapping a mapping function for {@code Result<T>} to {@code V}. <b>Not null.</b> <b>Must handle nulls.</b>
+     * 
+     * @param <V> the type of the value to reduce to
+     * 
+     * @return the reduced value
+     */
+
+    default <V> V reduce(@NonNull Function<Result<T>, V> mapping)
+    {
+      return mapping.apply(this);
+    }
 
     /**
      * Consumes any {@code Result}
@@ -117,7 +130,10 @@ public sealed interface Result<T> permits Failure, Success
      * }
      */
 
-    void act(Consumer<Result<T>> action);
+    default void act(ExceptionalConsumer<Result<T>> action)
+    {
+        action.accept(this);
+    }
 
     /**
      * Executes action if this outcome is a success, takes no action otherwise.
@@ -130,7 +146,7 @@ public sealed interface Result<T> permits Failure, Success
      * }
      */
 
-     Result<T> actOnSuccess(Consumer<Success<T>> action);
+     Result<T> actOnSuccess(ExceptionalConsumer<Success<T>> action);
 
     /**
      * Executes action if this outcome is a failure, takes no action otherwise.
@@ -143,15 +159,12 @@ public sealed interface Result<T> permits Failure, Success
      * }
      */
 
-     Result<T> actOnFailure(@NonNull Consumer<Failure<T>> action);
-
-
-
+     Result<T> actOnFailure(@NonNull ExceptionalConsumer<Failure<T>> action);
 
     /**
-     * Return supplied outcome if this outcome is a success, otherwise return the existing outcome
+     * Supplies a new outcome from existing success, otherwise returns the existing outcome.
      *
-     * @param supplyOnSuccess function that supplies a new outcome. Not null.
+     * @param supplier function that supplies a new outcome. <b>Not null.</b>
      *
      * @return populated Result.
      *
@@ -162,21 +175,22 @@ public sealed interface Result<T> permits Failure, Success
      * }
      */
 
-    Result<T> onSuccess(Supplier<Result<T>> supplyOnSuccess);
+    Result<T> supplyOnSuccess(ExceptionalSupplier<Result<T>> supplier);
 
     /**
      * Returns the supplied outcome if this outcome is a failure, otherwise returns the existing outcome.
      *
+     * @param supplier function that supplies a new outcome. <b>Not null.</b>
+     * 
      * @return the existing outcome if success, new Result if failure.
      *
      * <h4>Example:</h4>
      * {@snippet :
      *   var newResult = outcome.ifFailure(() -> Try.succeed(21));
      * }
-     *
      */
 
-     Result<T> onFailure(Supplier<Result<T>> supplyOnFailure);
+     Result<T> supplyOnFailure(ExceptionalSupplier<Result<T>> supplier);
 
     /**
      * If this outcome is a success transform to a new outcome
@@ -192,7 +206,7 @@ public sealed interface Result<T> permits Failure, Success
      *
      */
 
-    Result<T> onSuccess(Function<T, Result<T>> successTransform);
+    Result<T> mapOnSuccess(ExceptionalFunction<T, Result<T>> mapping);
 
     /**
      * Returns a transformed outcome if this outcome is a failure
@@ -208,13 +222,7 @@ public sealed interface Result<T> permits Failure, Success
      *
      */
 
-    Result<T> onFailure(@NonNull Function<Result<T>, Result<T>> failureTransform);
+    Result<T> mapOnFailure(@NonNull ExceptionalFunction<Result<T>, Result<T>> mapping);
 
-
-
-    default <RT> RT transform(@NonNull Function<Result<T>, RT> transform)
-    {
-      return transform.apply(this);
-    }
 
 }

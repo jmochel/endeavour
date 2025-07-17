@@ -1,16 +1,17 @@
 package org.saltations.endeavour;
 
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.ClassOrderer;
+import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestClassOrder;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.saltations.endeavour.fixture.ReplaceBDDCamelCase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 
 @Order(10)
+@DisplayNameGeneration(ReplaceBDDCamelCase.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
 public class ResultTest
@@ -35,30 +37,46 @@ public class ResultTest
 
         @Test
         @Order(1)
-        void whenAttemptingWithSuccessThenReturnsSuccess()
+        void whenAttemptProvidesValueThenReturnsValue()
         {
             var result = Try.attempt(() -> 1111L);
-            assertTrue(result.hasPayload());
+
+            assertEquals(Value.class, result.getClass());
             assertEquals(1111L, result.get(), "Success Value");
         }
 
         @Test
         @Order(2)
-        void whenAttemptingWithExceptionThenReturnsFailure()
+        void whenAttemptProvidesNullThenReturnsNoValue()
+        {
+            var result = Try.attempt(() -> null);
+
+            assertEquals(NoValue.class, result.getClass());
+            assertFalse(result.hasPayload());
+        }
+
+        @Test
+        @Order(3)
+        void whenAttemptThrowsExceptionThenReturnsFailure()
         {
             var result = Try.attempt(() -> {throw new Exception("Test");});
             assertFalse(result.hasPayload());
         }
 
+        @Test
+        @Order(4)
+        void whenAttemptIsNullThenReturnsFailure()
+        {
+            assertThrows(NullPointerException.class, () -> Try.attempt(null));
+        }
     }
-
 
     @Nested
     @Order(2)
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenValue {
 
-        private final Result<Long> value = Try.succeed(1111L);
+        private final Result<Long> value = Try.success(1111L);
 
         @Test
         @Order(10)
@@ -72,7 +90,7 @@ public class ResultTest
         @Order(20)
         void whenSupplyingResultOnSuccessThenReturnsSuppliedPayload() throws Throwable
         {
-            var outcome = value.onSuccess(() -> Try.succeed(2222L));
+            var outcome = value.supplyOnSuccess(() -> Try.success(2222L));
             assertEquals(2222L, outcome.get(), "Success Value");
         }
 
@@ -80,7 +98,7 @@ public class ResultTest
         @Order(30)
         void whenTransformingResultOnSuccessThenReturnsTransformedResultToNewSuccess() throws Throwable
         {
-            var outcome = value.onSuccess(x -> Try.succeed(x * 3));
+            var outcome = value.mapOnSuccess(x -> Try.success(x * 3));
             assertEquals(3333L, outcome.get(), "Transformed Result");
         }
 
@@ -88,7 +106,7 @@ public class ResultTest
         @Order(32)
         void whenTransformingResultOnSuccessThenReturnsTransformedResultToNewFailure() throws Throwable
         {
-            var outcome = value.onSuccess(x -> Try.fail());
+            var outcome = value.mapOnSuccess(x -> Try.failure());
         }
 
         @Test
@@ -106,7 +124,7 @@ public class ResultTest
         @Order(50)
         void whenSupplyingResultOnFailureThenReturnsExistingSuccess() throws Throwable
         {
-            var outcome = value.onFailure(() -> Try.succeed(2222L));
+            var outcome = value.supplyOnFailure(() -> Try.success(2222L));
             assertSame(outcome, value, "Existing Success");
         }
 
@@ -114,7 +132,7 @@ public class ResultTest
         @Order(60)
         void whenTransformingResultOnFailureThenReturnsExistingSuccess() throws Throwable
         {
-            var outcome = value.onFailure(x -> Try.succeed(x.get() * 3));
+            var outcome = value.mapOnFailure(x -> Try.success(x.get() * 3));
             assertSame(outcome, value, "Existing Success");
         }
 
@@ -139,8 +157,8 @@ public class ResultTest
             value.act(x -> {
                 switch (x)
                 {
-                    case Failure out -> appliedForFailure.getAndSet(true);
-                    case Success out -> appliedForSuccess.getAndSet(true);
+                    case Failure<Long> out -> appliedForFailure.getAndSet(true);
+                    case Success<Long> out -> appliedForSuccess.getAndSet(true);
                 }
             });
 
@@ -161,7 +179,7 @@ public class ResultTest
         @Order(90)
         void whenFlatMappingThenTakesSuccessAction()
         {
-            var outcome = value.flatMap(x -> Try.succeed(x * 3));
+            var outcome = value.flatMap(x -> Try.success(x * 3));
 
             assertEquals(3333L, outcome.get(), "Mapped Result");
         }
@@ -170,7 +188,7 @@ public class ResultTest
         @Order(100)
         void whenTransformingThenGivesTransformedResult()
         {
-            var result = value.transform(this::outcomeToString);
+            var result = value.reduce(this::outcomeToString);
 
             assertEquals("Success with value", result, "Transformed to 'Success with value'");
         }
@@ -187,9 +205,9 @@ public class ResultTest
         {
             return switch (outcome)
             {
-                case Value out -> "Success with value";
-                case NoValue out -> "Success with no value";
-                case Failure out -> "Failure";
+                case Value<Long> out -> "Success with value";
+                case NoValue<Long> out -> "Success with no value";
+                case Failure<Long> out -> "Failure";
             };
         }
 
@@ -200,20 +218,22 @@ public class ResultTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenFailure {
 
-        private final Result<Long> failure = Try.fail();
+        private final Result<Long> failure = Try.failure();
 
         @Test
         @Order(10)
-        void whenGettingValueThenThrowsException() throws Throwable
+        void whenGettingPayloadThenHasReturnsNull() throws Throwable
         {
-            assertThrows(Exception.class, () -> failure.get(), "Cannot get value from a failure");
+            assertEquals(Failure.class, failure.getClass(),"Must be a Failure");
+            assertFalse(failure.hasPayload(),"Must not have a payload");
+            assertEquals(null, failure.get(),"Must return null");
         }
 
         @Test
         @Order(20)
         void whenSupplyingResultOnSuccessThenReturnsTheExistingFailure() throws Throwable
         {
-            var outcome = failure.onSuccess(() -> Try.succeed(2222L));
+            var outcome = failure.supplyOnSuccess(() -> Try.success(2222L));
             assertSame(outcome, failure, "Same failure");
         }
 
@@ -221,7 +241,7 @@ public class ResultTest
         @Order(30)
         void whenTransformingResultOnSuccessThenReturnsTheExistingFailure()
         {
-            var outcome = failure.onSuccess(x -> Try.succeed(x * 3));
+            var outcome = failure.mapOnSuccess(x -> Try.success(x * 3));
             assertSame(outcome, failure, "Same failure");
         }
 
@@ -238,7 +258,7 @@ public class ResultTest
         @Order(50)
         void whenSupplyingValueOnFailureThenReturnsNewResult() throws Throwable
         {
-            var outcome = failure.onFailure(() -> Try.succeed(2222L));
+            var outcome = failure.supplyOnFailure(() -> Try.success(2222L));
             assertEquals(2222L, outcome.get(),"New Result");
         }
 
@@ -246,7 +266,7 @@ public class ResultTest
         @Order(60)
         void whenTransformingResultOnFailureThenReturnsNewResult() throws Throwable
         {
-            var outcome = failure.onFailure(x -> Try.fail());
+            var outcome = failure.mapOnFailure(x -> Try.failure());
             assertNotSame(outcome, failure, "New Result");
         }
 
@@ -277,8 +297,8 @@ public class ResultTest
             failure.act(x -> {
               switch (x)
               {
-                  case Failure out -> appliedForFailure.getAndSet(true);
-                  case Success out -> appliedForSuccess.getAndSet(true);
+                  case Failure<Long> out -> appliedForFailure.getAndSet(true);
+                  case Success<Long> out -> appliedForSuccess.getAndSet(true);
               }
             });
 
@@ -299,7 +319,7 @@ public class ResultTest
         @Order(90)
         void whenFlatMappingThenTakesSuccessAction()
         {
-            Function<Long,Result<Long>> mapping = (x) -> { return Try.succeed( 3L); };
+            Function<Long,Result<Long>> mapping = (x) -> { return Try.success( 3L); };
 
             var outcome = failure.flatMap(mapping);
             assertTrue(outcome.hasPayload(), "Has Success");
@@ -309,7 +329,7 @@ public class ResultTest
         @Order(100)
         void whenTransformingThenGivesTransformedResult()
         {
-            var result = failure.transform(this::outcomeToString);
+            var result = failure.reduce(this::outcomeToString);
 
             assertEquals("Failure", result, "Transformed to 'Success'");
         }
@@ -325,9 +345,9 @@ public class ResultTest
         {
             return switch (outcome)
             {
-                case Value out -> "Success with value";
-                case NoValue out -> "Success with no value";
-                case Failure out -> "Failure";
+                case Value<Long> out -> "Success with value";
+                case NoValue<Long> out -> "Success with no value";
+                case Failure<Long> out -> "Failure";
             };
         }
     }
@@ -336,14 +356,14 @@ public class ResultTest
     @Order(7)
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class TransmuteTests {
-        private final Result<Long> success = Try.succeed(1111L);
-        private final Result<Long> failure = Try.fail();
+        private final Result<Long> success = Try.success(1111L);
+        private final Result<Long> failure = Try.failure();
 
         @Test
         @Order(10)
         void whenTransmutingSuccessThenReturnsTransformedValue() {
             // Given a success outcome and a transform function
-            var result = success.transform(outcome -> {
+            var result = success.reduce(outcome -> {
                 if (outcome.hasPayload()) {
                     return outcome.get() * 2;
                 }
@@ -358,13 +378,13 @@ public class ResultTest
         @Order(20)
         void whenTransmutingFailureThenReturnsTransformedValue() {
             // Given a failure outcome and a transform function
-            var result = failure.transform(outcome -> {
+            var result = failure.reduce(outcome -> {
 
                 return switch (outcome)
                 {
-                    case Value out -> "Success";
-                    case NoValue out -> "Success";
-                    case Failure out -> "Failed";
+                    case Value<Long> out -> "Success";
+                    case NoValue<Long> out -> "Success";
+                    case Failure<Long> out -> "Failed";
                 };
             });
 
@@ -377,7 +397,7 @@ public class ResultTest
         void whenTransmutingWithNullTransformThenThrowsException() {
             // Given a success outcome and a null transform function
             assertThrows(NullPointerException.class, () -> {
-                success.transform(null);
+                success.reduce(null);
             });
         }
 
@@ -386,7 +406,7 @@ public class ResultTest
         void whenTransmutingWithThrowingTransformThenThrowsException() {
             // Given a success outcome and a transform function that throws
             assertThrows(RuntimeException.class, () -> {
-                success.transform(outcome -> {
+                success.reduce(outcome -> {
                     throw new RuntimeException("Transform failed");
                 });
             });
@@ -396,7 +416,7 @@ public class ResultTest
         @Order(60)
         void whenTransmutingWithComplexTransformThenReturnsExpectedResult() {
             // Given a success outcome and a complex transform function
-            var result = success.transform(outcome -> {
+            var result = success.reduce(outcome -> {
                 if (outcome.hasPayload()) {
                     var value = outcome.get();
                     return new ComplexResult(value, value * 2, value * 3);

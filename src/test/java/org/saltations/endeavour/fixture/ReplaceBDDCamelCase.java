@@ -58,8 +58,6 @@ public class ReplaceBDDCamelCase extends DisplayNameGenerator.Standard
         return methodDisplayName;
     }
 
-    
-
     private String splitCamelCase(String incoming)
     {
         return incoming.replaceAll("([A-Z][a-z]+)", " $1")

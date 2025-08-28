@@ -8,6 +8,8 @@
     <artifactId>endeavour-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+    
+
 
     <name>Endeavour Parent</name>
     <description>Parent project for Endeavour modules</description>

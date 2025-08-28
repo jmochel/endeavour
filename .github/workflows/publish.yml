@@ -25,22 +25,18 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: maven
-          # If using GitHub Packages:
-          server-id: github          # must match <distributionManagement>/<id>
-          server-username: GITHUB_ACTOR
+          # GitHub Packages configuration
+          server-id: github
+          server-username: ${{ github.actor }}
           server-password: ${{ secrets.GITHUB_TOKEN }}
-          # If using Sonatype (Maven Central), uncomment these and provide secrets:
-          # server-id: ossrh
-          # server-username: ${{ secrets.OSSRH_USERNAME }}
-          # server-password: ${{ secrets.OSSRH_PASSWORD }}
-          # gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          # gpg-passphrase:  ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Show project version
         id: mvn_version
         run: |
           ver=$(grep -oP '<version>\K[^<]+' pom.xml | head -n 1)
           echo "version=$ver" >> $GITHUB_OUTPUT
+
+
 
       # Optional sanity: fail if trying to deploy a SNAPSHOT on a tag or a release on master
       - name: Guard rails

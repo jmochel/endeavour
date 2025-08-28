@@ -1,48 +1,73 @@
-# This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
-# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
+name: Publish
 
-name: Maven Build and Publish
 on:
   push:
-    branches: [ "master" ]
+    branches: [ master ]       # SNAPSHOT deploys
+    tags: [ 'v*' ]             # release deploys
 
 jobs:
-  # Builds are not successful unless the tests are successful
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
-
-      - name: List contents of target folder
-        run: ls target
-
   publish:
     runs-on: ubuntu-latest
-    needs: build-and-test
+    permissions:
+      contents: read
+      packages: write      # for GitHub Packages (if you use it)
+    env:
+      # Common Maven flags
+      MAVEN_ARGS: -V -B -ntp
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup JDK 21
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
-      - run: mvn --batch-mode --update-snapshots verify
-      - run: mkdir staging && cp target/*.jar staging
-      - run: ls staging
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Dist Jar Snapshot
-          path: staging
+          distribution: temurin
+          java-version: 21
+          cache: maven
+          # If using GitHub Packages:
+          server-id: github          # must match <distributionManagement>/<id>
+          server-username: GITHUB_ACTOR
+          server-password: ${{ secrets.GITHUB_TOKEN }}
+          # If using Sonatype (Maven Central), uncomment these and provide secrets:
+          # server-id: ossrh
+          # server-username: ${{ secrets.OSSRH_USERNAME }}
+          # server-password: ${{ secrets.OSSRH_PASSWORD }}
+          # gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          # gpg-passphrase:  ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Show project version
+        id: mvn_version
+        run: |
+          ver=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "version=$ver" >> $GITHUB_OUTPUT
+
+      # Optional sanity: fail if trying to deploy a SNAPSHOT on a tag or a release on master
+      - name: Guard rails
+        run: |
+          ver="${{ steps.mvn_version.outputs.version }}"
+          ref="${GITHUB_REF}"
+          if [[ "$ref" == refs/tags/* ]]; then
+            if [[ "$ver" == *-SNAPSHOT ]]; then
+              echo "Tag build but project version is SNAPSHOT ($ver). Refuse to deploy."
+              exit 1
+            fi
+          else
+            if [[ "$ver" != *-SNAPSHOT ]]; then
+              echo "Master build but project version is RELEASE ($ver). Refuse to deploy."
+              exit 1
+            fi
+          fi
+
+      # Deploy snapshots on pushes to master
+      - name: Deploy SNAPSHOTs (master)
+        if: startsWith(github.ref, 'refs/heads/')
+        run: |
+          mvn $MAVEN_ARGS -DskipTests deploy
+
+      # Deploy releases on version tags (e.g., v1.2.3)
+      - name: Deploy RELEASE (tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          # For Sonatype central: include 'clean deploy -P release' or your signing profile
+          mvn $MAVEN_ARGS -DskipTests deploy

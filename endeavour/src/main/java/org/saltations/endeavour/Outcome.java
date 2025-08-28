@@ -12,13 +12,13 @@ import lombok.NonNull;
  * A generic interface for outcomes of operations.
  * <p>
  * An <code>Outcome</code> is a container (AKA Monad) that represents the result of an operation.
- * It is a container that allows us to handle the effects that are outside the function’s scope, so that
+ * It is a container that allows us to handle the effects that are outside the function's scope, so that
  * we don't mess up the functions handling the effects, thus keeping the function code clean.
  * Often explained as a "box with a special way to open it", it can be used to chain operations
  * together while isolating potential complications within the computation.
  * <p>
  * An Outcome can represent success or failure. As a result, it can contain typed payloads for success and failure.
- * Failure payloads are of type {@code <FV>} and success payloads are of type {@code <SV>}.
+ * Failure payloads are of type {@code FailureDescription} and success payloads are of type {@code <SV>}.
  *
  * <h4>Success</h4>
  * A <code>Success</code> represents the successful completion of an operation. It may contain a <code>value</code> of type {@code <SV>} that is the computed
@@ -26,10 +26,9 @@ import lombok.NonNull;
  * having {@code <SV>} be an {@code Optional<VT>} where {@code VT} is the type of the value. A <code>Success</code> will not have any a failure payload.
  *
  * <h4>Failure</h4>
- * A <code>Failure</code> represents a wholly unsuccessful completion of an operation. It <em>will</em> contain a failure payload of type {@code <FV>}
+ * A <code>Failure</code> represents a wholly unsuccessful completion of an operation. It <em>will</em> contain a failure payload of type {@code FailureDescription}
  * that describes the failure. It will not contain a success payload.
  *
- * @param <FV> Failure payload class. Accessible in failures
  * @param <SV> Success payload class. Accessible in successes
  *
  * @see Success
@@ -38,7 +37,7 @@ import lombok.NonNull;
  * @author Jim Mochel
  */
 
-public sealed interface Outcome<FV extends FailureDescription, SV> permits Failure, Success
+public sealed interface Outcome<SV> permits Failure, Success
 {
     /**
      * Returns <em>true</em> if this outcome has a success payload.
@@ -95,7 +94,7 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
      * }
      */
 
-    Outcome<FV,SV> ifSuccess(Supplier<Outcome<FV,SV>> supplier);
+    Outcome<SV> ifSuccess(Supplier<Outcome<SV>> supplier);
 
     /**
      * If this outcome is a success transform to a new outcome
@@ -111,7 +110,7 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
      *
      */
 
-    Outcome<FV,SV> ifSuccess(Function<SV, Outcome<FV,SV>> transform);
+    Outcome<SV> ifSuccess(Function<SV, Outcome<SV>> transform);
 
     /**
      * Executes action if this outcome is a success, takes no action otherwise.
@@ -124,7 +123,7 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
      * }
      */
 
-    void onSuccess(Consumer<Outcome<FV,SV>> action);
+    void onSuccess(Consumer<Outcome<SV>> action);
 
     /**
      * Returns the supplied outcome if this outcome is a failure, otherwise returns the existing outcome.
@@ -140,7 +139,7 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
      *
      */
 
-    Outcome<FV,SV> ifFailure(Supplier<Outcome<FV,SV>> supplier);
+    Outcome<SV> ifFailure(Supplier<Outcome<SV>> supplier);
 
     /**
      * Returns a transformed outcome if this outcome is a failure
@@ -156,7 +155,7 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
      *
      */
 
-    Outcome<FV,SV> ifFailure(@NonNull Function<Outcome<FV,SV>, Outcome<FV,SV>> transform);
+    Outcome<SV> ifFailure(@NonNull Function<Outcome<SV>, Outcome<SV>> transform);
 
     /**
      * Executes action if this outcome is a failure, takes no action otherwise.
@@ -170,7 +169,7 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
      *
      */
 
-    Outcome<FV,SV> onFailure(@NonNull Consumer<Failure<FV,SV>> action);
+    Outcome<SV> onFailure(@NonNull Consumer<Failure<SV>> action);
 
     /**
           * If this outcome is a failure execute the failure action, if success execute the success action.
@@ -184,26 +183,26 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
      * }
      */
 
-    void on(Consumer<Outcome<FV,SV>> successAction, Consumer<Outcome<FV,SV>> failureAction);
+    void on(Consumer<Outcome<SV>> successAction, Consumer<Outcome<SV>> failureAction);
 
-    <FV extends FailureDescription, SV2> Outcome<FV,SV2> map(@NonNull Function<SV,SV2> transform);
+    <SV2> Outcome<SV2> map(@NonNull Function<SV,SV2> transform);
 
-    <SV2> Outcome<FV,SV2> flatMap(@NonNull Function<SV,Outcome<FV,SV2>> transform);
+    <SV2> Outcome<SV2> flatMap(@NonNull Function<SV,Outcome<SV2>> transform);
 
-    default <RT> RT transform(@NonNull Function<Outcome<FV,SV>, RT> transform)
+    default <RT> RT transform(@NonNull Function<Outcome<SV>, RT> transform)
     {
       return transform.apply(this);
     }
 
-    default <RT> RT transform(@NonNull Function<Success<FV,SV>, RT> successTransform, @NonNull Function<Failure<FV,SV>, RT> failureTransform)
+    default <RT> RT transform(@NonNull Function<Success<SV>, RT> successTransform, @NonNull Function<Failure<SV>, RT> failureTransform)
     {
-        if (this instanceof Success<FV,SV> success)
+        if (this instanceof Success<SV> success)
         {
             return successTransform.apply(success);
         }
 
 
-        if (this instanceof Failure<FV,SV> failure)
+        if (this instanceof Failure<SV> failure)
         {
             return failureTransform.apply(failure);
         }
@@ -225,7 +224,7 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
      * @param <SV2> Type of the supplied value
      */
 
-    static <FV extends FailureDescription, SV2> Outcome<FV, SV2> attempt(@NonNull ExceptionalSupplier<SV2> supplier)
+    static <SV2> Outcome<SV2> attempt(@NonNull ExceptionalSupplier<SV2> supplier)
     {
         checkNotNull(supplier, "Supplier cannot be null");
 
@@ -235,7 +234,7 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
         }
         catch (Exception e)
         {
-            return new Failure<>((FV) FailureDescription.of()
+            return new Failure<>(FailureDescription.of()
                     .cause(e)
                     .build());
         }

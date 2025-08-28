@@ -11,10 +11,9 @@ public class Outcomes
     /**
      * Construct a successful result with a Boolean value of true
      *
-     * @param <FV> class of the contained failure
      * @param <SV> class of the contained success value
      *
-     * @return An XSuccess result of {@code XResult<XFail,Boolean>}
+     * @return An XSuccess result of {@code XResult<Boolean>}
      *
      * <p>
      * <b>Example:</b>
@@ -25,18 +24,17 @@ public class Outcomes
      *
      */
 
-    public static <FV extends FailureDescription, SV> Outcome<FV,SV> succeed()
+    public static <SV> Outcome<SV> succeed()
     {
-        return (Outcome<FV, SV>) new Success<>(Boolean.TRUE);
+        return (Outcome<SV>) new Success<>(Boolean.TRUE);
     }
 
     /**
      * Construct a successful result with given value
      *
-     * @param <FV> class of the contained failure
      * @param <SV> class of the contained success value
      *
-     * @return An XSuccess result of {@code XResult<XFail,SV>}
+     * @return An XSuccess result of {@code XResult<SV>}
      *
      * <p>
      * <b>Example:</b>
@@ -46,7 +44,7 @@ public class Outcomes
      * </pre>
      *
      */
-    public static <FV extends FailureDescription, SV> Outcome<FV,SV> succeed(SV value)
+    public static <SV> Outcome<SV> succeed(SV value)
     {
         requireNonNull(value, "Result must have a non-null value to return");
 
@@ -58,10 +56,9 @@ public class Outcomes
     /**
      * Construct a failed generic result
      *
-     * @param <FV> class of the contained failure
      * @param <SV> class of the contained success value
      *
-     * @return An Failure result of {@code Failure<XFail,SV>}
+     * @return An Failure result of {@code Failure<SV>}
      *
      * <p>
      * <b>Example:</b>
@@ -70,7 +67,7 @@ public class Outcomes
      * }
      * </pre>
      */
-    public static <FV extends FailureDescription, SV> Outcome<FV,SV> fail()
+    public static <SV> Outcome<SV> fail()
     {
         var type = FailureDescription.GenericFailureType.GENERIC;
 
@@ -86,10 +83,9 @@ public class Outcomes
      * @param template Message template composed using {@link org.slf4j.helpers.MessageFormatter} format strings
      * @param args arguments used to expand the given template
      *
-     * @param <FV> class of the contained failure
      * @param <SV> class of the contained success value
      *
-     * @return An Failure result of {@code Failure<XFail,SV>} with type {@code XFail.GenericFail.GENERIC} and a
+     * @return An Failure result of {@code Failure<SV>} with type {@code XFail.GenericFail.GENERIC} and a
      * detail message derived from the template and arguments
      *
      * <p>
@@ -100,7 +96,7 @@ public class Outcomes
      * </pre>
      */
 
-    public static <FV extends FailureDescription, SV> Outcome<FV,SV> failWithDetails(String template, Object...args)
+    public static <SV> Outcome<SV> failWithDetails(String template, Object...args)
     {
         requireNonNull(template, "Failure needs a non-null template");
 
@@ -119,10 +115,9 @@ public class Outcomes
     /**
      * Construct a failed titled result.
      *
-     * @param <FV> class of the contained failure
      * @param <SV> class of the contained success value
      *
-     * @return An Failure result of {@code Failure<XFail,SV>}
+     * @return An Failure result of {@code Failure<SV>}
      *
      * <p>
      * <b>Example:</b>
@@ -131,7 +126,7 @@ public class Outcomes
      * }
      * </pre>
      */
-    public static <FV extends FailureDescription, SV> Outcome<FV,SV> titledFail(String title)
+    public static <SV> Outcome<SV> titledFail(String title)
     {
         var failureType = FailureDescription.GenericFailureType.GENERIC;
 
@@ -147,10 +142,9 @@ public class Outcomes
     /**
      * Construct a failed result with title and expanded details
      *
-     * @param <FV> class of the contained failure
      * @param <SV> class of the contained success value
      *
-     * @return An Failure result of {@code Failure<XFail,SV>}
+     * @return An Failure result of {@code Failure<SV>}
      *
      * <p>
      * <b>Example:</b>
@@ -159,7 +153,7 @@ public class Outcomes
      * }
      * </pre>
      */
-    public static <FV extends FailureDescription, SV> Outcome<FV,SV> titledFailWithDetails(String title, String template, Object...args)
+    public static <SV> Outcome<SV> titledFailWithDetails(String title, String template, Object...args)
     {
         var failureType = FailureDescription.GenericFailureType.GENERIC;
 
@@ -174,7 +168,7 @@ public class Outcomes
     }
 
 
-    public static <FV extends FailureDescription, SV> Outcome<FV,SV> typedFail(FailureType failureType, Object...args)
+    public static <SV> Outcome<SV> typedFail(FailureType failureType, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
 
@@ -194,7 +188,7 @@ public class Outcomes
     }
 
 
-    public static <FV extends FailureDescription, SV> Outcome<FV,SV> typedFailWithDetails(FailureType failureType, String template, Object...args)
+    public static <SV> Outcome<SV> typedFailWithDetails(FailureType failureType, String template, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
 
@@ -207,7 +201,7 @@ public class Outcomes
         return new Failure(fail);
     }
 
-    public static <FV extends FailureDescription, SV> Outcome<FV,SV> causedFail(Exception cause)
+    public static <SV> Outcome<SV> causedFail(Exception cause)
     {
         var failureType = FailureDescription.GenericFailureType.GENERIC;
 
@@ -219,7 +213,7 @@ public class Outcomes
         return new Failure(fail);
     }
 
-    public static <FV extends FailureDescription, SV> Outcome<FV,SV> causedFail(Exception cause, FailureType failureType, Object...args)
+    public static <SV> Outcome<SV> causedFail(Exception cause, FailureType failureType, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
 
@@ -238,7 +232,7 @@ public class Outcomes
         return new Failure(fail);
     }
 
-    public static <FV extends FailureDescription, SV> Outcome<FV,SV> causedFailWithDetails(Exception cause, String template, Object...args)
+    public static <SV> Outcome<SV> causedFailWithDetails(Exception cause, String template, Object...args)
     {
         var failureType = FailureDescription.GenericFailureType.GENERIC;
 

@@ -58,7 +58,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenSuccess {
 
-        private final Outcome<FailureDescription, Long> success = Outcomes.succeed(1111L);
+        private final Outcome<Long> success = Outcomes.succeed(1111L);
 
         @Test
         @Order(10)
@@ -183,7 +183,7 @@ public class OutcomeTest
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     class GivenFailure {
 
-        private final Outcome<FailureDescription, Long> failure = Outcomes.fail();
+        private final Outcome<Long> failure = Outcomes.fail();
 
         @Test
         @Order(10)
@@ -292,7 +292,7 @@ public class OutcomeTest
             assertEquals("Failure", result, "Transformed to 'Success'");
         }
 
-        String outcomeToString(Outcome<FailureDescription, Long> outcome)
+        String outcomeToString(Outcome<Long> outcome)
         {
             return switch (outcome)
             {

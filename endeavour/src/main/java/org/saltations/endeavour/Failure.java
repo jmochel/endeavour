@@ -8,11 +8,10 @@ import java.util.function.Supplier;
 /**
  * Represents an full failure Outcome of an operation.
  *
- * @param <FV> The class of Failure analysis value that is being carried.
  * @param <SV> The class of the unrealized Success value.
  */
 
-public record Failure<FV extends FailureDescription, SV>(FV fail) implements Outcome<FV, SV>
+public record Failure<SV>(FailureDescription fail) implements Outcome<SV>
 {
 
     @Override
@@ -54,37 +53,37 @@ public record Failure<FV extends FailureDescription, SV>(FV fail) implements Out
     }
 
     @Override
-    public Outcome<FV, SV> ifSuccess(Supplier<Outcome<FV, SV>> supplier)
+    public Outcome<SV> ifSuccess(Supplier<Outcome<SV>> supplier)
     {
         return this;
     }
 
     @Override
-    public Outcome<FV, SV> ifSuccess(Function<SV, Outcome<FV, SV>> transform)
+    public Outcome<SV> ifSuccess(Function<SV, Outcome<SV>> transform)
     {
         return this;
     }
 
     @Override
-    public void onSuccess(Consumer<Outcome<FV, SV>> action)
+    public void onSuccess(Consumer<Outcome<SV>> action)
     {
         // Do Nothing
     }
 
     @Override
-    public Outcome<FV, SV> ifFailure(Supplier<Outcome<FV, SV>> supplier)
+    public Outcome<SV> ifFailure(Supplier<Outcome<SV>> supplier)
     {
         return supplier.get();
     }
 
     @Override
-    public Outcome<FV, SV> ifFailure(Function<Outcome<FV, SV>, Outcome<FV, SV>> transform)
+    public Outcome<SV> ifFailure(Function<Outcome<SV>, Outcome<SV>> transform)
     {
         return transform.apply(this);
     }
 
     @Override
-    public Outcome<FV,SV> onFailure(Consumer<Failure<FV, SV>> action)
+    public Outcome<SV> onFailure(Consumer<Failure<SV>> action)
     {
         action.accept(this);
 
@@ -92,21 +91,21 @@ public record Failure<FV extends FailureDescription, SV>(FV fail) implements Out
     }
 
     @Override
-    public void on(Consumer<Outcome<FV, SV>> successAction, Consumer<Outcome<FV, SV>> failureAction)
+    public void on(Consumer<Outcome<SV>> successAction, Consumer<Outcome<SV>> failureAction)
     {
         failureAction.accept(this);
     }
 
     @Override
-    public <FV extends FailureDescription, SV2> Outcome<FV, SV2> map(Function<SV, SV2> transform)
+    public <SV2> Outcome<SV2> map(Function<SV, SV2> transform)
     {
-        return new Failure<FV, SV2>((FV) fail);
+        return new Failure<SV2>(fail);
     }
 
     @Override
-    public <U> Outcome<FV, U> flatMap(Function<SV, Outcome<FV, U>> transform)
+    public <U> Outcome<U> flatMap(Function<SV, Outcome<U>> transform)
     {
-        return new Failure<FV, U>(fail);
+        return new Failure<U>(fail);
     }
 
     @Override

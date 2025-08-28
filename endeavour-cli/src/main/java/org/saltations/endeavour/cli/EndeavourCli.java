@@ -2,7 +2,6 @@ package org.saltations.endeavour.cli;
 
 import java.util.concurrent.Callable;
 
-import org.saltations.endeavour.FailureDescription;
 import org.saltations.endeavour.Outcome;
 import org.saltations.endeavour.Outcomes;
 
@@ -65,7 +64,7 @@ public class EndeavourCli implements Callable<Integer> {
     }
 
     private int runSuccessExample() {
-        Outcome<FailureDescription, String> result = Outcomes.succeed("Hello from Endeavour!");
+        Outcome<String> result = Outcomes.succeed("Hello from Endeavour!");
         
         return result.transform(
             success -> {
@@ -80,7 +79,7 @@ public class EndeavourCli implements Callable<Integer> {
     }
 
     private int runFailureExample() {
-        Outcome<FailureDescription, String> result = Outcomes.failWithDetails("This is a demonstration error");
+        Outcome<String> result = Outcomes.failWithDetails("This is a demonstration error");
         
         return result.transform(
             success -> {
@@ -97,7 +96,7 @@ public class EndeavourCli implements Callable<Integer> {
 
     private int runChainExample() {
         // Simulate a chain of operations that could fail
-        Outcome<FailureDescription, String> result = Outcomes.succeed("initial")
+        Outcome<String> result = Outcomes.succeed("initial")
             .flatMap(this::processStep1)
             .flatMap(this::processStep2)
             .flatMap(this::processStep3);
@@ -115,14 +114,14 @@ public class EndeavourCli implements Callable<Integer> {
         );
     }
 
-    private Outcome<FailureDescription, String> processStep1(String input) {
+    private Outcome<String> processStep1(String input) {
         if (verbose) {
             System.out.println("   Processing step 1 with: " + input);
         }
         return Outcomes.succeed(input + " -> step1");
     }
 
-    private Outcome<FailureDescription, String> processStep2(String input) {
+    private Outcome<String> processStep2(String input) {
         if (verbose) {
             System.out.println("   Processing step 2 with: " + input);
         }
@@ -133,7 +132,7 @@ public class EndeavourCli implements Callable<Integer> {
         return Outcomes.succeed(input + " -> step2");
     }
 
-    private Outcome<FailureDescription, String> processStep3(String input) {
+    private Outcome<String> processStep3(String input) {
         if (verbose) {
             System.out.println("   Processing step 3 with: " + input);
         }

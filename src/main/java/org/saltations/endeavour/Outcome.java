@@ -1,12 +1,12 @@
 package org.saltations.endeavour;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import lombok.NonNull;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A generic interface for outcomes of operations.
@@ -17,7 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Often explained as a "box with a special way to open it", it can be used to chain operations
  * together while isolating potential complications within the computation.
  * <p>
- * An Outcome can represent success or failure or partial success. As a result, it can contain typed payloads for success and failure or both.
+ * An Outcome can represent success or failure. As a result, it can contain typed payloads for success and failure.
  * Failure payloads are of type {@code <FV>} and success payloads are of type {@code <SV>}.
  *
  * <h4>Success</h4>
@@ -29,28 +29,22 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * A <code>Failure</code> represents a wholly unsuccessful completion of an operation. It <em>will</em> contain a failure payload of type {@code <FV>}
  * that describes the failure. It will not contain a success payload.
  *
- * <h4>PartialSuccess</h4>
- * A <code>PartialSuccess</code> represents a partially successful completion of an operation.
- * It may contain a success payload of type {@code <SV>} and/or a failure payload of type {@code <FV>}.
- *
- * @param <FV> Failure payload class. Accessible in failures and partial successes
- * @param <SV> Success payload class. Accessible in successes and partial successes.
+ * @param <FV> Failure payload class. Accessible in failures
+ * @param <SV> Success payload class. Accessible in successes
  *
  * @see Success
  * @see Failure
- * @see PartialSuccess
  *
  * @author Jim Mochel
  */
 
-public sealed interface Outcome<FV extends FailureDescription, SV> permits Failure, Success, PartialSuccess
+public sealed interface Outcome<FV extends FailureDescription, SV> permits Failure, Success
 {
     /**
      * Returns <em>true</em> if this outcome has a success payload.
      * <p>
      * Having a success payload is distinct from being a success.
      * A success will <b>always</b>  have a success payload.
-     * A partial success <b>may</b> have a success payload.
      * A failure will <b>never</b> have a success payload.
      *
      * @return <em>true</em> if this outcome has a success payload,<em>false</em> otherwise.
@@ -63,7 +57,6 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
      * <p>
      * Having a failure payload is distinct from being a failure.
      * A failure will <b>always</b> have a failure payload.
-     * A partial success <b>may</b> have a failure payload.
      * A success will <b>never</b> have a failure payload.
      *
      * @return <em>true</em> if this outcome has a failure payload,<em>false</em> otherwise.
@@ -89,7 +82,7 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
     SV get();
 
     /**
-     * Return supplied outcome if this outcome is a success (or partial success), otherwise return the existing outcome
+     * Return supplied outcome if this outcome is a success, otherwise return the existing outcome
      *
      * @param supplier function that supplies a new outcome. Not null.
      *
@@ -97,7 +90,7 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
      *
      * <b>Example 1</b>
      * {@snippet :
-     *   // Return a new Success with value 21 if the current outcome is a Success or PartialSuccess
+     *   // Return a new Success with value 21 if the current outcome is a Success
      *   var newOutcome = outcome.ifSuccess(() -> Outcomes.succeed(21));
      * }
      */
@@ -105,7 +98,7 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
     Outcome<FV,SV> ifSuccess(Supplier<Outcome<FV,SV>> supplier);
 
     /**
-     * If this outcome is a success (or partial success) transform to a new outcome
+     * If this outcome is a success transform to a new outcome
      *
      * @param transform function that supplies a new outcome from an existing outcome. Not null
      *
@@ -121,7 +114,7 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
     Outcome<FV,SV> ifSuccess(Function<SV, Outcome<FV,SV>> transform);
 
     /**
-     * Executes action if this outcome is a success (or partial success), takes no action otherwise.
+     * Executes action if this outcome is a success, takes no action otherwise.
      *
      * @param action the function that takes action based on success. Not null.
      *
@@ -180,10 +173,10 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
     Outcome<FV,SV> onFailure(@NonNull Consumer<Failure<FV,SV>> action);
 
     /**
-     * If this outcome is a failure execute the failure action, if success execute the success action. If partial success apply both.
-     *
-     * @param successAction the action to execute if this is a success or partial success
-     * @param failureAction the action to execute if this is a failure or partial success
+          * If this outcome is a failure execute the failure action, if success execute the success action.
+ *
+ * @param successAction the action to execute if this is a success
+ * @param failureAction the action to execute if this is a failure
      *
      * <p><b>Example:</b>
      * {@snippet :
@@ -219,26 +212,7 @@ public sealed interface Outcome<FV extends FailureDescription, SV> permits Failu
         throw new IllegalStateException("Outcome is not a success or failure");
     }
 
-    default <RT> RT transform(@NonNull Function<Success<FV,SV>, RT> successTransform, @NonNull Function<Failure<FV,SV>, RT> failureTransform, @NonNull Function<PartialSuccess<FV,SV>, RT> partialSuccessTransform)
-    {
-        if (this instanceof Success<FV,SV> success)
-        {
-            return successTransform.apply(success);
-        }
 
-        if (this instanceof Failure<FV,SV> failure)
-        {
-            return failureTransform.apply(failure);
-        }
-
-        if (this instanceof PartialSuccess<FV,SV> partialSuccess)
-        {
-            return partialSuccessTransform.apply(partialSuccess);
-        }
-
-        // This CAN NEVER happen
-        throw new IllegalStateException("Outcome is not a success, failure, or partial success");
-    }
 
 
     /**

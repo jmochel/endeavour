@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write      # for GitHub Packages (if you use it)
+      packages: write      # for GitHub Packages
+      id-token: write      # for GitHub token
     env:
       # Common Maven flags
       MAVEN_ARGS: -V -B -ntp
@@ -28,14 +29,24 @@ jobs:
           java-version: 21
           cache: maven
           server-id: github                # must match <distributionManagement>/<id> in POM
-          server-username: GITHUB_ACTOR
-          server-password: ${{ github.token }}
+          server-username: ${{ github.actor }}
+          server-password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Show project version
         id: mvn_version
         run: |
           ver=$(grep -oP '<version>\K[^<]+' pom.xml | head -n 1)
           echo "version=$ver" >> $GITHUB_OUTPUT
+
+      - name: Debug POM and Maven settings
+        run: |
+          echo "=== POM Distribution Management ==="
+          grep -A 10 "distributionManagement" pom.xml
+          echo "=== Maven Settings ==="
+          mvn help:effective-settings -DshowPasswords=false | grep -A 5 -B 5 "github"
+          echo "=== Testing GitHub Packages Access ==="
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               https://api.github.com/user/packages/maven/org.saltations.endeavour
 
 
 

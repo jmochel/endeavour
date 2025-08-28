@@ -39,7 +39,7 @@ jobs:
       - name: Show project version
         id: mvn_version
         run: |
-          ver=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          ver=$(grep -oP '<version>\K[^<]+' pom.xml | head -n 1)
           echo "version=$ver" >> $GITHUB_OUTPUT
 
       # Optional sanity: fail if trying to deploy a SNAPSHOT on a tag or a release on master

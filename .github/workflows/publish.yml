@@ -29,8 +29,8 @@ jobs:
           java-version: 21
           cache: maven
           server-id: github                # must match <distributionManagement>/<id> in POM
-          server-username: ${{ github.actor }}
-          server-password: ${{ secrets.GITHUB_TOKEN }}
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
 
       - name: Show project version
         id: mvn_version
@@ -70,8 +70,11 @@ jobs:
       # Deploy snapshots on pushes to master
       - name: Deploy SNAPSHOTs (master)
         if: startsWith(github.ref, 'refs/heads/')
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mvn $MAVEN_ARGS -DskipTests deploy
+          mvn $MAVEN_ARGS -DskipTests deploy 
 
       # Deploy releases on version tags (e.g., v1.2.3)
       - name: Deploy RELEASE (tag)

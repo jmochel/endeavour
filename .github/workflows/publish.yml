@@ -19,16 +19,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK
+      
+
+      - name: Set up JDK + Maven auth
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
           cache: maven
-          # GitHub Packages configuration
-          server-id: github
-          server-username: ${{ github.actor }}
-          server-password: ${{ secrets.GITHUB_TOKEN }}
+          server-id: github                # must match <distributionManagement>/<id> in POM
+          server-username: GITHUB_ACTOR
+          server-password: ${{ github.token }}
 
       - name: Show project version
         id: mvn_version
@@ -67,3 +68,5 @@ jobs:
         run: |
           # For Sonatype central: include 'clean deploy -P release' or your signing profile
           mvn $MAVEN_ARGS -DskipTests deploy
+
+    

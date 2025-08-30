@@ -4,32 +4,111 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.concurrent.Callable;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.saltations.endeavour.Outcome;
+import org.saltations.endeavour.Outcomes;
 
 import picocli.CommandLine;
+import picocli.CommandLine.Command;
 
 class EndeavourCliTest {
 
-    private EndeavourCli cli;
-
-    @BeforeEach
-    void setUp() {
-        cli = new EndeavourCli();
-    }
-
     @Test
-    public void testWithCommandLineOption() throws Exception {
+    public void givenSimpleCommandWhenGivenCorrectArgsThenSuccessIsPrinted() throws Exception {
         
         var baos = new ByteArrayOutputStream();
         System.setOut(new PrintStream(baos));
 
+        var cli = new DirtSimpleAppCommand();
         var cmd = new CommandLine(cli);
-        cmd.execute("success");
+        cmd.execute("-h");
 
-        assertThat(baos.toString()).contains("Success: Hello from Endeavour!");
+        assertThat(baos.toString()).contains("Usage:");
     }
 
+    @Test
+    public void givenCommandWithSubCommandsWhenGivenCorrectSubCommandArgsThenSuccessIsPrinted() throws Exception {
+        
+        var baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+
+        var cli = new TopLevelCommand();
+        var cmd = new CommandLine(cli);
+        cmd.execute("sc");
+
+        assertThat(baos.toString()).contains("SubCommand1");
+    }
+
+    @Test
+    public void givenCommandWithSubSubCommandsWhenGivenCorrectSubSubCommandArgsThenSuccessIsPrinted() throws Exception {
+        
+        var baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+
+        var cli = new TopLevelCommand();
+        var cmd = new CommandLine(cli);
+        cmd.execute("sc", "ssc");
+
+        assertThat(baos.toString()).contains("SubSubCommand1");
+    }
+
+    @Command(
+    name = "simple-app",
+    mixinStandardHelpOptions = true,
+    version = "1.0.0",
+    description = "Sample App Command")    
+    static class DirtSimpleAppCommand implements Callable<Outcome<Integer>> {
+        @Override
+        public Outcome<Integer> call() {
+            System.out.println("Top Level Command");
+            return Outcomes.succeed(0);
+        }
+    }
+
+    @Command(
+    name = "simple-app",
+    mixinStandardHelpOptions = true,
+    version = "1.0.0",
+    description = "Sample App Command",
+    subcommands = {
+        SubCommand1.class
+    })    
+    static class TopLevelCommand implements Callable<Outcome<Integer>> {
+        @Override
+        public Outcome<Integer> call() {
+            System.out.println("Top Level Command");
+            return Outcomes.succeed(0);
+        }
+    }
+
+    @Command(name = "sc", 
+    description = "Sub Command",
+    mixinStandardHelpOptions = true,
+    subcommands = {
+        SubSubCommand1.class
+    }) 
+    static class SubCommand1 implements Callable<Outcome<Integer>> {
+        @Override
+        public Outcome<Integer> call() {
+            System.out.println("SubCommand1");
+            return Outcomes.succeed(0);
+        }
+    }
     
+    @Command(name = "ssc", 
+    description = "Sub Sub Command",
+    mixinStandardHelpOptions = true) 
+    static class SubSubCommand1 implements Callable<Outcome<Integer>> {
+        @Override
+        public Outcome<Integer> call() {
+            System.out.println("SubSubCommand1");
+            return Outcomes.succeed(0);
+        }
+    }
+
+
+    
+
 }

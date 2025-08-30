@@ -9,8 +9,6 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     
-
-
     <name>Endeavour Parent</name>
     <description>Parent project for Endeavour modules</description>
 
@@ -124,16 +122,16 @@
     </build>
 
     <distributionManagement>
-    <repository>
-        <id>github</id>
-        <name>GitHub Packages</name>
-        <url>https://maven.pkg.github.com/jmochel/endeavour</url>
-    </repository>
-    <snapshotRepository>
-        <id>github</id>
-        <name>GitHub Packages</name>
-        <url>https://maven.pkg.github.com/jmochel/endeavour</url>
-    </snapshotRepository>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/jmochel/endeavour</url>
+        </repository>
+        <snapshotRepository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/jmochel/endeavour</url>
+        </snapshotRepository>
     </distributionManagement>
 
 </project>

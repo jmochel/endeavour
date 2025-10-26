@@ -1,0 +1,21 @@
+name: Endeavour - Maven Build
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+jobs:
+  # Builds are not successful unless the tests are successful
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      - name: Run tests
+        run: mvn -B test

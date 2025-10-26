@@ -1,37 +1,16 @@
 package org.saltations.endeavour;
 
 
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
- * Represents an full failure Outcome of an operation.
+ * Represents a failed result.
  *
- * @param <SV> The class of the unrealized Success value.
+ * @param <T> The class of the unrealized Success payload value.
  */
 
-public record Failure<SV>(FailureDescription fail) implements Outcome<SV>
+public record Failure<T>(FailureDescription fail) implements Result<T>
 {
-
-    @Override
-    public boolean hasSuccessPayload()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean hasFailurePayload()
-    {
-        return true;
-    }
-
-    @Override
-    public SV get()
-    {
-        throw new IllegalStateException(fail.getTotalMessage());
-    }
-
     public FailureType getType()
     {
         return fail.getType();
@@ -53,60 +32,67 @@ public record Failure<SV>(FailureDescription fail) implements Outcome<SV>
     }
 
     @Override
-    public Outcome<SV> ifSuccess(Supplier<Outcome<SV>> supplier)
+    public boolean hasPayload()
     {
-        return this;
+        return false;
     }
 
     @Override
-    public Outcome<SV> ifSuccess(Function<SV, Outcome<SV>> transform)
+    public T get()
     {
-        return this;
+        throw new IllegalStateException("Cannot get value from a failure: " + fail.getTitle() + " - " + fail.getDetail());
     }
 
     @Override
-    public void onSuccess(Consumer<Outcome<SV>> action)
+    public <U> Result<U> map(Function<T, U> mapping)
+    {
+        return new Failure<U>(fail);
+    }
+
+    @Override
+    public <U> Result<U> flatMap(Function<T, Result<U>> mapping)
+    {
+        return new Failure<U>(fail);
+    }
+
+    @Override
+    public Result<T> actOnSuccess(ExceptionalConsumer<Success<T>> action)
     {
         // Do Nothing
+        return this;    
     }
 
     @Override
-    public Outcome<SV> ifFailure(Supplier<Outcome<SV>> supplier)
+    public Result<T> actOnFailure(ExceptionalConsumer<Failure<T>> action)
+    {
+        action.accept(this);
+        return this;
+    }
+
+    @Override
+    public Result<T> supplyOnSuccess(ExceptionalSupplier<Result<T>> supplier)
+    {
+        return this;
+    }
+
+    @Override
+    public Result<T> supplyOnFailure(ExceptionalSupplier<Result<T>> supplier)
     {
         return supplier.get();
     }
 
     @Override
-    public Outcome<SV> ifFailure(Function<Outcome<SV>, Outcome<SV>> transform)
+    public Result<T> mapOnSuccess(ExceptionalFunction<T, Result<T>> transform)
     {
-        return transform.apply(this);
-    }
-
-    @Override
-    public Outcome<SV> onFailure(Consumer<Failure<SV>> action)
-    {
-        action.accept(this);
-
         return this;
     }
 
     @Override
-    public void on(Consumer<Outcome<SV>> successAction, Consumer<Outcome<SV>> failureAction)
+    public Result<T> mapOnFailure(ExceptionalFunction<Result<T>, Result<T>> transform)
     {
-        failureAction.accept(this);
+        return transform.apply(this);
     }
 
-    @Override
-    public <SV2> Outcome<SV2> map(Function<SV, SV2> transform)
-    {
-        return new Failure<SV2>(fail);
-    }
-
-    @Override
-    public <U> Outcome<U> flatMap(Function<SV, Outcome<U>> transform)
-    {
-        return new Failure<U>(fail);
-    }
 
     @Override
     public String toString()

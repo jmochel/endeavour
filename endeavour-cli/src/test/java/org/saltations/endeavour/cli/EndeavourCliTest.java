@@ -7,8 +7,8 @@ import java.io.PrintStream;
 import java.util.concurrent.Callable;
 
 import org.junit.jupiter.api.Test;
-import org.saltations.endeavour.Outcome;
-import org.saltations.endeavour.Outcomes;
+import org.saltations.endeavour.Result;
+import org.saltations.endeavour.Try;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -59,11 +59,11 @@ class EndeavourCliTest {
     mixinStandardHelpOptions = true,
     version = "1.0.0",
     description = "Sample App Command")    
-    static class DirtSimpleAppCommand implements Callable<Outcome<Integer>> {
+    static class DirtSimpleAppCommand implements Callable<Result<Integer>> {
         @Override
-        public Outcome<Integer> call() {
+        public Result<Integer> call() {
             System.out.println("Top Level Command");
-            return Outcomes.succeed(0);
+            return Try.success(0);
         }
     }
 
@@ -75,11 +75,11 @@ class EndeavourCliTest {
     subcommands = {
         SubCommand1.class
     })    
-    static class TopLevelCommand implements Callable<Outcome<Integer>> {
+    static class TopLevelCommand implements Callable<Result<Integer>> {
         @Override
-        public Outcome<Integer> call() {
+        public Result<Integer> call() {
             System.out.println("Top Level Command");
-            return Outcomes.succeed(0);
+            return Try.success(0);
         }
     }
 
@@ -89,22 +89,22 @@ class EndeavourCliTest {
     subcommands = {
         SubSubCommand1.class
     }) 
-    static class SubCommand1 implements Callable<Outcome<Integer>> {
+    static class SubCommand1 implements Callable<Result<Integer>> {
         @Override
-        public Outcome<Integer> call() {
+        public Result<Integer> call() {
             System.out.println("SubCommand1");
-            return Outcomes.succeed(0);
+            return Try.success(0);
         }
     }
     
     @Command(name = "ssc", 
     description = "Sub Sub Command",
     mixinStandardHelpOptions = true) 
-    static class SubSubCommand1 implements Callable<Outcome<Integer>> {
+    static class SubSubCommand1 implements Callable<Result<Integer>> {
         @Override
-        public Outcome<Integer> call() {
+        public Result<Integer> call() {
             System.out.println("SubSubCommand1");
-            return Outcomes.succeed(0);
+            return Try.success(0);
         }
     }
 

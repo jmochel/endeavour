@@ -1,88 +1,39 @@
 package org.saltations.endeavour;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+public sealed interface Success<T> extends Result<T> permits Value, NoValue {
 
-public record Success<SV>(SV value) implements Outcome<SV>
-{
-    @Override
-    public boolean hasSuccessPayload()
+
+    default Result<T> actOnSuccess(ExceptionalConsumer<Success<T>> action)
     {
-        return true;
+        action.accept(this);
+        return this;
     }
 
-    @Override
-    public boolean hasFailurePayload()
+    default Result<T> actOnFailure(ExceptionalConsumer<Failure<T>> action)
     {
-        return false;
+        return this;
     }
 
-    @Override
-    public SV get()
-    {
-        return value;
-    }
-
-    @Override
-    public Outcome<SV> ifSuccess(Supplier<Outcome<SV>> supplier)
+    default Result<T> supplyOnSuccess(ExceptionalSupplier<Result<T>> supplier)
     {
         return supplier.get();
     }
 
-    @Override
-    public Outcome<SV> ifSuccess(Function<SV, Outcome<SV>> transform)
+    default Result<T> supplyOnFailure(ExceptionalSupplier<Result<T>> supplier)
+    {
+        return this;
+    }
+
+    default Result<T> mapOnSuccess(ExceptionalFunction<T, Result<T>> transform)
     {
         return transform.apply(get());
     }
 
-    @Override
-    public void onSuccess(Consumer<Outcome<SV>> action)
-    {
-        action.accept(this);
-    }
-
-    @Override
-    public Outcome<SV> ifFailure(Supplier<Outcome<SV>> supplier)
+    default Result<T> mapOnFailure(ExceptionalFunction<Result<T>, Result<T>> transform)
     {
         return this;
     }
 
-    @Override
-    public Outcome<SV> ifFailure(Function<Outcome<SV>, Outcome<SV>> transform)
-    {
-        return this;
-    }
 
-    @Override
-    public Outcome<SV> onFailure(Consumer<Failure<SV>> action)
-    {
-        return this;
-    }
-
-    @Override
-    public void on(Consumer<Outcome<SV>> successAction, Consumer<Outcome<SV>> failureAction)
-    {
-        successAction.accept(this);
-    }
-
-    @Override
-    public <SV2> Outcome<SV2> map(Function<SV, SV2> transform)
-    {
-        return new Success<SV2>(transform.apply(value));
-    }
-
-    @Override
-    public <U> Outcome<U> flatMap(Function<SV, Outcome<U>> transform)
-    {
-        return transform.apply(value);
-    }
-
-    public String toString()
-    {
-        return new StringBuffer("Success").append("[")
-                                           .append(value)
-                                           .append("]")
-                                           .toString();
-    }
 }
+

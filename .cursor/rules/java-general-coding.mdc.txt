@@ -1,0 +1,96 @@
+---
+globs: *.java
+alwaysApply: false
+title: Java General Coding Guidelines
+description: General Java rules for this project
+scope: project
+tags: [java, guidelines, style]
+priority: high
+---
+
+# Java Coding Guidelines
+
+
+## General Principles
+
+- Use "Effective Java 3rd Edition" as the primary coding guidelines
+- Prefer immutability wherever possible.
+- Apply SOLID principles but do not apply Interface Segregatioon
+- Use Objects.equals for object comparison
+- Do not use Vector or Hashtable
+- Use StringBuilder for composing strings 
+- Only use java.time package for times and dates
+- Do not use Serializable
+- Do not use Boolean or boolean in parameter lists
+- Do not use assert keyword 
+
+## Interfaces 
+
+- Use when Multiple Implementations Exist
+- Use When injecting including multiple inmpls
+- Use when You’re Writing a Library or SDK
+
+## Naming Things
+
+- Use meaningful names (no abbreviations). Standard acronyms are used in the same case as they are defined (i.e.XML is all caps)
+- Do not use the meaningless suffixes: Helper, Utils, Manager, Data, 
+- Use business domain nouns and verbs. A method should do something, and its name should say so
+
+
+## Handling No-Things
+
+- Do not initialize variables to null
+- Return empty collections 
+- Option1: Return Optional<T> for Explicit Absence
+- Option2: Don’t use Optional In DTOs or method parameters (especially in performance-critical code).
+- Option3: Return a Default or Empty Object (The Null Object Pattern)
+
+## Javadoc Comments
+
+- Comments Explain “Why”, Not “What”
+  
+
+## Contructors and creating objects
+
+- Use static factory methods when
+  - You need a descriptive name.
+  - You want to validate/invariant-check before creation.
+  - You want to return a cached, shared, or flyweight instance.
+  - You want to control or hide the concrete type.
+  - You need subtype selection.
+  - You want to vary the returned object per input or environment.
+  - You want better type inference or generic helpers.
+  - You want singletons or scoped lifecycles.
+  - You want expressive conversions.
+  - You need API stability across versions.
+  - You’re wrapping records.
+- Use constructors when
+  - You want the simplest, most discoverable API for “just build the thing.”
+- Use builders when faced with many constructor parameters
+- Enforce the singleton property with a private constructor or an enum type
+ 
+## Try Catch
+
+- Use try with resources
+
+## Java 17 or greater
+
+- Make variables `final` whenever possible
+- Use records for immutable DTS or Value Objects
+- Switch Expressions
+- Records
+- Use sealed classes and pattern matching
+- Use Multiline Text Blocks
+  
+## Java 21 or greater 
+
+- Use Virtual Threads 
+- pattern matching for switch
+- Record Patterns
+
+## Java 24 or greater
+
+- MArkdown Javadoc
+- Primitive types in patterns
+- Nullabel vs non-nullable value types
+

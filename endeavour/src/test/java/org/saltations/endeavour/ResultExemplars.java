@@ -22,7 +22,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 @Order(30)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
-public class OutcomeExemplars
+public class ResultExemplars
 {
     @Test
     @Order(10)
@@ -32,7 +32,7 @@ public class OutcomeExemplars
         // Demonstrate the use of a functional to convert a success result to a REST response
         //
 
-        var success = new Success<>(21);
+        var success = new Value<>(21);
         var result = success.get();
     }
 

@@ -7,8 +7,8 @@ import java.io.PrintStream;
 import java.util.concurrent.Callable;
 
 import org.junit.jupiter.api.Test;
-import org.saltations.endeavour.Outcome;
-import org.saltations.endeavour.Outcomes;
+import org.saltations.endeavour.Result;
+import org.saltations.endeavour.Try;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -114,21 +114,21 @@ class EndeavourCliRunAllTest {
     subcommands = {
         SubCommand1.class
     })    
-    static class RootCommand implements Callable<Outcome<Integer>> {
+    static class RootCommand implements Callable<Result<Integer>> {
 
         @Option(names = {"-f", "--fail"}, description = "Fail the command")
         private boolean fail;
 
         @Override
-        public Outcome<Integer> call() {
+        public Result<Integer> call() {
             System.out.println("Invoked Root Command");
             if (fail) {
                 System.out.println("Failed to run Root Command");
-                return Outcomes.failWithDetails("Failed to run Root Command");
+                return Try.failureWithDetails("Failed to run Root Command");
             }
 
             System.out.println("Successfully ran Root Command");
-            return Outcomes.succeed(0);
+            return Try.success(0);
         }
     }
 
@@ -138,21 +138,21 @@ class EndeavourCliRunAllTest {
     subcommands = {
         SubSubCommand1.class
     }) 
-    static class SubCommand1 implements Callable<Outcome<Integer>> {
+    static class SubCommand1 implements Callable<Result<Integer>> {
 
         @Option(names = {"-f", "--fail"}, description = "Fail the command")
         private boolean fail;
 
         @Override
-        public Outcome<Integer> call() {
+        public Result<Integer> call() {
             System.out.println("Invoked SubCommand1");
             if (fail) {
                 System.out.println("Failed to run SubCommand1");
-                return Outcomes.failWithDetails("Failed to run SubCommand1");
+                return Try.failureWithDetails("Failed to run SubCommand1");
             }
 
             System.out.println("Successfully ran SubCommand1");
-            return Outcomes.succeed(0);
+            return Try.success(0);
         }
 
     }
@@ -160,21 +160,21 @@ class EndeavourCliRunAllTest {
     @Command(name = "ssc", 
     description = "Sub Sub Command Description 1",
     mixinStandardHelpOptions = true) 
-    static class SubSubCommand1 implements Callable<Outcome<Integer>> {
+    static class SubSubCommand1 implements Callable<Result<Integer>> {
 
         @Option(names = {"-f", "--fail"}, description = "Fail the command")
         private boolean fail;
 
         @Override
-        public Outcome<Integer> call() {
+        public Result<Integer> call() {
             System.out.println("Invoked SubSubCommand1");
             if (fail) {
                 System.out.println("Failed to run SubSubCommand1");
-                return Outcomes.failWithDetails("Failed to run SubSubCommand1");
+                return Try.failureWithDetails("Failed to run SubSubCommand1");
             }
 
             System.out.println("Successfully ran SubSubCommand1");
-            return Outcomes.succeed(0);
+            return Try.success(0);
         }
     }
    

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 import org.saltations.endeavour.Failure;
-import org.saltations.endeavour.Outcome;
+import org.saltations.endeavour.Result;
 import org.saltations.endeavour.Success;
 
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ import picocli.CommandLine.IExecutionStrategy;
  * This is a custom execution strategy that will execute all commands in the chain, and stop on the first error.
  * It is used to ensure that all commands in the chain are executed, and that the first error is propagated.
  * <h4>Note</h4>
- * This should only be used for commands and subcommands that implement Callable<Outcome<Integer>>.
+ * This should only be used for commands and subcommands that implement Callable<Result<Integer>>.
  */
 
 @Slf4j
@@ -70,15 +70,15 @@ public class RunAllStopOnError implements IExecutionStrategy  {
 
                 var outcome = ((Callable<?>) result).call();
 
-                // Bail if the command does not return an Outcome object
-                if (!(outcome instanceof Outcome)) {
-                    System.err.println("Command does not return an operating result of Outcome");
+                // Bail if the command does not return a Result object
+                if (!(outcome instanceof Result)) {
+                    System.err.println("Command does not return an operating result of Result");
                     return ExitCode.SOFTWARE;
                 }
 
-                // Evaluate the outcome 
+                // Evaluate the result 
 
-                var operatingResult = ((Outcome<?>) outcome);
+                var operatingResult = ((Result<?>) outcome);
 
                 switch (operatingResult) {
                     case Success<?> success:
@@ -88,7 +88,7 @@ public class RunAllStopOnError implements IExecutionStrategy  {
                         System.err.println(failure.getDetail());
                         return ExitCode.SOFTWARE;
                     default:
-                        throw new CommandLine.ExecutionException(cmdObj, "Error checking command return type", new Exception("Unknown outcome type"));
+                        throw new CommandLine.ExecutionException(cmdObj, "Error checking command return type", new Exception("Unknown result type"));
                 }
 
             } catch (Exception e) {

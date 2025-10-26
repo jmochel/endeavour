@@ -3,12 +3,14 @@ package org.saltations.endeavour;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.junit.jupiter.api.ClassOrderer;
+import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestClassOrder;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.saltations.endeavour.fixture.ReplaceBDDCamelCase;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,10 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Order(20)
-//@DisplayNameGeneration(ReplaceBDDCamelCase.class)
+@DisplayNameGeneration(ReplaceBDDCamelCase.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
-public class OutcomesTest
+public class TryTest
 {
     @Getter
     @AllArgsConstructor
@@ -45,8 +47,8 @@ public class OutcomesTest
         @Order(1)
         void canCreateSuccessWithValue()
         {
-            var result = Outcomes.succeed("OK");
-            assertOutcomeIsSuccess(result);
+            var result = Try.success("OK");
+            assertResultIsSuccess(result);
             assertAll("Success",
                     () -> assertEquals("OK",result.get(), "Value")
             );
@@ -56,9 +58,9 @@ public class OutcomesTest
         @Order(2)
         void canCreateSuccessWithoutValue()
         {
-            var result = Outcomes.succeed();
+            var result = Try.success();
 
-            assertOutcomeIsSuccess(result);
+            assertResultIsSuccess(result);
 
             assertAll("Success",
                     () -> assertEquals(Boolean.TRUE, result.get(), "Value")
@@ -76,9 +78,9 @@ public class OutcomesTest
         @Order(2)
         void canCreateSimplestFailure()
         {
-            var result = Outcomes.fail();
+            var result = Try.failure();
 
-            var failure = assertOutcomeIsFailure(result);
+            var failure = assertResultIsFailure(result);
 
             assertAll("Failure", () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"), () -> assertNull(failure.getCause(), "Cause"));
 
@@ -89,9 +91,9 @@ public class OutcomesTest
         @Order(4)
         void canCreateFailureWithDetails()
         {
-            var result = Outcomes.failWithDetails("{} did it", "Bozo");
+            var result = Try.failureWithDetails("{} did it", "Bozo");
 
-            var failure = assertOutcomeIsFailure(result);
+            var failure = assertResultIsFailure(result);
 
             assertAll("Failure",
                     () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
@@ -111,9 +113,9 @@ public class OutcomesTest
         @Order(2)
         void canCreateTitledFailure()
         {
-            var result = Outcomes.titledFail("Strange Category");
+            var result = Try.titledFailure("Strange Category");
 
-            var failure = assertOutcomeIsFailure(result);
+            var failure = assertResultIsFailure(result);
 
             assertAll("Failure",
                     () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
@@ -128,9 +130,9 @@ public class OutcomesTest
         void canCreateTitledFailureWithDetail()
         {
             var detail = "This went really bad";
-            var result = Outcomes.titledFailWithDetails("Really Bad", "Details: {} Bad", "Really Really");
+            var result = Try.titledFailureWithDetails("Really Bad", "Details: {} Bad", "Really Really");
 
-            var failure = assertOutcomeIsFailure(result);
+            var failure = assertResultIsFailure(result);
 
             assertAll("Failure",
                     () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
@@ -152,9 +154,9 @@ public class OutcomesTest
         @Order(2)
         void canCreateTypedFailure()
         {
-            var result = Outcomes.typedFail(ExemplarFailure.POTENTIALLY_FATAL);
+            var result = Try.typedFailure(ExemplarFailure.POTENTIALLY_FATAL);
 
-            var failure = assertOutcomeIsFailure(result);
+            var failure = assertResultIsFailure(result);
 
             assertAll("Failure", () -> assertEquals(ExemplarFailure.POTENTIALLY_FATAL, failure.getType(), "Type"), () -> assertNull(failure.getCause(), "Cause"));
 
@@ -166,9 +168,9 @@ public class OutcomesTest
         void canCreateTypedFailureWithDetail()
         {
             var detail = "This went really bad";
-            var result = Outcomes.typedFail(ExemplarFailure.POTENTIALLY_FATAL, detail);
+            var result = Try.typedFailure(ExemplarFailure.POTENTIALLY_FATAL, detail);
 
-            var failure = assertOutcomeIsFailure(result);
+            var failure = assertResultIsFailure(result);
 
             assertAll("Failure", () -> assertEquals(ExemplarFailure.POTENTIALLY_FATAL, failure.getType(), "Type"), () -> assertNull(failure.getCause(), "Cause"));
 
@@ -179,8 +181,8 @@ public class OutcomesTest
         @Order(8)
         void canCreateTypedFailureWithDetails()
         {
-            var result = Outcomes.typedFailWithDetails(ExemplarFailure.NOT_REALLY_SO_BAD, "Details: {} Bad", "Really Really");
-            var failure = assertOutcomeIsFailure(result);
+            var result = Try.typedFailureWithDetails(ExemplarFailure.NOT_REALLY_SO_BAD, "Details: {} Bad", "Really Really");
+            var failure = assertResultIsFailure(result);
 
             assertAll("Failure",
                     () -> assertEquals(ExemplarFailure.NOT_REALLY_SO_BAD, failure.getType(), "Type"),
@@ -199,9 +201,9 @@ public class OutcomesTest
         void canCreateCausedFailure()
         {
             var cause = new Exception();
-            var result = Outcomes.causedFail(cause);
+            var result = Try.causedFailure(cause);
 
-            var failure = assertOutcomeIsFailure(result);
+            var failure = assertResultIsFailure(result);
 
             assertAll("Failure",
                     () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
@@ -215,9 +217,9 @@ public class OutcomesTest
         void canCreateCausedFailureWithExceptionAndType()
         {
             var cause = new Exception();
-            var result = Outcomes.causedFail(cause, ExemplarFailure.POTENTIALLY_FATAL);
+            var result = Try.causedFailure(cause, ExemplarFailure.POTENTIALLY_FATAL);
 
-            var failure = assertOutcomeIsFailure(result);
+            var failure = assertResultIsFailure(result);
 
             assertAll("Failure",
                     () -> assertEquals(ExemplarFailure.POTENTIALLY_FATAL, failure.getType(), "Type"),
@@ -232,9 +234,9 @@ public class OutcomesTest
         {
             var cause = new Exception();
             var detail = "This went really bad";
-            var result = Outcomes.causedFail(cause, ExemplarFailure.POTENTIALLY_FATAL, detail);
+            var result = Try.causedFailure(cause, ExemplarFailure.POTENTIALLY_FATAL, detail);
 
-            var failure = assertOutcomeIsFailure(result);
+            var failure = assertResultIsFailure(result);
 
             assertAll("Failure",
                     () -> assertEquals(ExemplarFailure.POTENTIALLY_FATAL, failure.getType(), "Type"),
@@ -249,9 +251,9 @@ public class OutcomesTest
         {
             var cause = new Exception();
             var detail = "This went really bad";
-            var result = Outcomes.causedFailWithDetails(cause, detail);
+            var result = Try.causedFailureWithDetails(cause, detail);
 
-            var failure = assertOutcomeIsFailure(result);
+            var failure = assertResultIsFailure(result);
 
             assertAll("Failure",
                     () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
@@ -266,9 +268,9 @@ public class OutcomesTest
         {
             var cause = new Exception();
             var template = "This is a template message";
-            var result = Outcomes.causedFail(cause, ExemplarFailure.GENERAL, template);
+            var result = Try.causedFailure(cause, ExemplarFailure.GENERAL, template);
 
-            var failure = assertOutcomeIsFailure(result);
+            var failure = assertResultIsFailure(result);
 
             assertAll("Failure",
                     () -> assertEquals(ExemplarFailure.GENERAL, failure.getType(), "Type"),
@@ -284,9 +286,9 @@ public class OutcomesTest
             var providedExceptionMessage = "This is a provided exception message";
 
             var cause = new Exception(providedExceptionMessage);
-            var result = Outcomes.causedFail(cause, ExemplarFailure.NOT_REALLY_SO_BAD, "widget1", "widget2");
+            var result = Try.causedFailure(cause, ExemplarFailure.NOT_REALLY_SO_BAD, "widget1", "widget2");
 
-            var failure = assertOutcomeIsFailure(result);
+            var failure = assertResultIsFailure(result);
 
             // @formatter:off
             assertAll("Failure",
@@ -319,9 +321,9 @@ public class OutcomesTest
             var value = result.get();
         }
 
-        Outcome<String> simpleReturnOfOKString()
+        Result<String> simpleReturnOfOKString()
         {
-            return Outcomes.succeed("OK");
+            return Try.success("OK");
         }
     }
 
@@ -337,12 +339,12 @@ public class OutcomesTest
         {
             var result = simpleReturnOfFailure();
 
-            assertThrows(Exception.class, () -> result.get(), "Cannot get value from a failure");
+            assertThrows(IllegalStateException.class, () -> result.get(), "Should throw exception when trying to get value from failure");
         }
 
-        Outcome<Object> simpleReturnOfFailure()
+        Result<Object> simpleReturnOfFailure()
         {
-            return Outcomes.typedFail(ExemplarFailure.NOT_REALLY_SO_BAD);
+            return Try.typedFailure(ExemplarFailure.NOT_REALLY_SO_BAD);
         }
     }
 
@@ -356,34 +358,33 @@ public class OutcomesTest
         @Order(2)
         void canShowSuccess()
         {
-            assertEquals("Success[Jake]", Outcomes.succeed("Jake").toString());
+            assertEquals("Success[Jake]", Try.success("Jake").toString());
         }
 
         @Test
         @Order(4)
         void canShowFailure()
         {
-            assertEquals("Failure[GENERIC:generic-failure:]", Outcomes.fail().toString());
+            assertEquals("Failure[GENERIC:generic-failure:]", Try.failure().toString());
         }
     }
 
-    private Failure<?> assertOutcomeIsFailure(Outcome<?> result)
+    private Failure<?> assertResultIsFailure(Result<?> result)
     {
-        if (result instanceof Success<?>)
+        if (result instanceof Value<?>)
         {
             fail("Result should be a Failure");
         }
 
         assertAll("Result",
-                () -> assertFalse(result.hasSuccessPayload(),"Is Not Success"),
-                () -> assertTrue(result.hasFailurePayload(),"Is Failure")
+                () -> assertFalse(result.hasPayload(),"Is Not Success")
         );
 
         return (Failure<?>) result;
     }
 
 
-    private void assertOutcomeIsSuccess(Outcome<?> result)
+    private void assertResultIsSuccess(Result<?> result)
     {
         if (result instanceof Failure<?>)
         {
@@ -391,8 +392,7 @@ public class OutcomesTest
         }
 
         assertAll("Result",
-                () -> assertTrue(result.hasSuccessPayload(),"Has Success value"),
-                () -> assertFalse(result.hasFailurePayload(),"Does not have Failure value")
+                () -> assertTrue(result.hasPayload(),"Has Success value")
         );
 
     }

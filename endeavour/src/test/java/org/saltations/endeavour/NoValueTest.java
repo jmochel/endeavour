@@ -41,11 +41,35 @@ public class NoValueTest
     }
 
     @Test
+    @Order(25)
+    void whenMappingToNullThenReturnsNoValue() throws Throwable
+    {
+        // NoValue.map() with null result should return NoValue
+        var outcome = noValue.map(x -> null);
+        assertEquals(NoValue.class, outcome.getClass(), "Should return NoValue");
+        assertNull(outcome.get(), "Should return null");
+    }
+
+    @Test
     @Order(20)
     void whenSupplyingResultOnSuccessThenReturnsSuppliedResult() throws Throwable
     {
         var outcome = noValue.orElse(() -> Try.success(2222L));
         assertEquals(2222L, outcome.get(), "Success Value");
+    }
+
+    @Test
+    @Order(35)
+    void whenFlatMappingThenCallsMappingFunctionWithNull() throws Throwable
+    {
+        // NoValue.flatMap() calls the mapping function with null (since NoValue.get() returns null)
+        // The mapping function can ignore the null parameter and return whatever it wants
+        var outcome1 = noValue.flatMap(x -> Try.success(777L));
+        assertEquals(Value.class, outcome1.getClass(), "Should return Value");
+        assertEquals(777L, outcome1.get(), "Should return the mapped value");
+        
+        var outcome2 = noValue.flatMap(x -> Try.failure());
+        assertEquals(Failure.class, outcome2.getClass(), "Should return Failure");
     }
 
     @Test
@@ -177,6 +201,13 @@ public class NoValueTest
         assertEquals("Success with value", result, "Transformed to 'Success with value'");
     }
 
+
+    @Test
+    @Order(100)
+    void whenCallingToStringThenReturnsExpectedString()
+    {
+        assertEquals("Success[No value]", noValue.toString());
+    }
 
     String outcomeToString(Result<Long> outcome)
     {

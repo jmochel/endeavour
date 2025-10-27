@@ -13,6 +13,8 @@ import org.saltations.endeavour.fixture.ReplaceBDDCamelCase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -40,11 +42,34 @@ public class ValueTest
     }
 
     @Test
+    @Order(25)
+    void whenMappingToNullThenReturnsNoValue() throws Throwable
+    {
+        // Value.map() with null result should return NoValue
+        var outcome = value.map(x -> null);
+        assertEquals(NoValue.class, outcome.getClass(), "Should return NoValue");
+        assertNull(outcome.get(), "Should return null");
+    }
+
+    @Test
     @Order(20)
     void whenSupplyingResultOnSuccessThenReturnsSuppliersPayload() throws Throwable
     {
         var outcome = value.orElse(() -> Try.success(2222L));
         assertEquals(2222L, outcome.get(), "Success Value");
+    }
+
+    @Test
+    @Order(35)
+    void whenFlatMappingThenCallsMappingFunctionWithValue() throws Throwable
+    {
+        // Value.flatMap() calls mapping.apply(value) and returns the result
+        var outcome1 = value.flatMap(x -> Try.success(x * 2));
+        assertEquals(Value.class, outcome1.getClass(), "Should return Value");
+        assertEquals(2222L, outcome1.get(), "Should return doubled value");
+        
+        var outcome2 = value.flatMap(x -> Try.failure());
+        assertEquals(Failure.class, outcome2.getClass(), "Should return Failure");
     }
 
     @Test
@@ -160,6 +185,13 @@ public class ValueTest
         var opt = value.opt();
         assertTrue(opt.isPresent(), "Optional should be present for Success");
         assertEquals(1111L, opt.get(), "Optional value should match Success value");
+    }
+
+    @Test
+    @Order(100)
+    void whenCallingToStringThenReturnsExpectedString()
+    {
+        assertEquals("Success[1111]", value.toString());
     }
 
     String outcomeToString(Result<Long> outcome)

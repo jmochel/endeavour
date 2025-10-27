@@ -38,12 +38,12 @@ public record NoValue<T>() implements Success<T> {
     @Override
     public <U> Result<U> flatMap(Function<T, Result<U>> mapping)
     {
-        return new NoValue<U>();
+        return mapping.apply(null);
     }
 
     public String toString()
     {
-        return new StringBuffer("Success").append("[No value]")
+        return new StringBuilder("Success").append("[No value]")
                                           .toString();
     }
 }

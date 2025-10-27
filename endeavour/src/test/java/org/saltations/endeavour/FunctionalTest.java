@@ -7,10 +7,19 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class FunctionalTest {
+
+    @Test
+    @Order(0)
+    public void whenCreatingFunctionalInstanceThenSucceeds() {
+        // Test that Functional constructor can be called
+        var functional = new Functional();
+        assertNotNull(functional, "Functional instance should not be null");
+    }
 
     @Test
     public void whenWrappedExceptionalSupplierThrowsExceptionThenShouldThrowRecastException() {

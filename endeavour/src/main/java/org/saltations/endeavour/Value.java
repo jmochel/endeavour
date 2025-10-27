@@ -35,7 +35,7 @@ public record Value<T>(T value) implements Success<T> {
 
     public String toString()
     {
-        return new StringBuffer("Success").append("[")
+        return new StringBuilder("Success").append("[")
                                            .append(value)
                                            .append("]")
                                            .toString();

@@ -132,7 +132,10 @@ public class ResultTest
         @Order(60)
         void whenTransformingResultOnFailureThenReturnsExistingSuccess() throws Throwable
         {
-            var outcome = value.mapOnFailure(x -> Try.success(x.get() * 3));
+            var outcome = value.reduce(
+                success -> value,  // Return original result for success cases
+                failure -> Try.success(failure.get() * 3)
+            );
             assertSame(outcome, value, "Existing Success");
         }
 
@@ -269,7 +272,10 @@ public class ResultTest
         @Order(60)
         void whenTransformingResultOnFailureThenReturnsNewResult() throws Throwable
         {
-            var outcome = failure.mapOnFailure(x -> Try.failure());
+            var outcome = failure.reduce(
+                success -> Try.success(success),
+                failure -> Try.failure()
+            );
             assertNotSame(outcome, failure, "New Result");
         }
 

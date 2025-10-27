@@ -29,10 +29,6 @@ public sealed interface Success<T> extends Result<T> permits Value, NoValue {
         return transform.apply(get());
     }
 
-    default Result<T> mapOnFailure(ExceptionalFunction<Result<T>, Result<T>> transform)
-    {
-        return this;
-    }
 
 
 }

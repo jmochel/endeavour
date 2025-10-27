@@ -242,21 +242,6 @@ public sealed interface Result<T> permits Failure, Success
 
     Result<T> flatMap(ExceptionalFunction<T, Result<T>> mapping);
 
-    /**
-     * Returns a transformed outcome if this outcome is a failure
-     *
-     * @param failureTransform the function that creates a new outcome from the existing outcome. Not null.
-     *
-     * @return the existing outcome if not a failure, a new outcome otherwise.
-     *
-     * <p><h4>Example:</h4>
-     * {@snippet :
-     *   var newResult = outcome.ifFailureTransform(this::outcomeTransform);
-     * }
-     *
-     */
-
-    Result<T> mapOnFailure(@NonNull ExceptionalFunction<Result<T>, Result<T>> mapping);
 
 
 }

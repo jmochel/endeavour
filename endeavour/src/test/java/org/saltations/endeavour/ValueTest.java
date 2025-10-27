@@ -87,7 +87,10 @@ public class ValueTest
     @Order(60)
     void whenTransformingResultOnFailureThenReturnsExistingSuccess() throws Throwable
     {
-        var outcome = value.mapOnFailure(x -> Try.success(x.get() * 3));
+        var outcome = value.reduce(
+            success -> value,  // Return original result for success cases
+            failure -> Try.success(failure.get() * 3)
+        );
         assertSame(outcome, value, "Existing Success");
     }
 

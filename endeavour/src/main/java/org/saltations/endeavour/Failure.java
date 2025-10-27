@@ -87,11 +87,6 @@ public record Failure<T>(FailureDescription fail) implements Result<T>
         return this;
     }
 
-    @Override
-    public Result<T> mapOnFailure(ExceptionalFunction<Result<T>, Result<T>> transform)
-    {
-        return transform.apply(this);
-    }
 
 
     @Override

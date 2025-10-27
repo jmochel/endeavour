@@ -83,7 +83,10 @@ public class FailureTest
     @Order(60)
     void whenTransformingResultOnFailureThenReturnsNewResult() throws Throwable
     {
-        var outcome = failure.mapOnFailure(x -> Try.failure());
+        var outcome = failure.reduce(
+            success -> Try.success(success),
+            failure -> Try.failure()
+        );
         assertNotSame(outcome, failure, "New Result");
     }
 

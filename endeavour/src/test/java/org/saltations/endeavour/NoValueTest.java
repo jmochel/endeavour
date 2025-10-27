@@ -110,7 +110,10 @@ public class NoValueTest
     @Order(60)
     void whenTransformingResultOnFailureThenReturnsExistingSuccess() throws Throwable
     {
-        var outcome = noValue.mapOnFailure(x -> Try.success(x.get() * 3));
+        var outcome = noValue.reduce(
+            success -> noValue,  // Return original result for success cases
+            failure -> Try.success(failure.get() * 3)
+        );
         assertSame(outcome, noValue, "Existing Success");
     }
 

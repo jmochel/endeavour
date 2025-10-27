@@ -371,7 +371,7 @@ public class TryTest
 
     private Failure<?> assertResultIsFailure(Result<?> result)
     {
-        if (result instanceof Value<?>)
+        if (result instanceof QuantSuccess<?>)
         {
             fail("Result should be a Failure");
         }

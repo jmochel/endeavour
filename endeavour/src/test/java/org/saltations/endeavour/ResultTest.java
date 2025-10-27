@@ -41,7 +41,7 @@ public class ResultTest
         {
             var result = Try.attempt(() -> 1111L);
 
-            assertEquals(Value.class, result.getClass());
+            assertEquals(QuantSuccess.class, result.getClass());
             assertEquals(1111L, result.get(), "Success Value");
         }
 
@@ -51,7 +51,7 @@ public class ResultTest
         {
             var result = Try.attempt(() -> null);
 
-            assertEquals(NoValue.class, result.getClass());
+            assertEquals(QualSuccess.class, result.getClass());
             assertFalse(result.hasPayload());
         }
 
@@ -211,8 +211,8 @@ public class ResultTest
         {
             return switch (outcome)
             {
-                case Value<Long> out -> "Success with value";
-                case NoValue<Long> out -> "Success with no value";
+                case QuantSuccess<Long> out -> "Success with value";
+                case QualSuccess<Long> out -> "Success with no value";
                 case Failure<Long> out -> "Failure";
             };
         }
@@ -356,8 +356,8 @@ public class ResultTest
         {
             return switch (outcome)
             {
-                case Value<Long> out -> "Success with value";
-                case NoValue<Long> out -> "Success with no value";
+                case QuantSuccess<Long> out -> "Success with value";
+                case QualSuccess<Long> out -> "Success with no value";
                 case Failure<Long> out -> "Failure";
             };
         }

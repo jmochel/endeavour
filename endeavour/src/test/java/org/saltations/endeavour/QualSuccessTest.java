@@ -19,14 +19,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Validates the functionality of the individual outcome classes and how they are used
+ * Validates the functionality of the QualSuccess class and how it is used
  */
 
 @Order(10)
 @DisplayNameGeneration(ReplaceBDDCamelCase.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
-public class NoValueTest
+public class QualSuccessTest
 {
     private final Result<Long> noValue = Try.success(null);
 
@@ -34,7 +34,7 @@ public class NoValueTest
     @Order(1)
     void meetsContract() throws Throwable
     {
-        assertEquals(NoValue.class, noValue.getClass(), "NoValue");
+        assertEquals(QualSuccess.class, noValue.getClass(), "QualSuccess");
         assertEquals(null, noValue.get(), "Payload");
         assertFalse(noValue.hasPayload(), "Has Payload");
         assertEquals(Optional.empty(), noValue.opt(), "Empty Optional");
@@ -44,9 +44,9 @@ public class NoValueTest
     @Order(25)
     void whenMappingToNullThenReturnsNoValue() throws Throwable
     {
-        // NoValue.map() with null result should return NoValue
+        // QualSuccess.map() with null result should return QualSuccess
         var outcome = noValue.map(x -> null);
-        assertEquals(NoValue.class, outcome.getClass(), "Should return NoValue");
+        assertEquals(QualSuccess.class, outcome.getClass(), "Should return QualSuccess");
         assertNull(outcome.get(), "Should return null");
     }
 
@@ -62,10 +62,10 @@ public class NoValueTest
     @Order(35)
     void whenFlatMappingThenCallsMappingFunctionWithNull() throws Throwable
     {
-        // NoValue.flatMap() calls the mapping function with null (since NoValue.get() returns null)
+        // QualSuccess.flatMap() calls the mapping function with null (since QualSuccess.get() returns null)
         // The mapping function can ignore the null parameter and return whatever it wants
         var outcome1 = noValue.flatMap(x -> Try.success(777L));
-        assertEquals(Value.class, outcome1.getClass(), "Should return Value");
+        assertEquals(QuantSuccess.class, outcome1.getClass(), "Should return QuantSuccess");
         assertEquals(777L, outcome1.get(), "Should return the mapped value");
         
         var outcome2 = noValue.flatMap(x -> Try.failure());
@@ -77,7 +77,7 @@ public class NoValueTest
     void whenMappingPayloadOnSuccessToNonNullThenReturnsValueWithNewPayload() throws Throwable
     {
         var outcome = noValue.flatMap(x -> Try.success(777L));
-        assertEquals(Value.class, outcome.getClass(), "Value");
+        assertEquals(QuantSuccess.class, outcome.getClass(), "QuantSuccess");
         assertEquals(777L, outcome.get(), "Transformed Result");
     }
 
@@ -87,7 +87,7 @@ public class NoValueTest
     {
         var outcome = noValue.flatMap(x -> Try.success(null));
 
-        assertEquals(NoValue.class, outcome.getClass(), "NoValue");
+        assertEquals(QualSuccess.class, outcome.getClass(), "QualSuccess");
         assertEquals(null, outcome.get(), "Transformed Result");
     }
 
@@ -186,7 +186,7 @@ public class NoValueTest
     {
         var outcome = noValue.flatMap(x -> Try.success(null));
 
-        assertEquals(null, outcome.get(), "Mapped Result should be null for NoValue");
+        assertEquals(null, outcome.get(), "Mapped Result should be null for QualSuccess");
     }
 
     @Test
@@ -213,8 +213,8 @@ public class NoValueTest
     {
         return switch (outcome)
         {
-            case Value<Long> out -> "Success with value";
-            case NoValue<Long> out -> "Success with no value";
+            case QuantSuccess<Long> out -> "Success with value";
+            case QualSuccess<Long> out -> "Success with no value";
             case Failure<Long> out -> "Failure";
         };
     }

@@ -20,13 +20,13 @@ import lombok.NonNull;
  * It will not contain a success payload.
  * <p>
  * <h4>Success</h4>
- * A <code>Success</code> represents the successful completion of an operation. Successes may be either a {@code Value} (guaranteed to have a payload of type <V>)
- * or it will be a {@code NoValue} which is guaranteed not to have a payload of type <V> associated with it.
+ * A <code>Success</code> represents the successful completion of an operation. Successes may be either a {@code QuantSuccess} (guaranteed to have a payload of type <V>)
+ * or it will be a {@code QualSuccess} which is guaranteed not to have a payload of type <V> associated with it.
  * <p>
  *
  * <h4>IMPORTANT DESIGN NOTE:</h4>
  * 
- * <b></b> Both {@code Value<T>} and {@code NoValue<T>} are considered "successful" outcomes.
+ * <b></b> Both {@code QuantSuccess<T>} and {@code QualSuccess<T>} are considered "successful" outcomes.
  * The distinction is between operations that succeed with a value vs operations that succeed without producing a value
  * (e.g., void operations, deletions, updates). This design choice enables clean monadic operations where both success
  * cases are handled uniformly, while failures are handled separately. This is intentional and should not be flagged
@@ -34,8 +34,8 @@ import lombok.NonNull;
  * 
  * @param <T> Success payload type. Accessible in successes.
  *
- * @see Value
- * @see NoValue
+ * @see QuantSuccess
+ * @see QualSuccess
  * @see Failure
  * 
  * @author Jim Mochel
@@ -49,14 +49,7 @@ public sealed interface Result<T> permits Failure, Success
      * 
      * @return <em>true</em> if this outcome has a success payload,<em>false</em> otherwise.
      * 
-     * @implNote This method is intentionally designed to return <em>true</em> for both {@code Value} and {@code NoValue} instances.
-     * This is a deliberate design choice to distinguish between operations that succeed with a value vs operations that succeed without producing a value (e.g., void operations, deletions, updates). 
-     * This design choice enables clean monadic operations where both success cases are handled uniformly, while failures are handled separately. 
-     * This is intentional and should not be flagged as an issue in code reviews.
-     *
-     * @return <em>true</em> if this outcome has a success payload,<em>false</em> otherwise.
-     * 
-     * @implNote This method is intentionally designed to return <em>true</em> for both {@code Value} and {@code NoValue} instances.
+     * @implNote This method is intentionally designed to return <em>true</em> for both {@code QuantSuccess} and {@code QualSuccess} instances.
      */
 
     boolean hasPayload();
@@ -64,7 +57,7 @@ public sealed interface Result<T> permits Failure, Success
     /**
      * Returns the payload if this outcome has one.
      *
-     * @return payload associated with the success if a {@code Value}, a null if the result is {@code NoValue}, 
+     * @return payload associated with the success if a {@code QuantSuccess}, a null if the result is {@code QualSuccess}, 
      *         throws {@code IllegalStateException} if the result is a {@code Failure}.
      * 
      * @throws IllegalStateException if called on a {@code Failure}
@@ -80,16 +73,16 @@ public sealed interface Result<T> permits Failure, Success
     T get();
 
     /**
-     * Returns an {@code Optional} containing the success payload if this outcome is a {@code Value}, otherwise returns an empty {@code Optional}.
+     * Returns an {@code Optional} containing the success payload if this outcome is a {@code QuantSuccess}, otherwise returns an empty {@code Optional}.
      *
-     * @return {@code Optional} containing the success payload if this outcome is a {@code Value}, otherwise an empty {@code Optional}.
+     * @return {@code Optional} containing the success payload if this outcome is a {@code QuantSuccess}, otherwise an empty {@code Optional}.
      */
 
     default Optional<T> opt()
     {
         return switch (this) {
-            case Value<T> value -> Optional.of(value.get());
-            case NoValue<T> noValue -> Optional.empty();
+            case QuantSuccess<T> value -> Optional.of(value.get());
+            case QualSuccess<T> qualSuccess -> Optional.empty();
             case Failure<T> failure -> throw new IllegalStateException("Cannot get optional from a failure: " + failure.getTitle() + " - " + failure.getDetail());
         };
     }
@@ -124,7 +117,7 @@ public sealed interface Result<T> permits Failure, Success
      * - For Success: applies the success function to the contained value
      * - For Failure: applies the failure function to the failure details
      *
-     * @param onSuccess function to apply when this is a success (including NoValue cases)
+     * @param onSuccess function to apply when this is a success (including QualSuccess cases)
      * @param onFailure function to apply when this is a failure
      * 
      * @param <V> the type of the value to reduce to
@@ -135,8 +128,8 @@ public sealed interface Result<T> permits Failure, Success
     default <V> V reduce(@NonNull Function<T, V> onSuccess, @NonNull Function<Failure<T>, V> onFailure)
     {
         return switch (this) {
-            case Value<T> value -> onSuccess.apply(value.get());
-            case NoValue<T> noValue -> onSuccess.apply(null);
+            case QuantSuccess<T> value -> onSuccess.apply(value.get());
+            case QualSuccess<T> qualSuccess -> onSuccess.apply(null);
             case Failure<T> failure -> onFailure.apply(failure);
         };
     }

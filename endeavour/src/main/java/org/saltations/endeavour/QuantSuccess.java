@@ -3,7 +3,14 @@ package org.saltations.endeavour;
 import java.util.Objects;
 import java.util.function.Function;
 
-public record Value<T>(T value) implements Success<T> {
+/**
+ * Represents a successful operation that produced a quantified result value.
+ * This is the concrete implementation of {@link Success} for cases where
+ * the operation succeeded and produced a meaningful value.
+ *
+ * @param <T> the type of the successful result value
+ */
+public record QuantSuccess<T>(T value) implements Success<T> {
 
     @Override
     public boolean hasPayload()
@@ -20,11 +27,11 @@ public record Value<T>(T value) implements Success<T> {
     @Override
     public <U> Result<U> map(Function<T, U> mapping)
     {
-        // If the mapping transforms a payload into a null, we are returning a NoValue of an appropriate type,
-        // otherwise we are returning a Value with the new payload
+        // If the mapping transforms a payload into a null, we are returning a QualSuccess of an appropriate type,
+        // otherwise we are returning a QuantSuccess with the new payload
 
         var newValue = mapping.apply(get());
-        return Objects.isNull(newValue) ? new NoValue<U>() : new Value<U>(newValue);
+        return Objects.isNull(newValue) ? new QualSuccess<U>() : new QuantSuccess<U>(newValue);
     }
 
     @Override

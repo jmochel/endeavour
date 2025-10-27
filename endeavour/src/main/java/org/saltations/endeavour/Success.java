@@ -1,6 +1,13 @@
 package org.saltations.endeavour;
 
-public sealed interface Success<T> extends Result<T> permits Value, NoValue {
+/**
+ * Represents a successful operation result. This interface is implemented by
+ * {@link QuantSuccess} (for operations that produced a value) and {@link QualSuccess}
+ * (for operations that succeeded but produced no value).
+ *
+ * @param <T> the type of the successful result
+ */
+public sealed interface Success<T> extends Result<T> permits QuantSuccess, QualSuccess {
 
 
     default Result<T> ifSuccess(ExceptionalConsumer<Success<T>> action)

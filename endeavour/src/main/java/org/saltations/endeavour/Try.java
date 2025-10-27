@@ -19,7 +19,7 @@ public class Try
      *
      * @param supplier function that supplies a new value. <b>Not null</b>.
      *
-     * @return populated {@code Value} if supplier provides a non null value, {@code NoValue} 
+     * @return populated {@code QuantSuccess} if supplier provides a non null value, {@code QualSuccess} 
      * if supplier provides a null value, or {@code Failure} if supplier throws an exception.
      *
      * @param <T> Type of the supplied value
@@ -33,7 +33,7 @@ public class Try
          {
              var value = supplier.get();
              
-             return Objects.isNull(value) ? new NoValue<>() : new Value<>(value);
+             return Objects.isNull(value) ? new QualSuccess<>() : new QuantSuccess<>(value);
          }
          catch (Exception e)
          {
@@ -59,7 +59,7 @@ public class Try
 
     public static Result<Boolean> success()
     {
-        return new Value<>(Boolean.TRUE);
+        return new QuantSuccess<>(Boolean.TRUE);
     }
 
     /**
@@ -69,7 +69,7 @@ public class Try
      * 
      * @param <T> class of the contained success value
      *
-     * @return a {@code Value} with payload or {@code NoValue} if the value is {@code null}
+     * @return a {@code QuantSuccess} with payload or {@code QualSuccess} if the value is {@code null}
      *
      * <p>
      * <b>Example:</b>
@@ -82,7 +82,7 @@ public class Try
 
     public static <T> Result<T> success(T value)
     {
-        return Objects.nonNull(value) ? new Value<>(value) : new NoValue<>();
+        return Objects.nonNull(value) ? new QuantSuccess<>(value) : new QualSuccess<>();
     }
 
     /**

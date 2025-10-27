@@ -60,8 +60,6 @@ public class FailureTest
         assertSame(outcome, failure, "Same failure");
     }
 
-
-
     @Test
     @Order(40)
     void whenTakingActionOnSuccessThenDoesNotTakeAction()
@@ -167,8 +165,8 @@ public class FailureTest
     {
         return switch (outcome)
         {
-            case Value<Long> out -> "Success with value";
-            case NoValue<Long> out -> "Success with no value";
+            case QuantSuccess<Long> out -> "Success with value";
+            case QualSuccess<Long> out -> "Success with no value";
             case Failure<Long> out -> "Failure";
         };
     }

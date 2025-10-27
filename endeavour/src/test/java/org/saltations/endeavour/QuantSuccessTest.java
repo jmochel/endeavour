@@ -19,14 +19,14 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Validates the functionality of the individual outcome classes and how they are used
+ * Validates the functionality of the QuantSuccess class and how it is used
  */
 
 @Order(10)
 @DisplayNameGeneration(ReplaceBDDCamelCase.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
-public class ValueTest
+public class QuantSuccessTest
 {
     private final Result<Long> value = Try.success(1111L);
  
@@ -35,7 +35,7 @@ public class ValueTest
     @Order(1)
     void meetsContract() throws Throwable
     {
-        assertEquals(Value.class, value.getClass(), "Value");
+        assertEquals(QuantSuccess.class, value.getClass(), "QuantSuccess");
         assertEquals(1111L, value.get(), "Payload");
         assertTrue(value.hasPayload(), "Has Payload");
         assertEquals(Optional.of(1111L), value.opt(), "Optional");
@@ -45,9 +45,9 @@ public class ValueTest
     @Order(25)
     void whenMappingToNullThenReturnsNoValue() throws Throwable
     {
-        // Value.map() with null result should return NoValue
+        // QuantSuccess.map() with null result should return QualSuccess
         var outcome = value.map(x -> null);
-        assertEquals(NoValue.class, outcome.getClass(), "Should return NoValue");
+        assertEquals(QualSuccess.class, outcome.getClass(), "Should return QualSuccess");
         assertNull(outcome.get(), "Should return null");
     }
 
@@ -63,9 +63,9 @@ public class ValueTest
     @Order(35)
     void whenFlatMappingThenCallsMappingFunctionWithValue() throws Throwable
     {
-        // Value.flatMap() calls mapping.apply(value) and returns the result
+        // QuantSuccess.flatMap() calls mapping.apply(value) and returns the result
         var outcome1 = value.flatMap(x -> Try.success(x * 2));
-        assertEquals(Value.class, outcome1.getClass(), "Should return Value");
+        assertEquals(QuantSuccess.class, outcome1.getClass(), "Should return QuantSuccess");
         assertEquals(2222L, outcome1.get(), "Should return doubled value");
         
         var outcome2 = value.flatMap(x -> Try.failure());
@@ -78,7 +78,7 @@ public class ValueTest
     {
         var outcome = value.flatMap(x -> Try.success(x * 3));
 
-        assertEquals(Value.class, outcome.getClass(), "Must be a Value");
+        assertEquals(QuantSuccess.class, outcome.getClass(), "Must be a QuantSuccess");
         assertEquals(3333L, outcome.get(), "Transformed Result");
     }
    
@@ -198,8 +198,8 @@ public class ValueTest
     {
         return switch (outcome)
         {
-            case Value<Long> out -> "Success with value";
-            case NoValue<Long> out -> "Success with no value";
+            case QuantSuccess<Long> out -> "Success with value";
+            case QualSuccess<Long> out -> "Success with no value";
             case Failure<Long> out -> "Failure";
         };
     }

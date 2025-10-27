@@ -47,7 +47,7 @@ public class FailureTest
     @Order(30)
     void whenMappingPayloadToNewPayloadOnSuccessThenReturnsTheExistingFailure()
     {
-        var outcome = failure.mapOnSuccess(x -> Try.success(x * 3));
+        var outcome = failure.flatMapOnSuccess(x -> Try.success(x * 3));
         assertEquals(Failure.class, outcome.getClass(), "Failure");
         assertSame(outcome, failure, "Same failure");
     }
@@ -56,7 +56,7 @@ public class FailureTest
     @Order(20)
     void whenSupplyingResultOnSuccessThenReturnsTheExistingFailure() throws Throwable
     {
-        var outcome = failure.supplyOnSuccess(() -> Try.success(2222L));
+        var outcome = failure.orElse(() -> Try.success(2222L));
         assertSame(outcome, failure, "Same failure");
     }
 
@@ -67,7 +67,7 @@ public class FailureTest
     void whenTakingActionOnSuccessThenDoesNotTakeAction()
     {
         final AtomicBoolean applied = new AtomicBoolean(false);
-        failure.actOnSuccess(x -> applied.getAndSet(true));
+        failure.ifSuccess(x -> applied.getAndSet(true));
         assertFalse(applied.get(), "Action taken");
     }
 
@@ -75,7 +75,7 @@ public class FailureTest
     @Order(50)
     void whenSupplyingValueOnFailureThenReturnsNewResult() throws Throwable
     {
-        var outcome = failure.supplyOnFailure(() -> Try.success(2222L));
+        var outcome = failure.orElseGet(() -> Try.success(2222L));
         assertEquals(2222L, outcome.get(),"New Result");
     }
 
@@ -92,7 +92,7 @@ public class FailureTest
     void whenTakingActionOnFailureThenTakesAction()
     {
         final AtomicBoolean applied = new AtomicBoolean(false);
-        failure.actOnFailure(x -> applied.getAndSet(true));
+        failure.ifFailure(x -> applied.getAndSet(true));
         assertTrue(applied.get(), "Action taken");
     }
 
@@ -101,7 +101,7 @@ public class FailureTest
     void whenTakingActionOnFailureThenTakesActionThatThrowsException()
     {
         final AtomicBoolean applied = new AtomicBoolean(false);
-        assertThrows(IllegalArgumentException.class, () -> failure.actOnFailure(x -> {throw new IllegalArgumentException("Test"); }));
+        assertThrows(IllegalArgumentException.class, () -> failure.ifFailure(x -> {throw new IllegalArgumentException("Test"); }));
     }
 
     @Test

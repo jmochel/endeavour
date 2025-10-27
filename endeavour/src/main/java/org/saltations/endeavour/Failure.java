@@ -56,33 +56,33 @@ public record Failure<T>(FailureDescription fail) implements Result<T>
     }
 
     @Override
-    public Result<T> actOnSuccess(ExceptionalConsumer<Success<T>> action)
+    public Result<T> ifSuccess(ExceptionalConsumer<Success<T>> action)
     {
         // Do Nothing
         return this;    
     }
 
     @Override
-    public Result<T> actOnFailure(ExceptionalConsumer<Failure<T>> action)
+    public Result<T> ifFailure(ExceptionalConsumer<Failure<T>> action)
     {
         action.accept(this);
         return this;
     }
 
     @Override
-    public Result<T> supplyOnSuccess(ExceptionalSupplier<Result<T>> supplier)
+    public Result<T> orElse(ExceptionalSupplier<Result<T>> supplier)
     {
         return this;
     }
 
     @Override
-    public Result<T> supplyOnFailure(ExceptionalSupplier<Result<T>> supplier)
+    public Result<T> orElseGet(ExceptionalSupplier<Result<T>> supplier)
     {
         return supplier.get();
     }
 
     @Override
-    public Result<T> mapOnSuccess(ExceptionalFunction<T, Result<T>> transform)
+    public Result<T> flatMapOnSuccess(ExceptionalFunction<T, Result<T>> transform)
     {
         return this;
     }

@@ -19,6 +19,12 @@ public record NoValue<T>() implements Success<T> {
     }
 
     @Override
+    public T get()
+    {
+        return null;
+    }
+
+    @Override
     public <U> Result<U> map(Function<T, U> mapping)
     {
         // If the mapping transforms a null into a payload, we are returning a Value of an appropriate type,

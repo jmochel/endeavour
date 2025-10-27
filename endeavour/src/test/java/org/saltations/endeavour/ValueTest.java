@@ -43,7 +43,7 @@ public class ValueTest
     @Order(20)
     void whenSupplyingResultOnSuccessThenReturnsSuppliersPayload() throws Throwable
     {
-        var outcome = value.supplyOnSuccess(() -> Try.success(2222L));
+        var outcome = value.orElse(() -> Try.success(2222L));
         assertEquals(2222L, outcome.get(), "Success Value");
     }
 
@@ -51,7 +51,7 @@ public class ValueTest
     @Order(30)
     void whenMappingPayloadToNewPayloadOnSuccessThenReturnsNewValue() throws Throwable
     {
-        var outcome = value.mapOnSuccess(x -> Try.success(x * 3));
+        var outcome = value.flatMapOnSuccess(x -> Try.success(x * 3));
 
         assertEquals(Value.class, outcome.getClass(), "Must be a Value");
         assertEquals(3333L, outcome.get(), "Transformed Result");
@@ -61,7 +61,7 @@ public class ValueTest
     @Order(32)
     void whenMappingPayloadOnSuccessToNullThenReturnsNoValue() throws Throwable
     {
-        var outcome = value.mapOnSuccess(x -> Try.failure());
+        var outcome = value.flatMapOnSuccess(x -> Try.failure());
     }
 
     @Test
@@ -70,7 +70,7 @@ public class ValueTest
     {
         final AtomicBoolean applied = new AtomicBoolean(false);
 
-        value.actOnSuccess(x -> applied.getAndSet(true));
+        value.ifSuccess(x -> applied.getAndSet(true));
         assertTrue(applied.get(), "Action taken");
     }
 
@@ -79,7 +79,7 @@ public class ValueTest
     @Order(50)
     void whenSupplyingResultOnFailureThenReturnsExistingSuccess() throws Throwable
     {
-        var outcome = value.supplyOnFailure(() -> Try.success(2222L));
+        var outcome = value.orElseGet(() -> Try.success(2222L));
         assertSame(outcome, value, "Existing Success");
     }
 
@@ -98,7 +98,7 @@ public class ValueTest
     {
         final AtomicBoolean applied = new AtomicBoolean(false);
 
-        value.actOnFailure(x -> applied.getAndSet(true));
+        value.ifFailure(x -> applied.getAndSet(true));
         assertFalse(applied.get(), "Action taken");
     }
 

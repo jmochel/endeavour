@@ -44,7 +44,7 @@ public class NoValueTest
     @Order(20)
     void whenSupplyingResultOnSuccessThenReturnsSuppliedResult() throws Throwable
     {
-        var outcome = noValue.supplyOnSuccess(() -> Try.success(2222L));
+        var outcome = noValue.orElse(() -> Try.success(2222L));
         assertEquals(2222L, outcome.get(), "Success Value");
     }
 
@@ -52,7 +52,7 @@ public class NoValueTest
     @Order(30)
     void whenMappingPayloadOnSuccessToNonNullThenReturnsValueWithNewPayload() throws Throwable
     {
-        var outcome = noValue.mapOnSuccess(x -> Try.success(777L));
+        var outcome = noValue.flatMapOnSuccess(x -> Try.success(777L));
         assertEquals(Value.class, outcome.getClass(), "Value");
         assertEquals(777L, outcome.get(), "Transformed Result");
     }
@@ -61,7 +61,7 @@ public class NoValueTest
     @Order(31)
     void whenMappingPayloadOnSuccessToNullThenReturnsNoValue() throws Throwable
     {
-        var outcome = noValue.mapOnSuccess(x -> Try.success(null));
+        var outcome = noValue.flatMapOnSuccess(x -> Try.success(null));
 
         assertEquals(NoValue.class, outcome.getClass(), "NoValue");
         assertEquals(null, outcome.get(), "Transformed Result");
@@ -72,7 +72,7 @@ public class NoValueTest
     void whenMappingPayloadOnSuccessThrowExceptionThenReturnsFailure() throws Throwable
     {
         assertThrows(RuntimeException.class, () -> {
-            noValue.mapOnSuccess(x -> { throw new RuntimeException("Test Exception"); });
+            noValue.flatMapOnSuccess(x -> { throw new RuntimeException("Test Exception"); });
         });
     }
 
@@ -81,7 +81,7 @@ public class NoValueTest
     @Order(32)
     void whenTransformingResultOnSuccessThenReturnsTransformedResultToNewFailure() throws Throwable
     {
-        var outcome = noValue.mapOnSuccess(x -> Try.failure());
+        var outcome = noValue.flatMapOnSuccess(x -> Try.failure());
 
         assertEquals(Failure.class, outcome.getClass(), "Failure");
         assertThrows(IllegalStateException.class, () -> outcome.get(), "Should throw exception");
@@ -93,7 +93,7 @@ public class NoValueTest
     {
         final AtomicBoolean applied = new AtomicBoolean(false);
 
-        noValue.actOnSuccess(x -> applied.getAndSet(true));
+        noValue.ifSuccess(x -> applied.getAndSet(true));
         assertTrue(applied.get(), "Action taken");
     }
 
@@ -102,7 +102,7 @@ public class NoValueTest
     @Order(50)
     void whenSupplyingResultOnFailureThenReturnsExistingSuccess() throws Throwable
     {
-        var outcome = noValue.supplyOnFailure(() -> Try.success(2222L));
+        var outcome = noValue.orElseGet(() -> Try.success(2222L));
         assertSame(outcome, noValue, "Existing Success");
     }
 
@@ -121,7 +121,7 @@ public class NoValueTest
     {
         final AtomicBoolean applied = new AtomicBoolean(false);
 
-        noValue.actOnFailure(x -> applied.getAndSet(true));
+        noValue.ifFailure(x -> applied.getAndSet(true));
         assertFalse(applied.get(), "Action taken");
     }
 

@@ -49,10 +49,10 @@ public sealed interface Result<T> permits Failure, Success
     /**
      * Returns the payload if this outcome has one.
      *
-     * @return payload associated with the success if a {@code Value}, a null if the result is {@code NoValue} or {@code Failure}.
+     * @return payload associated with the success if a {@code Value}, a null if the result is {@code NoValue}, 
+     *         throws {@code IllegalStateException} if the result is a {@code Failure}.
      * 
-     * @implNote :
-     * This method must return null rather than throwing an exception when a value is not available.
+     * @throws IllegalStateException if called on a {@code Failure}
      *
      * <p>
      * <b>Example:</b>
@@ -62,10 +62,7 @@ public sealed interface Result<T> permits Failure, Success
      * </pre>
      */
 
-    default T get()
-    {
-        return null;
-    }
+    T get();
 
     /**
      * Returns an {@code Optional} containing the success payload if this outcome is a {@code Value}, otherwise returns an empty {@code Optional}.
@@ -75,7 +72,11 @@ public sealed interface Result<T> permits Failure, Success
 
     default Optional<T> opt()
     {
-        return Optional.ofNullable(get());
+        return switch (this) {
+            case Value<T> value -> Optional.of(value.get());
+            case NoValue<T> noValue -> Optional.empty();
+            case Failure<T> failure -> throw new IllegalStateException("Cannot get optional from a failure: " + failure.getTitle() + " - " + failure.getDetail());
+        };
     }
 
     /**
@@ -148,11 +149,11 @@ public sealed interface Result<T> permits Failure, Success
      *
      * <p><b>Example:</b>
      * {@snippet :
-     *   var newResult = outcome.actOnSuccess(x -> log.info("{}", x.get()));
+     *   var newResult = outcome.ifSuccess(x -> log.info("{}", x.get()));
      * }
      */
 
-     Result<T> actOnSuccess(ExceptionalConsumer<Success<T>> action);
+     Result<T> ifSuccess(ExceptionalConsumer<Success<T>> action);
 
     /**
      * Executes action if this outcome is a failure, takes no action otherwise.
@@ -161,11 +162,11 @@ public sealed interface Result<T> permits Failure, Success
      *
      * <p><b>Example:</b>
      * {@snippet :
-     *   var newResult = outcome.actOnFailure(x -> log.info("{}", x.get()));
+     *   var newResult = outcome.ifFailure(x -> log.info("{}", x.get()));
      * }
      */
 
-     Result<T> actOnFailure(@NonNull ExceptionalConsumer<Failure<T>> action);
+     Result<T> ifFailure(@NonNull ExceptionalConsumer<Failure<T>> action);
 
     /**
      * Supplies a new outcome from existing success, otherwise returns the existing outcome.
@@ -181,7 +182,7 @@ public sealed interface Result<T> permits Failure, Success
      * }
      */
 
-    Result<T> supplyOnSuccess(ExceptionalSupplier<Result<T>> supplier);
+    Result<T> orElse(ExceptionalSupplier<Result<T>> supplier);
 
     /**
      * Returns the supplied outcome if this outcome is a failure, otherwise returns the existing outcome.
@@ -196,7 +197,7 @@ public sealed interface Result<T> permits Failure, Success
      * }
      */
 
-     Result<T> supplyOnFailure(ExceptionalSupplier<Result<T>> supplier);
+     Result<T> orElseGet(ExceptionalSupplier<Result<T>> supplier);
 
     /**
      * If this outcome is a success transform to a new outcome
@@ -212,7 +213,7 @@ public sealed interface Result<T> permits Failure, Success
      *
      */
 
-    Result<T> mapOnSuccess(ExceptionalFunction<T, Result<T>> mapping);
+    Result<T> flatMapOnSuccess(ExceptionalFunction<T, Result<T>> mapping);
 
     /**
      * Returns a transformed outcome if this outcome is a failure

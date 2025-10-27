@@ -89,7 +89,9 @@ public class FailureDescription
     public enum GenericFailureType implements FailureType 
     {
         GENERIC("generic-failure", ""),
-        GENERIC_EXCEPTION("generic-exception-failure", "")
+        GENERIC_EXCEPTION("generic-checked-exception-failure", ""),
+        GENERIC_INTERRUPTED_EXCEPTION("generic-interrupted-exception-failure", ""),
+        GENERIC_RUNTIME_EXCEPTION("generic-runtime-exception-failure", "")
         ;
 
         private final String title;

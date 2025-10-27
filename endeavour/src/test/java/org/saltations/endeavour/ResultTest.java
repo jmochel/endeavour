@@ -33,11 +33,11 @@ public class ResultTest
     @Nested
     @Order(1)
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-    class Attempting {
+    class Attempt {
 
         @Test
         @Order(1)
-        void whenAttemptProvidesValueThenReturnsValue()
+        void whenValueProvidedThenReturnsQuantSuccessWithThatValue()
         {
             var result = Try.attempt(() -> 1111L);
 
@@ -47,7 +47,7 @@ public class ResultTest
 
         @Test
         @Order(2)
-        void whenAttemptProvidesNullThenReturnsNoValue()
+        void whenSupplierProvidesNullThenReturnsQualSuccess()
         {
             var result = Try.attempt(() -> null);
 
@@ -57,15 +57,55 @@ public class ResultTest
 
         @Test
         @Order(3)
-        void whenAttemptThrowsExceptionThenReturnsFailure()
+        void whenSupplierThrowsCheckedExceptionThenReturnsFailure()
         {
             var result = Try.attempt(() -> {throw new Exception("Test");});
             assertFalse(result.hasPayload());
+            assertEquals(Failure.class, result.getClass());
+            
+            // Verify the failure type
+            if (result instanceof Failure<?> failure) {
+                assertEquals(FailureDescription.GenericFailureType.GENERIC_EXCEPTION, failure.getType());
+            }
         }
 
         @Test
         @Order(4)
-        void whenAttemptIsNullThenReturnsFailure()
+        void whenSupplierThrowsRuntimeExceptionThenReturnsFailure()
+        {
+            var result = Try.attempt(() -> {throw new RuntimeException("Test");});
+            assertFalse(result.hasPayload());
+            assertEquals(Failure.class, result.getClass());
+            
+            // Verify the failure type
+            if (result instanceof Failure<?> failure) {
+                assertEquals(FailureDescription.GenericFailureType.GENERIC_RUNTIME_EXCEPTION, failure.getType());
+            }
+        }
+
+        @Test
+        @Order(5)
+        void whenSupplierThrowsInterruptedExceptionThenReturnsFailureAndRestoresInterrupt()
+        {
+            var result = Try.attempt(() -> {throw new InterruptedException("Interrupted");});
+            assertFalse(result.hasPayload());
+            assertEquals(Failure.class, result.getClass());
+            
+            // Verify the failure type
+            if (result instanceof Failure<?> failure) {
+                assertEquals(FailureDescription.GenericFailureType.GENERIC_INTERRUPTED_EXCEPTION, failure.getType());
+            }
+            
+            // Verify interrupt flag was restored
+            assertTrue(Thread.currentThread().isInterrupted());
+            
+            // Clear interrupt flag for other tests
+            Thread.interrupted();
+        }
+
+        @Test
+        @Order(6)
+        void whenCheckedSupplierIsNullThenThrowsNullPointerException()
         {
             assertThrows(NullPointerException.class, () -> Try.attempt(null));
         }
@@ -74,7 +114,7 @@ public class ResultTest
     @Nested
     @Order(2)
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-    class GivenValue {
+    class GivenQuantitativeSuccess {
 
         private final Result<Long> value = Try.success(1111L);
 
@@ -90,7 +130,7 @@ public class ResultTest
         @Order(20)
         void whenSupplyingResultOnSuccessThenReturnsSuppliedPayload() throws Throwable
         {
-            var outcome = value.orElse(() -> Try.success(2222L));
+            var outcome = value.orElse((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
             assertEquals(2222L, outcome.get(), "Success Value");
         }
 
@@ -124,7 +164,7 @@ public class ResultTest
         @Order(50)
         void whenSupplyingResultOnFailureThenReturnsExistingSuccess() throws Throwable
         {
-            var outcome = value.orElseGet(() -> Try.success(2222L));
+            var outcome = value.orElseGet((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
             assertSame(outcome, value, "Existing Success");
         }
 
@@ -239,7 +279,7 @@ public class ResultTest
         @Order(20)
         void whenSupplyingResultOnSuccessThenReturnsTheExistingFailure() throws Throwable
         {
-            var outcome = failure.orElse(() -> Try.success(2222L));
+            var outcome = failure.orElse((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
             assertSame(outcome, failure, "Same failure");
         }
 
@@ -264,7 +304,7 @@ public class ResultTest
         @Order(50)
         void whenSupplyingValueOnFailureThenReturnsNewResult() throws Throwable
         {
-            var outcome = failure.orElseGet(() -> Try.success(2222L));
+            var outcome = failure.orElseGet((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
             assertEquals(2222L, outcome.get(),"New Result");
         }
 
@@ -453,6 +493,274 @@ public class ResultTest
         @Order(10)
         void whenCreatingNewInstanceThenSucceeds() {
             new Try();
+        }
+    }
+
+    @Nested
+    @Order(9)
+    @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+    class CheckedSupplierMethodsTest {
+        
+        @Nested
+        @Order(1)
+        @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+        class givenSuccessWithCheckedSupplier {
+            
+            private final Result<Long> success = Try.success(1111L);
+            
+            @Test
+            @Order(10)
+            void whenOrElseWithCheckedSupplierThenReturnsSuppliedResult() {
+                // Given a success and a CheckedSupplier that returns a new result
+                CheckedSupplier<Result<Long>> supplier = () -> Try.success(2222L);
+                
+                // When calling orElse with the CheckedSupplier
+                var result = success.orElse((CheckedSupplier<Result<Long>>) supplier);
+                
+                // Then the result should be the supplied result
+                assertEquals(2222L, result.get());
+                assertEquals(QuantSuccess.class, result.getClass());
+            }
+            
+            @Test
+            @Order(20)
+            void whenOrElseWithCheckedSupplierThatThrowsThenReturnsFailure() {
+                // Given a success and a CheckedSupplier that throws an exception
+                CheckedSupplier<Result<Long>> supplier = () -> {
+                    throw new Exception("CheckedSupplier failed");
+                };
+                
+                // When calling orElse with the CheckedSupplier
+                var result = success.orElse((CheckedSupplier<Result<Long>>) supplier);
+                
+                // Then the result should be a failure
+                assertEquals(Failure.class, result.getClass());
+                assertFalse(result.hasPayload());
+            }
+            
+            @Test
+            @Order(30)
+            void whenOrElseGetWithCheckedSupplierThenReturnsOriginalSuccess() {
+                // Given a success and a CheckedSupplier
+                CheckedSupplier<Result<Long>> supplier = () -> Try.success(2222L);
+                
+                // When calling orElseGet with the CheckedSupplier
+                var result = success.orElseGet((CheckedSupplier<Result<Long>>) supplier);
+                
+                // Then the result should be the original success (supplier not called)
+                assertSame(result, success);
+                assertEquals(1111L, result.get());
+            }
+            
+            @Test
+            @Order(40)
+            void whenOrElseWithNullCheckedSupplierThenThrowsException() {
+                // Given a success and a null CheckedSupplier
+                CheckedSupplier<Result<Long>> supplier = null;
+                
+                // When calling orElse with null supplier
+                // Then it should throw NullPointerException
+                assertThrows(NullPointerException.class, () -> success.orElse(supplier));
+            }
+            
+            @Test
+            @Order(50)
+            void whenOrElseGetWithNullCheckedSupplierThenThrowsException() {
+                // Given a success and a null CheckedSupplier
+                CheckedSupplier<Result<Long>> supplier = null;
+                
+                // When calling orElseGet with null supplier
+                // Then it should throw NullPointerException
+                assertThrows(NullPointerException.class, () -> success.orElseGet(supplier));
+            }
+        }
+        
+        @Nested
+        @Order(2)
+        @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+        class GivenQualSuccessWithCheckedSupplier {
+            
+            private final Result<Long> qualSuccess = Try.success(null);
+            
+            @Test
+            @Order(10)
+            void whenOrElseWithCheckedSupplierThenReturnsSuppliedResult() {
+                // Given a QualSuccess and a CheckedSupplier that returns a new result
+                CheckedSupplier<Result<Long>> supplier = () -> Try.success(2222L);
+                
+                // When calling orElse with the CheckedSupplier
+                var result = qualSuccess.orElse(supplier);
+                
+                // Then the result should be the supplied result
+                assertEquals(2222L, result.get());
+                assertEquals(QuantSuccess.class, result.getClass());
+            }
+            
+            @Test
+            @Order(20)
+            void whenOrElseGetWithCheckedSupplierThenReturnsOriginalQualSuccess() {
+                // Given a QualSuccess and a CheckedSupplier
+                CheckedSupplier<Result<Long>> supplier = () -> Try.success(2222L);
+                
+                // When calling orElseGet with the CheckedSupplier
+                var result = qualSuccess.orElseGet(supplier);
+                
+                // Then the result should be the original QualSuccess (supplier not called)
+                assertSame(result, qualSuccess);
+                assertEquals(QualSuccess.class, result.getClass());
+            }
+        }
+        
+        @Nested
+        @Order(3)
+        @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+        class GivenFailureWithCheckedSupplier {
+            
+            private final Result<Long> failure = Try.failure();
+            
+            @Test
+            @Order(10)
+            void whenOrElseWithCheckedSupplierThenReturnsOriginalFailure() {
+                // Given a failure and a CheckedSupplier
+                CheckedSupplier<Result<Long>> supplier = () -> Try.success(2222L);
+                
+                // When calling orElse with the CheckedSupplier
+                var result = failure.orElse(supplier);
+                
+                // Then the result should be the original failure (supplier not called)
+                assertSame(result, failure);
+                assertEquals(Failure.class, result.getClass());
+            }
+            
+            @Test
+            @Order(20)
+            void whenOrElseGetWithCheckedSupplierThenReturnsSuppliedResult() {
+                // Given a failure and a CheckedSupplier that returns a new result
+                CheckedSupplier<Result<Long>> supplier = () -> Try.success(2222L);
+                
+                // When calling orElseGet with the CheckedSupplier
+                var result = failure.orElseGet(supplier);
+                
+                // Then the result should be the supplied result
+                assertEquals(2222L, result.get());
+                assertEquals(QuantSuccess.class, result.getClass());
+            }
+            
+            @Test
+            @Order(30)
+            void whenOrElseGetWithCheckedSupplierThatThrowsThenReturnsFailure() {
+                // Given a failure and a CheckedSupplier that throws an exception
+                CheckedSupplier<Result<Long>> supplier = () -> {
+                    throw new Exception("CheckedSupplier failed");
+                };
+                
+                // When calling orElseGet with the CheckedSupplier
+                var result = failure.orElseGet(supplier);
+                
+                // Then the result should be a failure
+                assertEquals(Failure.class, result.getClass());
+                assertFalse(result.hasPayload());
+            }
+            
+            @Test
+            @Order(40)
+            void whenOrElseWithNullCheckedSupplierThenThrowsException() {
+                // Given a failure and a null CheckedSupplier
+                CheckedSupplier<Result<Long>> supplier = null;
+                
+                // When calling orElse with null supplier
+                // Then it should throw NullPointerException
+                assertThrows(NullPointerException.class, () -> failure.orElse(supplier));
+            }
+            
+            @Test
+            @Order(50)
+            void whenOrElseGetWithNullCheckedSupplierThenThrowsException() {
+                // Given a failure and a null CheckedSupplier
+                CheckedSupplier<Result<Long>> supplier = null;
+                
+                // When calling orElseGet with null supplier
+                // Then it should throw NullPointerException
+                assertThrows(NullPointerException.class, () -> failure.orElseGet(supplier));
+            }
+        }
+        
+        @Nested
+        @Order(4)
+        @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+        class CheckedSupplierExceptionHandling {
+            
+            @Test
+            @Order(10)
+            void whenCheckedSupplierThrowsRuntimeExceptionThenReturnsFailure() {
+                // Given a success and a CheckedSupplier that throws RuntimeException
+                var success = Try.success(1111L);
+                CheckedSupplier<Result<Long>> supplier = () -> {
+                    throw new RuntimeException("Runtime exception");
+                };
+                
+                // When calling orElse with the CheckedSupplier
+                var result = success.orElse((CheckedSupplier<Result<Long>>) supplier);
+                
+                // Then the result should be a failure with RUNTIME type
+                assertEquals(Failure.class, result.getClass());
+                assertFalse(result.hasPayload());
+                
+                // Verify the failure type
+                if (result instanceof Failure<Long> failure) {
+                    assertEquals(FailureDescription.GenericFailureType.GENERIC_EXCEPTION, failure.getType());
+                }
+            }
+            
+            @Test
+            @Order(20)
+            void whenCheckedSupplierThrowsInterruptedExceptionThenReturnsFailureAndRestoresInterrupt() {
+                // Given a success and a CheckedSupplier that throws InterruptedException
+                var success = Try.success(1111L);
+                CheckedSupplier<Result<Long>> supplier = () -> {
+                    throw new InterruptedException("Interrupted");
+                };
+                
+                // When calling orElse with the CheckedSupplier
+                var result = success.orElse((CheckedSupplier<Result<Long>>) supplier);
+                
+                // Then the result should be a failure with INTERRUPTED type
+                assertEquals(Failure.class, result.getClass());
+                assertFalse(result.hasPayload());
+                
+                // Verify the failure type
+                if (result instanceof Failure<Long> failure) {
+                    assertEquals(FailureDescription.GenericFailureType.GENERIC_EXCEPTION, failure.getType());
+                }
+                
+                // Verify interrupt flag was restored
+                assertTrue(Thread.currentThread().isInterrupted());
+                
+                // Clear interrupt flag for other tests
+                Thread.interrupted();
+            }
+            
+            @Test
+            @Order(30)
+            void whenCheckedSupplierThrowsCheckedExceptionThenReturnsFailure() {
+                // Given a success and a CheckedSupplier that throws a checked exception
+                var success = Try.success(1111L);
+                CheckedSupplier<Result<Long>> supplier = () -> {
+                    throw new Exception("Checked exception");
+                };
+                
+                // When calling orElse with the CheckedSupplier
+                var result = success.orElse((CheckedSupplier<Result<Long>>) supplier);
+                
+                // Then the result should be a failure with EXCEPTION type
+                assertEquals(Failure.class, result.getClass());
+                assertFalse(result.hasPayload());
+                
+                // Verify the failure type
+                if (result instanceof Failure<Long> failure) {
+                    assertEquals(FailureDescription.GenericFailureType.GENERIC_EXCEPTION, failure.getType());
+                }
+            }
         }
     }
 

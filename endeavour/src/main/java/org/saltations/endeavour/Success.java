@@ -36,6 +36,49 @@ public sealed interface Success<T> extends Result<T> permits QuantSuccess, QualS
         return transform.apply(get());
     }
 
+    default Result<T> orElse(CheckedSupplier<Result<T>> supplier)
+    {
+        if (supplier == null) {
+            throw new NullPointerException("CheckedSupplier cannot be null");
+        }
+        
+        try
+        {
+            return supplier.get();
+        }
+        catch (InterruptedException ex)
+        {
+            // restore the interrupted flag
+            Thread.currentThread().interrupt();
+            return new Failure<>(FailureDescription.of()
+                .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                .cause(ex)
+                .build());
+        }
+        catch (Exception e)
+        {
+            return switch(e)
+            {
+                case RuntimeException ex -> new Failure<>(FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                    .cause(ex)
+                    .build());
+                case Exception ex -> new Failure<>(FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                    .cause(ex)
+                    .build());
+            };
+        }
+    }
+
+    default Result<T> orElseGet(CheckedSupplier<Result<T>> supplier)
+    {
+        if (supplier == null) {
+            throw new NullPointerException("CheckedSupplier cannot be null");
+        }
+        return this;
+    }
+
 
 
 }

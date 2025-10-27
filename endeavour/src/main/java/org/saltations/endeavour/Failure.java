@@ -87,6 +87,51 @@ public record Failure<T>(FailureDescription fail) implements Result<T>
         return this;
     }
 
+    @Override
+    public Result<T> orElse(CheckedSupplier<Result<T>> supplier)
+    {
+        if (supplier == null) {
+            throw new NullPointerException("CheckedSupplier cannot be null");
+        }
+        return this;
+    }
+
+    @Override
+    public Result<T> orElseGet(CheckedSupplier<Result<T>> supplier)
+    {
+        if (supplier == null) {
+            throw new NullPointerException("CheckedSupplier cannot be null");
+        }
+        
+        try
+        {
+            return supplier.get();
+        }
+        catch (InterruptedException ex)
+        {
+            // restore the interrupted flag
+            Thread.currentThread().interrupt();
+            return new Failure<>(FailureDescription.of()
+                .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                .cause(ex)
+                .build());
+        }
+        catch (Exception e)
+        {
+            return switch(e)
+            {
+                case RuntimeException ex -> new Failure<>(FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                    .cause(ex)
+                    .build());
+                case Exception ex -> new Failure<>(FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                    .cause(ex)
+                    .build());
+            };
+        }
+    }
+
 
 
     @Override

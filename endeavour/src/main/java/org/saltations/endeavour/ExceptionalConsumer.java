@@ -3,10 +3,11 @@ package org.saltations.endeavour;
 import java.util.function.Consumer;
 
 /**
- * This is similar to the Java Supplier function type. It has a checked exception on it to allow it to
- * be used in lambda expressions on the outcome methods.
+ * A {@code Consumer} function that captures checked exceptions and wraps them in a RuntimeException. 
+ * 
+ * This allows us to use it in lambda expressions on the outcome methods.
  *
- * @param <T> Type of the supplied value
+ * @param <T> Type of the supplied value.
  */
 
 @FunctionalInterface

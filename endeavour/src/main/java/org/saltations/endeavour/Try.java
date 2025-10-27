@@ -15,17 +15,19 @@ import lombok.NonNull;
 public class Try
 {
     /**
-     * Attempt to execute the given supplier operation and return the result
+     * Attempt to execute the given checked supplier operation and return the result.
+     * This method handles checked exceptions by converting them to appropriate failures.
      *
-     * @param supplier function that supplies a new value. <b>Not null</b>.
+     * @param supplier function that supplies a new value and may throw checked exceptions. <b>Not null</b>.
      *
      * @return populated {@code QuantSuccess} if supplier provides a non null value, {@code QualSuccess} 
      * if supplier provides a null value, or {@code Failure} if supplier throws an exception.
+     * InterruptedException is handled specially by restoring the interrupt flag.
      *
      * @param <T> Type of the supplied value
      */
 
-     public static <U> Result<U> attempt(@NonNull ExceptionalSupplier<U> supplier)
+     public static <U> Result<U> attempt(@NonNull CheckedSupplier<U> supplier)
      {
          checkNotNull(supplier, "Supplier function cannot be null");
  
@@ -35,11 +37,28 @@ public class Try
              
              return Objects.isNull(value) ? new QualSuccess<>() : new QuantSuccess<>(value);
          }
+         catch (InterruptedException ex)
+         {
+             // restore the interrupted flag
+             Thread.currentThread().interrupt();
+             return new Failure<>(FailureDescription.of()
+                     .type(FailureDescription.GenericFailureType.GENERIC_INTERRUPTED_EXCEPTION)
+                     .cause(ex)
+                     .build());
+         }
          catch (Exception e)
          {
-             return new Failure<>(FailureDescription.of()
-                     .cause(e)
+             return switch(e)
+             {
+                 case RuntimeException ex -> new Failure<>(FailureDescription.of()
+                     .type(FailureDescription.GenericFailureType.GENERIC_RUNTIME_EXCEPTION)
+                     .cause(ex)
                      .build());
+                 case Exception ex -> new Failure<>(FailureDescription.of()
+                     .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                     .cause(ex)
+                     .build());
+             };
          }
      }
 

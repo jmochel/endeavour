@@ -55,7 +55,7 @@ public class QuantSuccessTest
     @Order(20)
     void whenSupplyingResultOnSuccessThenReturnsSuppliersPayload() throws Throwable
     {
-        var outcome = value.orElse(() -> Try.success(2222L));
+        var outcome = value.orElse((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
         assertEquals(2222L, outcome.get(), "Success Value");
     }
 
@@ -104,7 +104,7 @@ public class QuantSuccessTest
     @Order(50)
     void whenSupplyingResultOnFailureThenReturnsExistingSuccess() throws Throwable
     {
-        var outcome = value.orElseGet(() -> Try.success(2222L));
+        var outcome = value.orElseGet((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
         assertSame(outcome, value, "Existing Success");
     }
 

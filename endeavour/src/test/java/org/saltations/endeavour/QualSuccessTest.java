@@ -54,7 +54,7 @@ public class QualSuccessTest
     @Order(20)
     void whenSupplyingResultOnSuccessThenReturnsSuppliedResult() throws Throwable
     {
-        var outcome = noValue.orElse(() -> Try.success(2222L));
+        var outcome = noValue.orElse((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
         assertEquals(2222L, outcome.get(), "Success Value");
     }
 
@@ -126,7 +126,7 @@ public class QualSuccessTest
     @Order(50)
     void whenSupplyingResultOnFailureThenReturnsExistingSuccess() throws Throwable
     {
-        var outcome = noValue.orElseGet(() -> Try.success(2222L));
+        var outcome = noValue.orElseGet((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
         assertSame(outcome, noValue, "Existing Success");
     }
 

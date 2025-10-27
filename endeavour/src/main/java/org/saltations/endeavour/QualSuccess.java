@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * Represents a successful operation that produced a qualified result with no value.
+ * Represents a qualified successful operation. I.e. a successful operation with no payload.
  * This is the concrete implementation of {@link Success} for cases where
  * the operation succeeded but produced no meaningful value (e.g., void operations,
  * deletions, updates).

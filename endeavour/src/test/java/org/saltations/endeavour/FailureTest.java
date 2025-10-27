@@ -56,7 +56,7 @@ public class FailureTest
     @Order(20)
     void whenSupplyingResultOnSuccessThenReturnsTheExistingFailure() throws Throwable
     {
-        var outcome = failure.orElse(() -> Try.success(2222L));
+        var outcome = failure.orElse((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
         assertSame(outcome, failure, "Same failure");
     }
 
@@ -73,7 +73,7 @@ public class FailureTest
     @Order(50)
     void whenSupplyingValueOnFailureThenReturnsNewResult() throws Throwable
     {
-        var outcome = failure.orElseGet(() -> Try.success(2222L));
+        var outcome = failure.orElseGet((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
         assertEquals(2222L, outcome.get(),"New Result");
     }
 

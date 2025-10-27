@@ -7,9 +7,8 @@ import lombok.NonNull;
 
 
 /**
- * A generic interface for outcomes of operations.
- * <p>
  * An <code>Result</code> is a container (AKA Monad) that represents the result of an operation.
+ * <p>
  * It is a container that allows us to handle the effects that are outside the function's scope so that
  * we don't mess up the functions handling the effects, thus keeping the function code clean.
  * Often explained as a "box with a special way to open it", it can be used to chain operations
@@ -20,8 +19,8 @@ import lombok.NonNull;
  * It will not contain a success payload.
  * <p>
  * <h4>Success</h4>
- * A <code>Success</code> represents the successful completion of an operation. Successes may be either a {@code QuantSuccess} (guaranteed to have a payload of type <V>)
- * or it will be a {@code QualSuccess} which is guaranteed not to have a payload of type <V> associated with it.
+ * A <code>Success</code> represents the successful completion of an operation. Successes may be either a quantitative success {@code QuantSuccess} (guaranteed to have a payload of type <V>)
+ * or it will be a  qualitative success{@code QualSuccess} which is guaranteed not to have a payload.
  * <p>
  *
  * <h4>IMPORTANT DESIGN NOTE:</h4>
@@ -32,7 +31,7 @@ import lombok.NonNull;
  * cases are handled uniformly, while failures are handled separately. This is intentional and should not be flagged
  * as an issue in code reviews. * 
  * 
- * @param <T> Success payload type. Accessible in successes.
+ * @param <T> Success payload type. Accessible in {@code QuantSuccess}.
  *
  * @see QuantSuccess
  * @see QualSuccess
@@ -45,11 +44,9 @@ public sealed interface Result<T> permits Failure, Success
 {
     /**
      * Returns <em>true</em> if this outcome has a success payload.
-     * <p>
      * 
      * @return <em>true</em> if this outcome has a success payload,<em>false</em> otherwise.
      * 
-     * @implNote This method is intentionally designed to return <em>true</em> for both {@code QuantSuccess} and {@code QualSuccess} instances.
      */
 
     boolean hasPayload();
@@ -73,8 +70,8 @@ public sealed interface Result<T> permits Failure, Success
     T get();
 
     /**
-     * Returns an {@code Optional} containing the success payload if this outcome is a {@code QuantSuccess}, otherwise returns an empty {@code Optional}.
-     *
+     * Returns an {@code Optional} containing the success payload (if any).
+     * 
      * @return {@code Optional} containing the success payload if this outcome is a {@code QuantSuccess}, otherwise an empty {@code Optional}.
      */
 
@@ -88,7 +85,7 @@ public sealed interface Result<T> permits Failure, Success
     }
 
     /**
-     * Maps a internal payload to {@code Result<U>} by mapping payload of type {@code <T>} to payload of type {@code <U>}
+     * Maps a payload to {@code Result<U>} by mapping payload of type {@code <T>} to payload of type {@code <U>}
      *
      * @param mapping a mapping function for T to U. <b>Not null.</b> <b>Must handle nulls from the {@code Result#get()}. method</b>
      *
@@ -206,6 +203,39 @@ public sealed interface Result<T> permits Failure, Success
      */
 
      Result<T> orElseGet(ExceptionalSupplier<Result<T>> supplier);
+
+    /**
+     * Supplies a new outcome from existing success, otherwise returns the existing outcome.
+     * Uses a CheckedSupplier that can throw checked exceptions.
+     *
+     * @param supplier function that supplies a new outcome. <b>Not null.</b>
+     *
+     * @return populated Result.
+     *
+     * <b>Example 1</b>
+     * {@snippet :
+     *   // Return a new Success with value 21 if the current outcome is a Success
+     *   var newResult = outcome.orElse(() -> Try.succeed(21));
+     * }
+     */
+
+    Result<T> orElse(CheckedSupplier<Result<T>> supplier);
+
+    /**
+     * Returns the supplied outcome if this outcome is a failure, otherwise returns the existing outcome.
+     * Uses a CheckedSupplier that can throw checked exceptions.
+     *
+     * @param supplier function that supplies a new outcome. <b>Not null.</b>
+     * 
+     * @return the existing outcome if success, new Result if failure.
+     *
+     * <h4>Example:</h4>
+     * {@snippet :
+     *   var newResult = outcome.orElseGet(() -> Try.succeed(21));
+     * }
+     */
+
+     Result<T> orElseGet(CheckedSupplier<Result<T>> supplier);
 
     /**
      * If this outcome is a success transform to a new outcome

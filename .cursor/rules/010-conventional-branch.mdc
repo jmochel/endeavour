@@ -1,6 +1,6 @@
 ---
 description: Creating Git branches
-alwaysApply: false
+alwaysApply: true
 ---
 # Conventional Commits (MDC)
 

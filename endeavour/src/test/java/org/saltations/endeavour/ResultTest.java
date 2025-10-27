@@ -98,7 +98,7 @@ public class ResultTest
         @Order(30)
         void whenTransformingResultOnSuccessThenReturnsTransformedResultToNewSuccess() throws Throwable
         {
-            var outcome = value.flatMapOnSuccess(x -> Try.success(x * 3));
+            var outcome = value.flatMap(x -> Try.success(x * 3));
             assertEquals(3333L, outcome.get(), "Transformed Result");
         }
 
@@ -106,7 +106,7 @@ public class ResultTest
         @Order(32)
         void whenTransformingResultOnSuccessThenReturnsTransformedResultToNewFailure() throws Throwable
         {
-            var outcome = value.flatMapOnSuccess(x -> Try.failure());
+            var outcome = value.flatMap(x -> Try.failure());
         }
 
         @Test
@@ -244,7 +244,7 @@ public class ResultTest
         @Order(30)
         void whenTransformingResultOnSuccessThenReturnsTheExistingFailure()
         {
-            var outcome = failure.flatMapOnSuccess(x -> Try.success(x * 3));
+            var outcome = failure.flatMap(x -> Try.success(x * 3));
             assertSame(outcome, failure, "Same failure");
         }
 

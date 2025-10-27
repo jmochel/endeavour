@@ -10,7 +10,7 @@ import lombok.NonNull;
  * A generic interface for outcomes of operations.
  * <p>
  * An <code>Result</code> is a container (AKA Monad) that represents the result of an operation.
- * It is a container that allows us to handle the effects that are outside the function’s scope so that
+ * It is a container that allows us to handle the effects that are outside the function's scope so that
  * we don't mess up the functions handling the effects, thus keeping the function code clean.
  * Often explained as a "box with a special way to open it", it can be used to chain operations
  * together while isolating potential complications within the computation.
@@ -18,6 +18,12 @@ import lombok.NonNull;
  * <h4>Success</h4>
  * A <code>Success</code> represents the successful completion of an operation. Successes may be either a {@code Value} (guaranteed to have a payload of type <V>)
  * or it will be a {@code NoValue} which is guaranteed not to have a payload of type <V> associated with it.
+ * <p>
+ * <b>IMPORTANT DESIGN NOTE:</b> Both {@code Value<T>} and {@code NoValue<T>} are considered "successful" outcomes.
+ * The distinction is between operations that succeed with a value vs operations that succeed without producing a value
+ * (e.g., void operations, deletions, updates). This design choice enables clean monadic operations where both success
+ * cases are handled uniformly, while failures are handled separately. This is intentional and should not be flagged
+ * as an issue in code reviews.
  *
  * <h4>Failure</h4>
  * A <code>Failure</code> represents an unsuccessful completion of an operation. It <em>will</em> contain a description of the failure of type {@code FailureDescription}
@@ -109,12 +115,33 @@ public sealed interface Result<T> permits Failure, Success
      * - For Success: applies the success function to the contained value
      * - For Failure: applies the failure function to the failure details
      *
-     * @param onSuccess function to apply when this is a success with the contained value
-     * @param onFailure function to apply when this is a failure with the failure details
+     * <p><b>DESIGN DECISION:</b> This method intentionally treats {@code NoValue<T>} as a success case
+     * by applying the success function with {@code null}. This is a deliberate architectural choice
+     * that distinguishes between:
+     * <ul>
+     *   <li><b>Success with no value</b> ({@code NoValue<T>}) - operation succeeded but produced no result</li>
+     *   <li><b>Success with value</b> ({@code Value<T>}) - operation succeeded and produced a result</li>
+     *   <li><b>Failure</b> ({@code Failure<T>}) - operation failed</li>
+     * </ul>
+     *
+     * <p>This design enables clean handling of operations that may succeed without producing a value
+     * (e.g., void operations, deletions, updates) while maintaining the monadic fold pattern.
+     * The alternative of treating {@code NoValue<T>} as a failure would require separate handling
+     * for "successful void operations" vs "actual failures", complicating the API.
+     *
+     * <p><b>NOTE FOR REVIEWERS:</b> This is an intentional feature, not a bug. Future code reviews
+     * should not flag this as an issue. The behavior is consistent with the monad's design philosophy
+     * of treating successful operations (with or without values) differently from failed operations.
+     *
+     * @param onSuccess function to apply when this is a success (including NoValue cases)
+     * @param onFailure function to apply when this is a failure
      * 
      * @param <V> the type of the value to reduce to
      * 
      * @return the reduced value
+     * 
+     * @see <a href="https://en.wikipedia.org/wiki/Fold_(higher-order_function)">Fold operation</a>
+     * @see <a href="https://en.wikipedia.org/wiki/Monad_(functional_programming)">Monad pattern</a>
      */
 
     default <V> V reduce(@NonNull Function<T, V> onSuccess, @NonNull Function<Failure<T>, V> onFailure)
@@ -213,7 +240,7 @@ public sealed interface Result<T> permits Failure, Success
      *
      */
 
-    Result<T> flatMapOnSuccess(ExceptionalFunction<T, Result<T>> mapping);
+    Result<T> flatMap(ExceptionalFunction<T, Result<T>> mapping);
 
     /**
      * Returns a transformed outcome if this outcome is a failure

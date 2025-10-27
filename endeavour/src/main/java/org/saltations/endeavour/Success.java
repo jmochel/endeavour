@@ -24,7 +24,7 @@ public sealed interface Success<T> extends Result<T> permits Value, NoValue {
         return this;
     }
 
-    default Result<T> flatMapOnSuccess(ExceptionalFunction<T, Result<T>> transform)
+    default Result<T> flatMap(ExceptionalFunction<T, Result<T>> transform)
     {
         return transform.apply(get());
     }

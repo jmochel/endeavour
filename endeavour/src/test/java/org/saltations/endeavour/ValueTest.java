@@ -51,7 +51,7 @@ public class ValueTest
     @Order(30)
     void whenMappingPayloadToNewPayloadOnSuccessThenReturnsNewValue() throws Throwable
     {
-        var outcome = value.flatMapOnSuccess(x -> Try.success(x * 3));
+        var outcome = value.flatMap(x -> Try.success(x * 3));
 
         assertEquals(Value.class, outcome.getClass(), "Must be a Value");
         assertEquals(3333L, outcome.get(), "Transformed Result");
@@ -61,7 +61,7 @@ public class ValueTest
     @Order(32)
     void whenMappingPayloadOnSuccessToNullThenReturnsNoValue() throws Throwable
     {
-        var outcome = value.flatMapOnSuccess(x -> Try.failure());
+        var outcome = value.flatMap(x -> Try.failure());
     }
 
     @Test

@@ -47,7 +47,7 @@ public class FailureTest
     @Order(30)
     void whenMappingPayloadToNewPayloadOnSuccessThenReturnsTheExistingFailure()
     {
-        var outcome = failure.flatMapOnSuccess(x -> Try.success(x * 3));
+        var outcome = failure.flatMap(x -> Try.success(x * 3));
         assertEquals(Failure.class, outcome.getClass(), "Failure");
         assertSame(outcome, failure, "Same failure");
     }

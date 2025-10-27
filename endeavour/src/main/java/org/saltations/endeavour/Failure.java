@@ -82,7 +82,7 @@ public record Failure<T>(FailureDescription fail) implements Result<T>
     }
 
     @Override
-    public Result<T> flatMapOnSuccess(ExceptionalFunction<T, Result<T>> transform)
+    public Result<T> flatMap(ExceptionalFunction<T, Result<T>> transform)
     {
         return this;
     }

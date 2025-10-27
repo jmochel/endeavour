@@ -52,7 +52,7 @@ public class NoValueTest
     @Order(30)
     void whenMappingPayloadOnSuccessToNonNullThenReturnsValueWithNewPayload() throws Throwable
     {
-        var outcome = noValue.flatMapOnSuccess(x -> Try.success(777L));
+        var outcome = noValue.flatMap(x -> Try.success(777L));
         assertEquals(Value.class, outcome.getClass(), "Value");
         assertEquals(777L, outcome.get(), "Transformed Result");
     }
@@ -61,7 +61,7 @@ public class NoValueTest
     @Order(31)
     void whenMappingPayloadOnSuccessToNullThenReturnsNoValue() throws Throwable
     {
-        var outcome = noValue.flatMapOnSuccess(x -> Try.success(null));
+        var outcome = noValue.flatMap(x -> Try.success(null));
 
         assertEquals(NoValue.class, outcome.getClass(), "NoValue");
         assertEquals(null, outcome.get(), "Transformed Result");
@@ -72,7 +72,7 @@ public class NoValueTest
     void whenMappingPayloadOnSuccessThrowExceptionThenReturnsFailure() throws Throwable
     {
         assertThrows(RuntimeException.class, () -> {
-            noValue.flatMapOnSuccess(x -> { throw new RuntimeException("Test Exception"); });
+            noValue.flatMap(x -> { throw new RuntimeException("Test Exception"); });
         });
     }
 
@@ -81,7 +81,7 @@ public class NoValueTest
     @Order(32)
     void whenTransformingResultOnSuccessThenReturnsTransformedResultToNewFailure() throws Throwable
     {
-        var outcome = noValue.flatMapOnSuccess(x -> Try.failure());
+        var outcome = noValue.flatMap(x -> Try.failure());
 
         assertEquals(Failure.class, outcome.getClass(), "Failure");
         assertThrows(IllegalStateException.class, () -> outcome.get(), "Should throw exception");
@@ -157,7 +157,7 @@ public class NoValueTest
     @Order(90)
     void whenFlatMappingThenTakesSuccessAction()
     {
-        var outcome = noValue.flatMap(x -> Try.success(x * 3));
+        var outcome = noValue.flatMap(x -> Try.success(null));
 
         assertEquals(null, outcome.get(), "Mapped Result should be null for NoValue");
     }

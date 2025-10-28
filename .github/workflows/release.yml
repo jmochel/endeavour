@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: "Release version (e.g., 0.2.0)"
+        required: true
+      developmentVersion:
+        description: "Next development version (e.g., 0.3.0-SNAPSHOT)"
+        required: true
+
+jobs:
+  maven-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # required to push tags/commits
+      packages: write   # for GitHub Packages deploy in perform (if used)
+      id-token: write
+    env:
+      MAVEN_ARGS: -V -B -ntp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # release plugin needs full history to tag
+
+      - name: Set up JDK + Maven server auth
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+          server-id: github                # matches <distributionManagement>/<id>
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+
+      - name: Configure Git identity
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Verify build before release
+        run: |
+          mvn $MAVEN_ARGS verify
+
+      - name: Maven release:prepare
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn $MAVEN_ARGS \
+            -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
+            -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }} \
+            -DscmCommentPrefix="[release] " \
+            release:prepare
+
+      - name: Maven release:perform
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn $MAVEN_ARGS release:perform
+
+

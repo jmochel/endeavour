@@ -12,20 +12,17 @@ import java.util.Objects;
 public sealed interface Success<T> extends Result<T> permits QuantSuccess, QualSuccess {
 
 
-    default Result<T> ifSuccess(ExceptionalConsumer<Success<T>> action)
+    default Result<T> ifSuccess(CheckedConsumer<Success<T>> action) throws Exception
     {
+        Objects.requireNonNull(action, "Action cannot be null");
         action.accept(this);
         return this;
     }
 
-    default Result<T> ifFailure(ExceptionalConsumer<Failure<T>> action)
+    default Result<T> ifFailure(CheckedConsumer<Failure<T>> action) throws Exception
     {
+        Objects.requireNonNull(action, "Action cannot be null");
         return this;
-    }
-
-    default Result<T> flatMap(ExceptionalFunction<T, Result<T>> transform)
-    {
-        return transform.apply(get());
     }
 
     default Result<T> orElse(Result<T> alternateResult)

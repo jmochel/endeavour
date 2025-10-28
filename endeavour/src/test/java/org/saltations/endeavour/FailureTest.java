@@ -76,7 +76,7 @@ public class FailureTest
 
     @Test
     @Order(40)
-    void whenReducingFailureThenCallsFailureFunction() throws Throwable
+    void whenReducingFailureThenCallsFailureFunction() throws Exception
     {
         String result = failure.reduce(
             success -> {
@@ -107,7 +107,7 @@ public class FailureTest
 
     @Test
     @Order(60)
-    void whenIfSuccessThenDoesNotTakeAction() {
+    void whenIfSuccessThenDoesNotTakeAction() throws Exception {
         final AtomicBoolean applied = new AtomicBoolean(false);
         failure.ifSuccess(x -> applied.getAndSet(true));
         assertFalse(applied.get(), "Action taken");
@@ -115,7 +115,7 @@ public class FailureTest
 
     @Test
     @Order(61)
-    void whenIfFailureThenTakesAction() {
+    void whenIfFailureThenTakesAction() throws Exception {
         final AtomicBoolean applied = new AtomicBoolean(false);
         failure.ifFailure(x -> applied.getAndSet(true));
         assertTrue(applied.get(), "Action taken");
@@ -144,6 +144,76 @@ public class FailureTest
             .isQuantSuccess()
             .hasPayload()
             .hasValue(2222L);
+    }
+
+    @Test
+    @Order(72)
+    void whenOrElseGetSupplierThrowsInterruptedExceptionThenReturnsFailureWithInterruptedFlagRestored() throws Exception
+    {
+        // Create a supplier that throws InterruptedException
+        CheckedSupplier<Result<Long>> throwingSupplier = () -> {
+            Thread.currentThread().interrupt(); // Simulate interruption
+            throw new InterruptedException("Test interruption");
+        };
+
+        var outcome = failure.orElseGet(throwingSupplier);
+
+        assertThat(outcome)
+            .isFailure()
+            .hasFailureType(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+            .hasCause()
+            .hasCauseOfType(InterruptedException.class)
+            .hasCauseWithMessage("Test interruption");
+
+        // Verify that the interrupted flag was restored
+        assertTrue(Thread.interrupted(), "Interrupted flag should be restored");
+    }
+
+    @Test
+    @Order(73)
+    void whenOrElseGetSupplierThrowsRuntimeExceptionThenReturnsFailureWithCause() throws Exception
+    {
+        RuntimeException testException = new RuntimeException("Test runtime exception");
+        CheckedSupplier<Result<Long>> throwingSupplier = () -> {
+            throw testException;
+        };
+
+        var outcome = failure.orElseGet(throwingSupplier);
+
+        assertThat(outcome)
+            .isFailure()
+            .hasFailureType(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+            .hasCause()
+            .hasCauseOfType(RuntimeException.class)
+            .hasCauseWithMessage("Test runtime exception");
+    }
+
+    @Test
+    @Order(74)
+    void whenOrElseGetSupplierThrowsCheckedExceptionThenReturnsFailureWithCause() throws Exception
+    {
+        Exception testException = new Exception("Test checked exception");
+        CheckedSupplier<Result<Long>> throwingSupplier = () -> {
+            throw testException;
+        };
+
+        var outcome = failure.orElseGet(throwingSupplier);
+
+        assertThat(outcome)
+            .isFailure()
+            .hasFailureType(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+            .hasCause()
+            .hasCauseOfType(Exception.class)
+            .hasCauseWithMessage("Test checked exception");
+    }
+
+    @Test
+    @Order(75)
+    void whenOrElseGetSupplierIsNullThenThrowsNullPointerException()
+    {
+        assertThrows(NullPointerException.class, () -> {
+            failure.orElseGet(null);
+        });
     }
 
   

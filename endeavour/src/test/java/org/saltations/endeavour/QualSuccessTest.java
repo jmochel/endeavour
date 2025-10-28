@@ -92,7 +92,7 @@ public class QualSuccessTest
 
     @Test
     @Order(40)
-    void whenReducingThenReturnsSuccessValue() throws Throwable
+    void whenReducingThenReturnsSuccessValue() throws Exception
     {
         var result = qualSuccess.reduce(
             success -> "Eureka",
@@ -121,7 +121,7 @@ public class QualSuccessTest
 
     @Test
     @Order(60)
-    void whenTakingActionIfSuccessThenTakesAction() throws Throwable
+    void whenTakingActionIfSuccessThenTakesAction() throws Exception
     {
         final AtomicBoolean applied = new AtomicBoolean(false);
 
@@ -132,7 +132,7 @@ public class QualSuccessTest
 
     @Test
     @Order(61)
-    void whenTakingActionIfFailureThenTakesNoAction() throws Throwable
+    void whenTakingActionIfFailureThenTakesNoAction() throws Exception
     {
         final AtomicBoolean applied = new AtomicBoolean(false);
 
@@ -156,7 +156,7 @@ public class QualSuccessTest
 
     @Test
     @Order(70)
-    void whenTakingActionOnFailureThenTakesNoAction()
+    void whenTakingActionOnFailureThenTakesNoAction() throws Exception
     {
         final AtomicBoolean applied = new AtomicBoolean(false);
 
@@ -172,6 +172,37 @@ public class QualSuccessTest
     void whenCallingToStringThenReturnsExpectedString()
     {
         assertEquals("Success[No value]", qualSuccess.toString());
+    }
+
+    @Test
+    @Order(101)
+    void whenOrElseGetThenReturnsExistingSuccessWithoutCallingSupplier() throws Exception
+    {
+        final AtomicBoolean supplierCalled = new AtomicBoolean(false);
+        
+        CheckedSupplier<Result<Long>> supplier = () -> {
+            supplierCalled.set(true);
+            return Try.success(9999L);
+        };
+
+        var outcome = qualSuccess.orElseGet(supplier);
+
+        // Should return the existing success without calling the supplier
+        assertThat(outcome)
+            .isSuccess()
+            .isQualSuccess()
+            .hasNoPayload();
+
+        assertFalse(supplierCalled.get(), "Supplier should not be called for success");
+    }
+
+    @Test
+    @Order(102)
+    void whenOrElseGetWithNullSupplierThenThrowsNullPointerException()
+    {
+        assertThrows(NullPointerException.class, () -> {
+            qualSuccess.orElseGet(null);
+        });
     }
 
 }

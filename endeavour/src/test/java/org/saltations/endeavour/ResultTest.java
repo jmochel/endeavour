@@ -126,7 +126,7 @@ public class ResultTest
 
         @Test
         @Order(10)
-        void whenTransmutingSuccessThenReturnsTransformedValue() {
+        void whenTransmutingSuccessThenReturnsTransformedValue() throws Exception {
             // Given a success outcome and a transform function
             var result = success.reduce(
                 v -> v * 2,
@@ -139,7 +139,7 @@ public class ResultTest
 
         @Test
         @Order(20)
-        void whenTransmutingFailureThenReturnsTransformedValue() {
+        void whenTransmutingFailureThenReturnsTransformedValue() throws Exception {
             // Given a failure outcome and a transform function
             var result = failure.reduce(
                 v -> "Success",
@@ -152,7 +152,7 @@ public class ResultTest
 
         @Test
         @Order(30)
-        void whenTransmutingWithNullTransformThenThrowsException() {
+        void whenTransmutingWithNullTransformThenThrowsException() throws Exception {
             // Given a success outcome and a null transform function
             assertThrows(NullPointerException.class, () -> {
                 success.reduce(null, f -> "Failed");
@@ -160,8 +160,35 @@ public class ResultTest
         }
 
         @Test
+        @Order(31)
+        void whenTransmutingWithNullFailureTransformThenThrowsException() throws Exception {
+            // Given a success outcome and a null failure transform function
+            assertThrows(NullPointerException.class, () -> {
+                success.reduce(v -> "Success", null);
+            });
+        }
+
+        @Test
+        @Order(32)
+        void whenTransmutingFailureWithNullSuccessTransformThenThrowsException() throws Exception {
+            // Given a failure outcome and a null success transform function
+            assertThrows(NullPointerException.class, () -> {
+                failure.reduce(null, f -> "Failed");
+            });
+        }
+
+        @Test
+        @Order(33)
+        void whenTransmutingFailureWithNullFailureTransformThenThrowsException() throws Exception {
+            // Given a failure outcome and a null failure transform function
+            assertThrows(NullPointerException.class, () -> {
+                failure.reduce(v -> "Success", null);
+            });
+        }
+
+        @Test
         @Order(50)
-        void whenTransmutingWithThrowingTransformThenThrowsException() {
+        void whenTransmutingWithThrowingTransformThenThrowsException() throws Exception {
             // Given a success outcome and a transform function that throws
             assertThrows(RuntimeException.class, () -> {
                 success.reduce(
@@ -173,7 +200,7 @@ public class ResultTest
 
         @Test
         @Order(60)
-        void whenTransmutingWithComplexTransformThenReturnsExpectedResult() {
+        void whenTransmutingWithComplexTransformThenReturnsExpectedResult() throws Exception {
             // Given a success outcome and a complex transform function
             var result = success.reduce(
                 v -> new ComplexResult(v, v * 2, v * 3),

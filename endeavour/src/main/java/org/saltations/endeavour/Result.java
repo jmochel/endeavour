@@ -105,38 +105,26 @@ public sealed interface Result<T> permits Failure, Success
     <U> Result<U> flatMap(@NonNull CheckedFunction<T,Result<U>> mapping) throws Exception;
 
     /**
-     * If this outcome is a success transform to a new outcome
-     *
-     * @param successTransform function that supplies a new outcome from an existing outcome. Not null
-     *
-     * @return transformed Success if success, Failure if failure.
-     *
-     * <p><b>Example:</b>
-     * {@snippet :
-     *   var newResult = outcome.ifSuccessApply(this::outcomeTransform);
-     * }
-     *
-     */
-
-     Result<T> flatMap(ExceptionalFunction<T, Result<T>> mapping);
-
-
-    /**
      * Reduces the {@code Result<T>} to a single value of type {@code V} using a fold operation.
-     * This follows the standard monadic fold pattern where:
-     * - For Success: applies the success function to the contained value
-     * - For Failure: applies the failure function to the failure details
      *
-     * @param onSuccess function to apply when this is a success (including QualSuccess cases)
-     * @param onFailure function to apply when this is a failure
+     * @param onSuccess function to apply if this is a success. <b>Not null.</b>
+     * @param onFailure function to apply if this is a failure. <b>Not null.</b>
+     *
+     * @return the result of applying the appropriate function
      * 
-     * @param <V> the type of the value to reduce to
-     * 
-     * @return the reduced value
+     * @throws Exception if either function throws a checked exception
+     *
+     * @param <V> the type of the reduced value
      */
-
-    default <V> V reduce(@NonNull Function<T, V> onSuccess, @NonNull Function<Failure<T>, V> onFailure)
+    default <V> V reduce(@NonNull CheckedFunction<T, V> onSuccess, @NonNull CheckedFunction<Failure<T>, V> onFailure) throws Exception
     {
+        if (onSuccess == null) {
+            throw new NullPointerException("Success function cannot be null");
+        }
+        if (onFailure == null) {
+            throw new NullPointerException("Failure function cannot be null");
+        }
+        
         return switch (this) {
             case QuantSuccess<T> value -> onSuccess.apply(value.get());
             case QualSuccess<T> qualSuccess -> onSuccess.apply(null);
@@ -162,7 +150,9 @@ public sealed interface Result<T> permits Failure, Success
     /**
      * Executes action if this outcome is a success, takes no action otherwise.
      *
-     * @param action the function that takes action based on success. Not null.
+     * @param action the function that takes action based on success. <b>Not null.</b>
+     * 
+     * @throws Exception if the action throws a checked exception
      *
      * <p><b>Example:</b>
      * {@snippet :
@@ -170,12 +160,14 @@ public sealed interface Result<T> permits Failure, Success
      * }
      */
 
-     Result<T> ifSuccess(ExceptionalConsumer<Success<T>> action);
+     Result<T> ifSuccess(@NonNull CheckedConsumer<Success<T>> action) throws Exception;
 
     /**
      * Executes action if this outcome is a failure, takes no action otherwise.
      *
-     * @param action the function that takes action based on failure. Not null.
+     * @param action the function that takes action based on failure. <b>Not null.</b>
+     * 
+     * @throws Exception if the action throws a checked exception
      *
      * <p><b>Example:</b>
      * {@snippet :
@@ -183,7 +175,7 @@ public sealed interface Result<T> permits Failure, Success
      * }
      */
 
-     Result<T> ifFailure(@NonNull ExceptionalConsumer<Failure<T>> action);
+     Result<T> ifFailure(@NonNull CheckedConsumer<Failure<T>> action) throws Exception;
 
     /**
      * Returns the alternate result if this outcome is a failure, otherwise returns the existing outcome.

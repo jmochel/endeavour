@@ -66,12 +66,6 @@ public record Failure<T>(FailureDescription description) implements Result<T>
     }
 
     @Override
-    public Result<T> flatMap(ExceptionalFunction<T, Result<T>> transform)
-    {
-        return this;
-    }
-
-    @Override
     public void act(CheckedConsumer<T> action) throws Exception
     {
         Objects.requireNonNull(action, "Action cannot be null");
@@ -79,15 +73,17 @@ public record Failure<T>(FailureDescription description) implements Result<T>
     }
 
     @Override
-    public Result<T> ifSuccess(ExceptionalConsumer<Success<T>> action)
+    public Result<T> ifSuccess(CheckedConsumer<Success<T>> action) throws Exception
     {
+        Objects.requireNonNull(action, "Action cannot be null");
         // Do Nothing
         return this;    
     }
 
     @Override
-    public Result<T> ifFailure(ExceptionalConsumer<Failure<T>> action)
+    public Result<T> ifFailure(CheckedConsumer<Failure<T>> action) throws Exception
     {
+        Objects.requireNonNull(action, "Action cannot be null");
         action.accept(this);
         return this;
     }

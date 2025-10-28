@@ -13,9 +13,9 @@ import org.saltations.endeavour.fixture.ReplaceBDDCamelCase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.saltations.endeavour.fixture.ResultAssert.assertThat;
 
@@ -131,7 +131,7 @@ public class QuantSuccessTest
 
     @Test
     @Order(40)
-    void whenTakingActionOnSuccessThenTakesAction() throws Throwable
+    void whenTakingActionOnSuccessThenTakesAction() throws Exception
     {
         final AtomicBoolean applied = new AtomicBoolean(false);
 
@@ -141,7 +141,7 @@ public class QuantSuccessTest
 
     @Test
     @Order(60)
-    void whenTransformingResultOnFailureThenReturnsExistingSuccess() throws Throwable
+    void whenTransformingResultOnFailureThenReturnsExistingSuccess() throws Exception
     {
         var outcome = value.reduce(
             success -> value,  // Return original result for success cases
@@ -153,7 +153,7 @@ public class QuantSuccessTest
 
     @Test
     @Order(70)
-    void whenTakingActionOnFailureThenTakesNoAction()
+    void whenTakingActionOnFailureThenTakesNoAction() throws Exception
     {
         final AtomicBoolean applied = new AtomicBoolean(false);
 
@@ -205,7 +205,7 @@ public class QuantSuccessTest
 
     @Test
     @Order(100)
-    void whenTransformingThenGivesTransformedResult()
+    void whenTransformingThenGivesTransformedResult() throws Exception
     {
         var result = value.reduce(
             v -> "Success with value",
@@ -238,6 +238,38 @@ public class QuantSuccessTest
             case QualSuccess<Long> out -> "Success with no value";
             case Failure<Long> out -> "Failure";
         };
+    }
+
+    @Test
+    @Order(100)
+    void whenOrElseGetThenReturnsExistingSuccessWithoutCallingSupplier() throws Exception
+    {
+        final AtomicBoolean supplierCalled = new AtomicBoolean(false);
+        
+        CheckedSupplier<Result<Long>> supplier = () -> {
+            supplierCalled.set(true);
+            return Try.success(9999L);
+        };
+
+        var outcome = value.orElseGet(supplier);
+
+        // Should return the existing success without calling the supplier
+        assertThat(outcome)
+            .isSuccess()
+            .isQuantSuccess()
+            .hasPayload()
+            .hasValue(1111L); // Original value, not supplier value
+
+        assertFalse(supplierCalled.get(), "Supplier should not be called for success");
+    }
+
+    @Test
+    @Order(101)
+    void whenOrElseGetWithNullSupplierThenThrowsNullPointerException()
+    {
+        assertThrows(NullPointerException.class, () -> {
+            value.orElseGet(null);
+        });
     }
 
 }

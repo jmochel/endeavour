@@ -874,4 +874,55 @@ class FailureAnalysisCreationTest
         private final String title;
         private final String template;
     }
+
+    @Test
+    @Order(100)
+    void whenBuildingWithNullTemplateThenReturnsEmptyDetail()
+    {
+        var analysis = FailureDescription.of()
+                .template(null)
+                .build();
+
+        assertEquals("", analysis.getDetail(), "Detail should be empty when template is null");
+    }
+
+    @Test
+    @Order(101)
+    void whenBuildingWithNullArgsThenUsesEmptyArray()
+    {
+        var analysis = FailureDescription.of()
+                .template("Template with {} placeholder")
+                .args((Object[]) null)
+                .build();
+
+        assertEquals("Template with NotSupplied placeholder", analysis.getDetail(), 
+                "Should handle null args by using empty array");
+    }
+
+    @Test
+    @Order(102)
+    void whenBuildingWithCauseButNoOtherInfoThenUsesCauseMessage()
+    {
+        Exception testException = new Exception("Test exception message");
+        var analysis = FailureDescription.of()
+                .cause(testException)
+                .build();
+
+        assertEquals("Test exception message", analysis.getDetail(), 
+                "Should use cause message when no other detail provided");
+    }
+
+    @Test
+    @Order(103)
+    void whenBuildingWithCauseWithNullMessageThenUsesEmptyDetail()
+    {
+        Exception testException = new Exception();
+        testException.initCause(null); // Ensure no message
+        var analysis = FailureDescription.of()
+                .cause(testException)
+                .build();
+
+        assertEquals("", analysis.getDetail(), 
+                "Should use empty detail when cause has null message");
+    }
 }

@@ -45,6 +45,8 @@ jobs:
         run: |
           git config url."https://github.com/".insteadOf "git@github.com:"
           git config url."https://github.com/".insteadOf "git://github.com/"
+          # Update the remote URL to use HTTPS with token
+          git remote set-url origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
 
       - name: Verify build before release
         run: |

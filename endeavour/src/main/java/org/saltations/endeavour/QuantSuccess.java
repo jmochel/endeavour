@@ -2,6 +2,7 @@ package org.saltations.endeavour;
 
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.Optional;
 
 /**
  * Represents a successful operation that produced a quantified result value.
@@ -10,6 +11,7 @@ import java.util.function.Function;
  *
  * @param <T> the type of the successful result value
  */
+
 public record QuantSuccess<T>(T value) implements Success<T> {
 
     @Override
@@ -22,6 +24,12 @@ public record QuantSuccess<T>(T value) implements Success<T> {
     public T get()
     {
         return value;
+    }
+    
+    @Override
+    public Optional<T> opt()
+    {
+        return Optional.of(value);
     }
 
     @Override

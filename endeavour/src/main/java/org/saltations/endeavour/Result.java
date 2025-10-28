@@ -74,15 +74,7 @@ public sealed interface Result<T> permits Failure, Success
      * 
      * @return {@code Optional} containing the success payload if this outcome is a {@code QuantSuccess}, otherwise an empty {@code Optional}.
      */
-
-    default Optional<T> opt()
-    {
-        return switch (this) {
-            case QuantSuccess<T> value -> Optional.of(value.get());
-            case QualSuccess<T> qualSuccess -> Optional.empty();
-            case Failure<T> failure -> throw new IllegalStateException("Cannot get optional from a failure: " + failure.getTitle() + " - " + failure.getDetail());
-        };
-    }
+    Optional<T> opt();
 
     /**
      * Maps a payload to {@code Result<U>} by mapping payload of type {@code <T>} to payload of type {@code <U>}
@@ -106,7 +98,25 @@ public sealed interface Result<T> permits Failure, Success
      * @param <U>
      */
 
+    @Deprecated
     <U> Result<U> flatMap(@NonNull Function<T,Result<U>> mapping);
+
+    /**
+     * If this outcome is a success transform to a new outcome
+     *
+     * @param successTransform function that supplies a new outcome from an existing outcome. Not null
+     *
+     * @return transformed Success if success, Failure if failure.
+     *
+     * <p><b>Example:</b>
+     * {@snippet :
+     *   var newResult = outcome.ifSuccessApply(this::outcomeTransform);
+     * }
+     *
+     */
+
+     Result<T> flatMap(ExceptionalFunction<T, Result<T>> mapping);
+
 
     /**
      * Reduces the {@code Result<T>} to a single value of type {@code V} using a fold operation.
@@ -174,58 +184,26 @@ public sealed interface Result<T> permits Failure, Success
      Result<T> ifFailure(@NonNull ExceptionalConsumer<Failure<T>> action);
 
     /**
-     * Supplies a new outcome from existing success, otherwise returns the existing outcome.
+     * Returns the alternate result if this outcome is a failure, otherwise returns the existing outcome.
      *
-     * @param supplier function that supplies a new outcome. <b>Not null.</b>
+     * @param alternateResult the alternate result to return if this is a failure. <b>Not null.</b>
      *
-     * @return populated Result.
-     *
-     * <b>Example 1</b>
-     * {@snippet :
-     *   // Return a new Success with value 21 if the current outcome is a Success
-     *   var newResult = outcome.ifSuccess(() -> Try.succeed(21));
-     * }
-     */
-
-    Result<T> orElse(ExceptionalSupplier<Result<T>> supplier);
-
-    /**
-     * Returns the supplied outcome if this outcome is a failure, otherwise returns the existing outcome.
-     *
-     * @param supplier function that supplies a new outcome. <b>Not null.</b>
-     * 
-     * @return the existing outcome if success, new Result if failure.
-     *
-     * <h4>Example:</h4>
-     * {@snippet :
-     *   var newResult = outcome.ifFailure(() -> Try.succeed(21));
-     * }
-     */
-
-     Result<T> orElseGet(ExceptionalSupplier<Result<T>> supplier);
-
-    /**
-     * Supplies a new outcome from existing success, otherwise returns the existing outcome.
-     * Uses a CheckedSupplier that can throw checked exceptions.
-     *
-     * @param supplier function that supplies a new outcome. <b>Not null.</b>
-     *
-     * @return populated Result.
+     * @return the alternate result if failure, existing result if success.
      *
      * <b>Example 1</b>
      * {@snippet :
      *   // Return a new Success with value 21 if the current outcome is a Success
-     *   var newResult = outcome.orElse(() -> Try.succeed(21));
+     *   var newResult = outcome.orElse(Try.succeed(666L));
      * }
      */
 
-    Result<T> orElse(CheckedSupplier<Result<T>> supplier);
+    Result<T> orElse(Result<T> alternateResult);
 
     /**
      * Returns the supplied outcome if this outcome is a failure, otherwise returns the existing outcome.
      * Uses a CheckedSupplier that can throw checked exceptions.
      *
-     * @param supplier function that supplies a new outcome. <b>Not null.</b>
+     * @param supplier function that supplies a new result. <b>Not null.</b>
      * 
      * @return the existing outcome if success, new Result if failure.
      *
@@ -236,23 +214,5 @@ public sealed interface Result<T> permits Failure, Success
      */
 
      Result<T> orElseGet(CheckedSupplier<Result<T>> supplier);
-
-    /**
-     * If this outcome is a success transform to a new outcome
-     *
-     * @param successTransform function that supplies a new outcome from an existing outcome. Not null
-     *
-     * @return transformed Success if success, Failure if failure.
-     *
-     * <p><b>Example:</b>
-     * {@snippet :
-     *   var newResult = outcome.ifSuccessApply(this::outcomeTransform);
-     * }
-     *
-     */
-
-    Result<T> flatMap(ExceptionalFunction<T, Result<T>> mapping);
-
-
 
 }

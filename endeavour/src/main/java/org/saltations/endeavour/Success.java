@@ -21,54 +21,17 @@ public sealed interface Success<T> extends Result<T> permits QuantSuccess, QualS
         return this;
     }
 
-    default Result<T> orElse(ExceptionalSupplier<Result<T>> supplier)
-    {
-        return supplier.get();
-    }
-
-    default Result<T> orElseGet(ExceptionalSupplier<Result<T>> supplier)
-    {
-        return this;
-    }
-
     default Result<T> flatMap(ExceptionalFunction<T, Result<T>> transform)
     {
         return transform.apply(get());
     }
 
-    default Result<T> orElse(CheckedSupplier<Result<T>> supplier)
+    default Result<T> orElse(Result<T> alternateResult)
     {
-        if (supplier == null) {
-            throw new NullPointerException("CheckedSupplier cannot be null");
+        if (alternateResult == null) {
+            throw new NullPointerException("Alternate result cannot be null");
         }
-        
-        try
-        {
-            return supplier.get();
-        }
-        catch (InterruptedException ex)
-        {
-            // restore the interrupted flag
-            Thread.currentThread().interrupt();
-            return new Failure<>(FailureDescription.of()
-                .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
-                .cause(ex)
-                .build());
-        }
-        catch (Exception e)
-        {
-            return switch(e)
-            {
-                case RuntimeException ex -> new Failure<>(FailureDescription.of()
-                    .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
-                    .cause(ex)
-                    .build());
-                case Exception ex -> new Failure<>(FailureDescription.of()
-                    .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
-                    .cause(ex)
-                    .build());
-            };
-        }
+        return alternateResult;
     }
 
     default Result<T> orElseGet(CheckedSupplier<Result<T>> supplier)

@@ -1,4 +1,4 @@
-package org.saltations.endeavour;
+package org.saltations.endeavour.fixture;
 
 import java.util.Collections;
 import java.util.List;

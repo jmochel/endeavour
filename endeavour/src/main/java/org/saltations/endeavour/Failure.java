@@ -1,7 +1,8 @@
 package org.saltations.endeavour;
 
-
 import java.util.function.Function;
+import java.util.Optional;
+import java.util.Objects;
 
 /**
  * Represents a failed result.
@@ -9,26 +10,26 @@ import java.util.function.Function;
  * @param <T> The class of the unrealized Success payload value.
  */
 
-public record Failure<T>(FailureDescription fail) implements Result<T>
+public record Failure<T>(FailureDescription description) implements Result<T>
 {
     public FailureType getType()
     {
-        return fail.getType();
+        return description.getType();
     }
 
     public String getDetail()
     {
-        return fail.getDetail();
+        return description.getDetail();
     }
 
     public String getTitle()
     {
-        return fail.getTitle();
+        return description.getTitle();
     }
 
     public Exception getCause()
     {
-        return fail.getCause();
+        return description.getCause();
     }
 
     @Override
@@ -40,19 +41,31 @@ public record Failure<T>(FailureDescription fail) implements Result<T>
     @Override
     public T get()
     {
-        throw new IllegalStateException("Cannot get value from a failure: " + fail.getTitle() + " - " + fail.getDetail());
+        throw new IllegalStateException("Cannot get value from a failure: " + description.getTitle() + " - " + description.getDetail());
+    }
+
+    @Override
+    public Optional<T> opt()
+    {
+        return Optional.empty();
     }
 
     @Override
     public <U> Result<U> map(Function<T, U> mapping)
     {
-        return new Failure<U>(fail);
+        return new Failure<U>(description);
     }
 
     @Override
     public <U> Result<U> flatMap(Function<T, Result<U>> mapping)
     {
-        return new Failure<U>(fail);
+        return new Failure<U>(description);
+    }
+
+    @Override
+    public Result<T> flatMap(ExceptionalFunction<T, Result<T>> transform)
+    {
+        return this;
     }
 
     @Override
@@ -70,30 +83,11 @@ public record Failure<T>(FailureDescription fail) implements Result<T>
     }
 
     @Override
-    public Result<T> orElse(ExceptionalSupplier<Result<T>> supplier)
+    public Result<T> orElse(Result<T> alternateResult)
     {
-        return this;
-    }
+        Objects.requireNonNull(alternateResult, "Alternate result cannot be null");
 
-    @Override
-    public Result<T> orElseGet(ExceptionalSupplier<Result<T>> supplier)
-    {
-        return supplier.get();
-    }
-
-    @Override
-    public Result<T> flatMap(ExceptionalFunction<T, Result<T>> transform)
-    {
-        return this;
-    }
-
-    @Override
-    public Result<T> orElse(CheckedSupplier<Result<T>> supplier)
-    {
-        if (supplier == null) {
-            throw new NullPointerException("CheckedSupplier cannot be null");
-        }
-        return this;
+        return alternateResult;
     }
 
     @Override

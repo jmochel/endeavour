@@ -2,6 +2,7 @@ package org.saltations.endeavour;
 
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.Optional;
 
 /**
  * Represents a qualified successful operation. I.e. a successful operation with no payload.
@@ -24,6 +25,12 @@ public record QualSuccess<T>() implements Success<T> {
     public T get()
     {
         return null;
+    }
+    
+    @Override
+    public Optional<T> opt()
+    {
+        return Optional.empty();
     }
 
     @Override

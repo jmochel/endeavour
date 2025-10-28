@@ -17,6 +17,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.saltations.endeavour.fixture.MemoryAppender;
 import org.saltations.endeavour.fixture.ReplaceBDDCamelCase;
 import org.slf4j.LoggerFactory;
 import org.junit.jupiter.api.DisplayNameGeneration;

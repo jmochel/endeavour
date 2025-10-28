@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.saltations.endeavour.fixture.ResultAssert.assertThat;
 
 /**
  * Validates the functionality of the QuantSuccess class and how it is used
@@ -35,42 +36,76 @@ public class QuantSuccessTest
     @Order(1)
     void meetsContract() throws Throwable
     {
-        assertEquals(QuantSuccess.class, value.getClass(), "QuantSuccess");
-        assertEquals(1111L, value.get(), "Payload");
-        assertTrue(value.hasPayload(), "Has Payload");
+        assertThat(value)
+            .isSuccess()
+            .isQuantSuccess()
+            .hasPayload()
+            .hasValue(1111L);
+
         assertEquals(Optional.of(1111L), value.opt(), "Optional");
     }
 
     @Test
-    @Order(25)
-    void whenMappingToNullThenReturnsNoValue() throws Throwable
+    @Order(20)
+    void whenMappedToNullThenReturnsQualSuccess() throws Throwable
     {
         // QuantSuccess.map() with null result should return QualSuccess
-        var outcome = value.map(x -> null);
-        assertEquals(QualSuccess.class, outcome.getClass(), "Should return QualSuccess");
-        assertNull(outcome.get(), "Should return null");
+        var result = value.map(x -> null);
+
+        assertThat(result)
+            .isSuccess()
+            .isQualSuccess()
+            .hasNoPayload();
+
+        assertEquals(QualSuccess.class, result.getClass(), "Should return QualSuccess");
+        assertNull(result.get(), "Should return null");
     }
+
+    @Test
+    @Order(21)
+    void whenMappedThenReturnsQuantSuccess() throws Throwable
+    {
+        // QuantSuccess.map() with null result should return QualSuccess
+        var result = value.map(x -> 2 * x);
+
+        assertThat(result)
+            .isSuccess()
+            .isQuantSuccess()
+            .hasPayload()
+            .hasValue(2222L);
+    }
+
+    @Test
+    @Order(30)
+    void whenBindingThenReturnsResultOfMappingFunction() throws Throwable
+    {
+        // QuantSuccess.flatMap() calls mapping.apply(value) and returns the result
+        var result1 = value.flatMap(x -> Try.success(x * 2));
+        assertThat(result1)
+            .isSuccess()
+            .isQuantSuccess()
+            .hasPayload()
+            .hasValue(2222L);
+        
+        var outcome2 = value.flatMap(x -> Try.failure());
+        assertThat(outcome2)
+            .isFailure();
+    }
+
 
     @Test
     @Order(20)
     void whenSupplyingResultOnSuccessThenReturnsSuppliersPayload() throws Throwable
     {
-        var outcome = value.orElse((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
-        assertEquals(2222L, outcome.get(), "Success Value");
+        var outcome = value.orElse(Try.success(2222L));
+        assertThat(outcome)
+            .isSuccess()
+            .isQuantSuccess()
+            .hasPayload()
+            .hasValue(2222L);
     }
 
-    @Test
-    @Order(35)
-    void whenFlatMappingThenCallsMappingFunctionWithValue() throws Throwable
-    {
-        // QuantSuccess.flatMap() calls mapping.apply(value) and returns the result
-        var outcome1 = value.flatMap(x -> Try.success(x * 2));
-        assertEquals(QuantSuccess.class, outcome1.getClass(), "Should return QuantSuccess");
-        assertEquals(2222L, outcome1.get(), "Should return doubled value");
-        
-        var outcome2 = value.flatMap(x -> Try.failure());
-        assertEquals(Failure.class, outcome2.getClass(), "Should return Failure");
-    }
+
 
     @Test
     @Order(30)
@@ -78,8 +113,11 @@ public class QuantSuccessTest
     {
         var outcome = value.flatMap(x -> Try.success(x * 3));
 
-        assertEquals(QuantSuccess.class, outcome.getClass(), "Must be a QuantSuccess");
-        assertEquals(3333L, outcome.get(), "Transformed Result");
+        assertThat(outcome)
+            .isSuccess()
+            .isQuantSuccess()
+            .hasPayload()
+            .hasValue(3333L);
     }
    
     @Test
@@ -87,6 +125,8 @@ public class QuantSuccessTest
     void whenMappingPayloadOnSuccessToNullThenReturnsNoValue() throws Throwable
     {
         var outcome = value.flatMap(x -> Try.failure());
+        assertThat(outcome)
+            .isFailure();
     }
 
     @Test
@@ -97,15 +137,6 @@ public class QuantSuccessTest
 
         value.ifSuccess(x -> applied.getAndSet(true));
         assertTrue(applied.get(), "Action taken");
-    }
-
-
-    @Test
-    @Order(50)
-    void whenSupplyingResultOnFailureThenReturnsExistingSuccess() throws Throwable
-    {
-        var outcome = value.orElseGet((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
-        assertSame(outcome, value, "Existing Success");
     }
 
     @Test
@@ -155,7 +186,11 @@ public class QuantSuccessTest
     {
         var outcome = value.map(x -> x * 3);
 
-        assertEquals(3333L, outcome.get(), "Mapped Result");
+        assertThat(outcome)
+            .isSuccess()
+            .isQuantSuccess()
+            .hasPayload()
+            .hasValue(3333L);
     }
 
     @Test
@@ -164,7 +199,11 @@ public class QuantSuccessTest
     {
         var outcome = value.flatMap(x -> Try.success(x * 3));
 
-        assertEquals(3333L, outcome.get(), "Mapped Result");
+        assertThat(outcome)
+            .isSuccess()
+            .isQuantSuccess()
+            .hasPayload()
+            .hasValue(3333L);
     }
 
     @Test

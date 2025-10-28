@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.saltations.endeavour.fixture.ResultAssert.assertThat;
 
 /**
  * Validates the functionality of the QualSuccess class and how it is used
@@ -28,138 +29,87 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
 public class QualSuccessTest
 {
-    private final Result<Long> noValue = Try.success(null);
+    private final Result<Long> qualSuccess = Try.success(null);
 
     @Test
     @Order(1)
     void meetsContract() throws Throwable
     {
-        assertEquals(QualSuccess.class, noValue.getClass(), "QualSuccess");
-        assertEquals(null, noValue.get(), "Payload");
-        assertFalse(noValue.hasPayload(), "Has Payload");
-        assertEquals(Optional.empty(), noValue.opt(), "Empty Optional");
-    }
+        assertThat(qualSuccess)
+            .isSuccess()
+            .isQualSuccess()
+            .hasNoPayload();
 
-    @Test
-    @Order(25)
-    void whenMappingToNullThenReturnsNoValue() throws Throwable
-    {
-        // QualSuccess.map() with null result should return QualSuccess
-        var outcome = noValue.map(x -> null);
-        assertEquals(QualSuccess.class, outcome.getClass(), "Should return QualSuccess");
-        assertNull(outcome.get(), "Should return null");
+        assertEquals(Optional.empty(), qualSuccess.opt(), "Empty Optional");
     }
 
     @Test
     @Order(20)
-    void whenSupplyingResultOnSuccessThenReturnsSuppliedResult() throws Throwable
+    void whenMappedToNullThenReturnsQualSuccess() throws Throwable
     {
-        var outcome = noValue.orElse((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
-        assertEquals(2222L, outcome.get(), "Success Value");
+        var result = qualSuccess.map(x -> null);
+
+        assertThat(result)
+            .isSuccess()
+            .isQualSuccess()
+            .hasNoPayload();
+        
+        assertNull(result.get(), "Should return null");
     }
 
     @Test
-    @Order(35)
-    void whenFlatMappingThenCallsMappingFunctionWithNull() throws Throwable
+    @Order(21)
+    void whenPayloadMappedToNonNullThenReturnsQuantSuccess() throws Throwable
     {
-        // QualSuccess.flatMap() calls the mapping function with null (since QualSuccess.get() returns null)
-        // The mapping function can ignore the null parameter and return whatever it wants
-        var outcome1 = noValue.flatMap(x -> Try.success(777L));
-        assertEquals(QuantSuccess.class, outcome1.getClass(), "Should return QuantSuccess");
-        assertEquals(777L, outcome1.get(), "Should return the mapped value");
-        
-        var outcome2 = noValue.flatMap(x -> Try.failure());
-        assertEquals(Failure.class, outcome2.getClass(), "Should return Failure");
+        // QualSuccess.map() with null result should return QualSuccess
+        var result = qualSuccess.map(x -> 2222L);
+
+        assertThat(result)
+            .isSuccess()
+            .isQuantSuccess()
+            .hasPayload()
+            .hasValue(2222L)
+        ;
     }
 
     @Test
     @Order(30)
-    void whenMappingPayloadOnSuccessToNonNullThenReturnsValueWithNewPayload() throws Throwable
+    void whenBindingThenReturnsResultOfMappingFunction() throws Throwable
     {
-        var outcome = noValue.flatMap(x -> Try.success(777L));
-        assertEquals(QuantSuccess.class, outcome.getClass(), "QuantSuccess");
-        assertEquals(777L, outcome.get(), "Transformed Result");
-    }
-
-    @Test
-    @Order(31)
-    void whenMappingPayloadOnSuccessToNullThenReturnsNoValue() throws Throwable
-    {
-        var outcome = noValue.flatMap(x -> Try.success(null));
-
-        assertEquals(QualSuccess.class, outcome.getClass(), "QualSuccess");
-        assertEquals(null, outcome.get(), "Transformed Result");
-    }
-
-    @Test
-    @Order(31)
-    void whenMappingPayloadOnSuccessThrowExceptionThenReturnsFailure() throws Throwable
-    {
-        assertThrows(RuntimeException.class, () -> {
-            noValue.flatMap(x -> { throw new RuntimeException("Test Exception"); });
-        });
-    }
-
-
-    @Test
-    @Order(32)
-    void whenTransformingResultOnSuccessThenReturnsTransformedResultToNewFailure() throws Throwable
-    {
-        var outcome = noValue.flatMap(x -> Try.failure());
-
-        assertEquals(Failure.class, outcome.getClass(), "Failure");
-        assertThrows(IllegalStateException.class, () -> outcome.get(), "Should throw exception");
+        var result1 = qualSuccess.flatMap(x -> Try.success(x));
+        assertThat(result1)
+            .isSuccess()
+            .isQualSuccess()
+            .hasNoPayload()
+        ;
+        
+        var result2 = qualSuccess.flatMap(x -> Try.failure());
+        assertThat(result2)
+            .isFailure()
+            .hasNoPayload()
+            ;
     }
 
     @Test
     @Order(40)
-    void whenTakingActionOnSuccessThenTakesAction() throws Throwable
+    void whenReducingThenReturnsSuccessValue() throws Throwable
     {
-        final AtomicBoolean applied = new AtomicBoolean(false);
+        var result = qualSuccess.reduce(
+            success -> "Eureka",
+            failure -> "DangIt"
+        );
 
-        noValue.ifSuccess(x -> applied.getAndSet(true));
-        assertTrue(applied.get(), "Action taken");
+        assertSame(result, "Eureka", "Success value");
     }
-
 
     @Test
     @Order(50)
-    void whenSupplyingResultOnFailureThenReturnsExistingSuccess() throws Throwable
-    {
-        var outcome = noValue.orElseGet((ExceptionalSupplier<Result<Long>>) () -> Try.success(2222L));
-        assertSame(outcome, noValue, "Existing Success");
-    }
-
-    @Test
-    @Order(60)
-    void whenTransformingResultOnFailureThenReturnsExistingSuccess() throws Throwable
-    {
-        var outcome = noValue.reduce(
-            success -> noValue,  // Return original result for success cases
-            failure -> Try.success(failure.get() * 3)
-        );
-        assertSame(outcome, noValue, "Existing Success");
-    }
-
-
-    @Test
-    @Order(70)
-    void whenTakingActionOnFailureThenTakesNoAction()
-    {
-        final AtomicBoolean applied = new AtomicBoolean(false);
-
-        noValue.ifFailure(x -> applied.getAndSet(true));
-        assertFalse(applied.get(), "Action taken");
-    }
-
-    @Test
-    @Order(70)
-    void whenTakingActionOnBothThenTakesSuccessAction()
+    void whenTakingActionThenTakesSuccessAction()
     {
         final AtomicBoolean appliedForFailure = new AtomicBoolean(false);
         final AtomicBoolean appliedForSuccess = new AtomicBoolean(false);
 
-        noValue.act(x -> {
+        qualSuccess.act(x -> {
             switch (x)
             {
                 case Failure<Long> out -> appliedForFailure.getAndSet(true);
@@ -171,52 +121,60 @@ public class QualSuccessTest
         assertFalse(appliedForFailure.get(), "Failure Action taken");
     }
 
-    @Test
-    @Order(80)
-    void whenMappingThenTakesSuccessAction()
-    {
-        var outcome = noValue.map(x -> x == null ? 0L : x * 3);
 
-        assertEquals(0L, outcome.get(), "Mapped Result");
+    @Test
+    @Order(60)
+    void whenTakingActionIfSuccessThenTakesAction() throws Throwable
+    {
+        final AtomicBoolean applied = new AtomicBoolean(false);
+
+        qualSuccess.ifSuccess(x -> applied.getAndSet(true));
+        assertTrue(applied.get(), "Action taken");
+    }
+
+
+    @Test
+    @Order(61)
+    void whenTakingActionIfFailureThenTakesNoAction() throws Throwable
+    {
+        final AtomicBoolean applied = new AtomicBoolean(false);
+
+        qualSuccess.ifFailure(x -> applied.getAndSet(true));
+        assertFalse(applied.get(), "Action taken");
+    }
+
+
+
+    @Test
+    @Order(70)
+    void whenOrElseThenReturnsSuppliedResult() throws Throwable
+    {
+        var result = qualSuccess.orElse(Try.success(2222L));
+        assertThat(result)
+            .isSuccess()
+            .isQuantSuccess()
+            .hasPayload()
+            .hasValue(2222L);
     }
 
     @Test
-    @Order(90)
-    void whenFlatMappingThenTakesSuccessAction()
+    @Order(70)
+    void whenTakingActionOnFailureThenTakesNoAction()
     {
-        var outcome = noValue.flatMap(x -> Try.success(null));
+        final AtomicBoolean applied = new AtomicBoolean(false);
 
-        assertEquals(null, outcome.get(), "Mapped Result should be null for QualSuccess");
+        qualSuccess.ifFailure(x -> applied.getAndSet(true));
+        assertFalse(applied.get(), "Action taken");
     }
 
-    @Test
-    @Order(100)
-    void whenTransformingThenGivesTransformedResult()
-    {
-        var result = noValue.reduce(
-            v -> "Success with value",
-            f -> "Failure"
-        );
 
-        assertEquals("Success with value", result, "Transformed to 'Success with value'");
-    }
 
 
     @Test
     @Order(100)
     void whenCallingToStringThenReturnsExpectedString()
     {
-        assertEquals("Success[No value]", noValue.toString());
-    }
-
-    String outcomeToString(Result<Long> outcome)
-    {
-        return switch (outcome)
-        {
-            case QuantSuccess<Long> out -> "Success with value";
-            case QualSuccess<Long> out -> "Success with no value";
-            case Failure<Long> out -> "Failure";
-        };
+        assertEquals("Success[No value]", qualSuccess.toString());
     }
 
 }

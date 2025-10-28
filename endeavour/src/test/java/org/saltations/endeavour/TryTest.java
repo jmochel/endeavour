@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.saltations.endeavour.fixture.ResultAssert.assertThat;
 
 @Order(20)
 @DisplayNameGeneration(ReplaceBDDCamelCase.class)
@@ -48,10 +49,11 @@ public class TryTest
         void canCreateSuccessWithValue()
         {
             var result = Try.success("OK");
-            assertResultIsSuccess(result);
-            assertAll("Success",
-                    () -> assertEquals("OK",result.get(), "Value")
-            );
+            assertThat(result)
+                .isSuccess()
+                .isQuantSuccess()
+                .hasPayload()
+                .hasValue("OK");
         }
 
         @Test
@@ -60,11 +62,11 @@ public class TryTest
         {
             var result = Try.success();
 
-            assertResultIsSuccess(result);
-
-            assertAll("Success",
-                    () -> assertEquals(Boolean.TRUE, result.get(), "Value")
-            );
+            assertThat(result)
+                .isSuccess()
+                .isQuantSuccess()
+                .hasPayload()
+                .hasValue(Boolean.TRUE);
         }
     }
 
@@ -80,11 +82,11 @@ public class TryTest
         {
             var result = Try.failure();
 
-            var failure = assertResultIsFailure(result);
-
-            assertAll("Failure", () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"), () -> assertNull(failure.getCause(), "Cause"));
-
-            assertEquals("", failure.getDetail(), "Detail");
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(FailureDescription.GenericFailureType.GENERIC)
+                .hasNoCause();
         }
 
         @Test
@@ -93,13 +95,11 @@ public class TryTest
         {
             var result = Try.failureWithDetails("{} did it", "Bozo");
 
-            var failure = assertResultIsFailure(result);
-
-            assertAll("Failure",
-                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
-                    () -> assertNull(failure.getCause(), "Cause"),
-                    () -> assertEquals("Bozo did it", failure.getDetail(), "Detail")
-            );
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(FailureDescription.GenericFailureType.GENERIC)
+                .hasNoCause();
         }
     }
 
@@ -115,14 +115,11 @@ public class TryTest
         {
             var result = Try.titledFailure("Strange Category");
 
-            var failure = assertResultIsFailure(result);
-
-            assertAll("Failure",
-                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
-                    () -> assertNull(failure.getCause(), "Cause")
-            );
-
-            assertEquals("Strange Category", failure.getTitle(), "Title");
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(FailureDescription.GenericFailureType.GENERIC)
+                .hasNoCause();
         }
 
         @Test
@@ -132,15 +129,11 @@ public class TryTest
             var detail = "This went really bad";
             var result = Try.titledFailureWithDetails("Really Bad", "Details: {} Bad", "Really Really");
 
-            var failure = assertResultIsFailure(result);
-
-            assertAll("Failure",
-                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
-                    () -> assertNull(failure.getCause(), "Cause")
-            );
-
-            assertEquals("Really Bad", failure.getTitle(), "Title");
-            assertEquals("Details: Really Really Bad", failure.getDetail(), "Detail");
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(FailureDescription.GenericFailureType.GENERIC)
+                .hasNoCause();
         }
 
     }
@@ -156,11 +149,11 @@ public class TryTest
         {
             var result = Try.typedFailure(ExemplarFailure.POTENTIALLY_FATAL);
 
-            var failure = assertResultIsFailure(result);
-
-            assertAll("Failure", () -> assertEquals(ExemplarFailure.POTENTIALLY_FATAL, failure.getType(), "Type"), () -> assertNull(failure.getCause(), "Cause"));
-
-            assertEquals("", failure.getDetail(), "Detail");
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(ExemplarFailure.POTENTIALLY_FATAL)
+                .hasNoCause();
         }
 
         @Test
@@ -170,11 +163,11 @@ public class TryTest
             var detail = "This went really bad";
             var result = Try.typedFailure(ExemplarFailure.POTENTIALLY_FATAL, detail);
 
-            var failure = assertResultIsFailure(result);
-
-            assertAll("Failure", () -> assertEquals(ExemplarFailure.POTENTIALLY_FATAL, failure.getType(), "Type"), () -> assertNull(failure.getCause(), "Cause"));
-
-            assertEquals(detail, failure.getDetail(), "Detail");
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(ExemplarFailure.POTENTIALLY_FATAL)
+                .hasNoCause();
         }
 
         @Test
@@ -182,12 +175,12 @@ public class TryTest
         void canCreateTypedFailureWithDetails()
         {
             var result = Try.typedFailureWithDetails(ExemplarFailure.NOT_REALLY_SO_BAD, "Details: {} Bad", "Really Really");
-            var failure = assertResultIsFailure(result);
-
-            assertAll("Failure",
-                    () -> assertEquals(ExemplarFailure.NOT_REALLY_SO_BAD, failure.getType(), "Type"),
-                    () -> assertTrue(failure.getDetail().contains("Details: Really Really Bad"), "Detail contains expanded arg"),
-                    () -> assertNull(failure.getCause(), "Cause"));
+            
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(ExemplarFailure.NOT_REALLY_SO_BAD)
+                .hasNoCause();
         }
     }
 
@@ -203,13 +196,12 @@ public class TryTest
             var cause = new Exception();
             var result = Try.causedFailure(cause);
 
-            var failure = assertResultIsFailure(result);
-
-            assertAll("Failure",
-                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
-                    () -> assertEquals("", failure.getDetail(), "Detail"),
-                    () -> assertNotNull(failure.getCause(), "Cause")
-            );
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(FailureDescription.GenericFailureType.GENERIC)
+                .hasCause()
+                .hasCause(cause);
         }
 
         @Test
@@ -219,13 +211,12 @@ public class TryTest
             var cause = new Exception();
             var result = Try.causedFailure(cause, ExemplarFailure.POTENTIALLY_FATAL);
 
-            var failure = assertResultIsFailure(result);
-
-            assertAll("Failure",
-                    () -> assertEquals(ExemplarFailure.POTENTIALLY_FATAL, failure.getType(), "Type"),
-                    () -> assertEquals("", failure.getDetail(), "Detail"),
-                    () -> assertNotNull(failure.getCause(), "Cause")
-            );
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(ExemplarFailure.POTENTIALLY_FATAL)
+                .hasCause()
+                .hasCause(cause);
         }
 
         @Test
@@ -236,13 +227,12 @@ public class TryTest
             var detail = "This went really bad";
             var result = Try.causedFailure(cause, ExemplarFailure.POTENTIALLY_FATAL, detail);
 
-            var failure = assertResultIsFailure(result);
-
-            assertAll("Failure",
-                    () -> assertEquals(ExemplarFailure.POTENTIALLY_FATAL, failure.getType(), "Type"),
-                    () -> assertEquals(detail, failure.getDetail(), "Detail"),
-                    () -> assertNotNull(failure.getCause(), "Cause")
-            );
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(ExemplarFailure.POTENTIALLY_FATAL)
+                .hasCause()
+                .hasCause(cause);
         }
 
         @Test
@@ -253,13 +243,12 @@ public class TryTest
             var detail = "This went really bad";
             var result = Try.causedFailureWithDetails(cause, detail);
 
-            var failure = assertResultIsFailure(result);
-
-            assertAll("Failure",
-                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, failure.getType(), "Type"),
-                    () -> assertEquals(detail, failure.getDetail(), "Detail"),
-                    () -> assertNotNull(failure.getCause(), "Cause")
-            );
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(FailureDescription.GenericFailureType.GENERIC)
+                .hasCause()
+                .hasCause(cause);
         }
 
         @Test
@@ -270,13 +259,12 @@ public class TryTest
             var template = "This is a template message";
             var result = Try.causedFailure(cause, ExemplarFailure.GENERAL, template);
 
-            var failure = assertResultIsFailure(result);
-
-            assertAll("Failure",
-                    () -> assertEquals(ExemplarFailure.GENERAL, failure.getType(), "Type"),
-                    () -> assertEquals(template, failure.getDetail(), "Detail"),
-                    () -> assertNotNull(failure.getCause(), "Cause")
-            );
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(ExemplarFailure.GENERAL)
+                .hasCause()
+                .hasCause(cause);
         }
 
         @Test
@@ -288,15 +276,12 @@ public class TryTest
             var cause = new Exception(providedExceptionMessage);
             var result = Try.causedFailure(cause, ExemplarFailure.NOT_REALLY_SO_BAD, "widget1", "widget2");
 
-            var failure = assertResultIsFailure(result);
-
-            // @formatter:off
-            assertAll("Failure",
-                    () -> assertEquals(ExemplarFailure.NOT_REALLY_SO_BAD, failure.getType(), "Type"),
-                    () -> assertEquals(providedExceptionMessage, failure.getDetail(), "Detail contains provided exception message"),
-                    () -> assertNotNull(failure.getCause(), "Cause")
-            );
-            // @formatter:on
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(ExemplarFailure.NOT_REALLY_SO_BAD)
+                .hasCause()
+                .hasCause(cause);
         }
     }
 
@@ -310,7 +295,11 @@ public class TryTest
         void whenProvidedValueThenAbleToRetrieve() throws Throwable
         {
             var result = simpleReturnOfOKString();
-            var value = result.get();
+            assertThat(result)
+                .isSuccess()
+                .isQuantSuccess()
+                .hasPayload()
+                .hasValue("OK");
         }
 
         @Test
@@ -318,7 +307,11 @@ public class TryTest
         void whenProvidedValueThenAbleToRetrieveRatherThanThrowException() throws Throwable
         {
             var result = simpleReturnOfOKString();
-            var value = result.get();
+            assertThat(result)
+                .isSuccess()
+                .isQuantSuccess()
+                .hasPayload()
+                .hasValue("OK");
         }
 
         Result<String> simpleReturnOfOKString()
@@ -339,6 +332,10 @@ public class TryTest
         {
             var result = simpleReturnOfFailure();
 
+            assertThat(result)
+                .isFailure()
+                .hasNoPayload()
+                .hasFailureType(ExemplarFailure.NOT_REALLY_SO_BAD);
             assertThrows(IllegalStateException.class, () -> result.get(), "Should throw exception when trying to get value from failure");
         }
 
@@ -368,34 +365,5 @@ public class TryTest
             assertEquals("Failure[GENERIC:generic-failure:]", Try.failure().toString());
         }
     }
-
-    private Failure<?> assertResultIsFailure(Result<?> result)
-    {
-        if (result instanceof QuantSuccess<?>)
-        {
-            fail("Result should be a Failure");
-        }
-
-        assertAll("Result",
-                () -> assertFalse(result.hasPayload(),"Is Not Success")
-        );
-
-        return (Failure<?>) result;
-    }
-
-
-    private void assertResultIsSuccess(Result<?> result)
-    {
-        if (result instanceof Failure<?>)
-        {
-            fail("Result should be a Success");
-        }
-
-        assertAll("Result",
-                () -> assertTrue(result.hasPayload(),"Has Success value")
-        );
-
-    }
-
 
 }

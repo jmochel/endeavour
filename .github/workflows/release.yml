@@ -41,6 +41,11 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Configure Git to use HTTPS with token
+        run: |
+          git config url."https://github.com/".insteadOf "git@github.com:"
+          git config url."https://github.com/".insteadOf "git://github.com/"
+
       - name: Verify build before release
         run: |
           mvn $MAVEN_ARGS verify

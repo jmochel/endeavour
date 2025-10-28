@@ -152,6 +152,13 @@
         </pluginManagement>
     </build>
 
+    <scm>
+        <connection>scm:git:https://github.com/jmochel/endeavour.git</connection>
+        <developerConnection>scm:git:https://github.com/jmochel/endeavour.git</developerConnection>
+        <url>https://github.com/jmochel/endeavour</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <distributionManagement>
         <repository>
             <id>github</id>

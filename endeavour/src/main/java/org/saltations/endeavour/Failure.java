@@ -1,112 +1,138 @@
 package org.saltations.endeavour;
 
-
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Optional;
+import java.util.Objects;
 
 /**
- * Represents an full failure Outcome of an operation.
+ * Represents a failed result.
  *
- * @param <SV> The class of the unrealized Success value.
+ * @param <T> The class of the unrealized Success payload value.
  */
 
-public record Failure<SV>(FailureDescription fail) implements Outcome<SV>
+public record Failure<T>(FailureDescription description) implements Result<T>
 {
+    public FailureType getType()
+    {
+        return description.getType();
+    }
+
+    public String getDetail()
+    {
+        return description.getDetail();
+    }
+
+    public String getTitle()
+    {
+        return description.getTitle();
+    }
+
+    public Exception getCause()
+    {
+        return description.getCause();
+    }
 
     @Override
-    public boolean hasSuccessPayload()
+    public boolean hasPayload()
     {
         return false;
     }
 
     @Override
-    public boolean hasFailurePayload()
+    public T get()
     {
-        return true;
+        throw new IllegalStateException("Cannot get value from a failure: " + description.getTitle() + " - " + description.getDetail());
     }
 
     @Override
-    public SV get()
+    public Optional<T> opt()
     {
-        throw new IllegalStateException(fail.getTotalMessage());
-    }
-
-    public FailureType getType()
-    {
-        return fail.getType();
-    }
-
-    public String getDetail()
-    {
-        return fail.getDetail();
-    }
-
-    public String getTitle()
-    {
-        return fail.getTitle();
-    }
-
-    public Exception getCause()
-    {
-        return fail.getCause();
+        return Optional.empty();
     }
 
     @Override
-    public Outcome<SV> ifSuccess(Supplier<Outcome<SV>> supplier)
+    public <U> Result<U> map(CheckedFunction<T, U> mapping) throws Exception
     {
-        return this;
+        Objects.requireNonNull(mapping, "Mapping function cannot be null");
+        
+        return new Failure<U>(description);
     }
 
     @Override
-    public Outcome<SV> ifSuccess(Function<SV, Outcome<SV>> transform)
+    public <U> Result<U> flatMap(CheckedFunction<T, Result<U>> mapping) throws Exception
     {
-        return this;
+        Objects.requireNonNull(mapping, "Mapping function cannot be null");
+        return new Failure<U>(description);
     }
 
     @Override
-    public void onSuccess(Consumer<Outcome<SV>> action)
+    public void act(CheckedConsumer<T> action) throws Exception
     {
+        Objects.requireNonNull(action, "Action cannot be null");
         // Do Nothing
     }
 
     @Override
-    public Outcome<SV> ifFailure(Supplier<Outcome<SV>> supplier)
+    public Result<T> ifSuccess(CheckedConsumer<Success<T>> action) throws Exception
     {
-        return supplier.get();
+        Objects.requireNonNull(action, "Action cannot be null");
+        // Do Nothing
+        return this;    
     }
 
     @Override
-    public Outcome<SV> ifFailure(Function<Outcome<SV>, Outcome<SV>> transform)
+    public Result<T> ifFailure(CheckedConsumer<Failure<T>> action) throws Exception
     {
-        return transform.apply(this);
-    }
-
-    @Override
-    public Outcome<SV> onFailure(Consumer<Failure<SV>> action)
-    {
+        Objects.requireNonNull(action, "Action cannot be null");
         action.accept(this);
-
         return this;
     }
 
     @Override
-    public void on(Consumer<Outcome<SV>> successAction, Consumer<Outcome<SV>> failureAction)
+    public Result<T> orElse(Result<T> alternateResult)
     {
-        failureAction.accept(this);
+        Objects.requireNonNull(alternateResult, "Alternate result cannot be null");
+
+        return alternateResult;
     }
 
     @Override
-    public <SV2> Outcome<SV2> map(Function<SV, SV2> transform)
+    public Result<T> orElseGet(CheckedSupplier<Result<T>> supplier)
     {
-        return new Failure<SV2>(fail);
+        if (supplier == null) {
+            throw new NullPointerException("CheckedSupplier cannot be null");
+        }
+        
+        try
+        {
+            return supplier.get();
+        }
+        catch (InterruptedException ex)
+        {
+            // restore the interrupted flag
+            Thread.currentThread().interrupt();
+            return new Failure<>(FailureDescription.of()
+                .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                .cause(ex)
+                .build());
+        }
+        catch (Exception e)
+        {
+            return switch(e)
+            {
+                case RuntimeException ex -> new Failure<>(FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                    .cause(ex)
+                    .build());
+                case Exception ex -> new Failure<>(FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                    .cause(ex)
+                    .build());
+            };
+        }
     }
 
-    @Override
-    public <U> Outcome<U> flatMap(Function<SV, Outcome<U>> transform)
-    {
-        return new Failure<U>(fail);
-    }
+
 
     @Override
     public String toString()
@@ -120,5 +146,7 @@ public record Failure<SV>(FailureDescription fail) implements Outcome<SV>
                                            .append("]")
                                            .toString();
     }
+
+
 
 }

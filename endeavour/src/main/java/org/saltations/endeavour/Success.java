@@ -1,88 +1,53 @@
 package org.saltations.endeavour;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Objects;
 
-public record Success<SV>(SV value) implements Outcome<SV>
-{
-    @Override
-    public boolean hasSuccessPayload()
-    {
-        return true;
-    }
+/**
+ * Represents a successful operation result. This interface is implemented by
+ * {@link QuantSuccess} (for operations that produced a value) and {@link QualSuccess}
+ * (for operations that succeeded but produced no value).
+ *
+ * @param <T> the type of the successful result
+ */
+public sealed interface Success<T> extends Result<T> permits QuantSuccess, QualSuccess {
 
-    @Override
-    public boolean hasFailurePayload()
-    {
-        return false;
-    }
 
-    @Override
-    public SV get()
+    default Result<T> ifSuccess(CheckedConsumer<Success<T>> action) throws Exception
     {
-        return value;
-    }
-
-    @Override
-    public Outcome<SV> ifSuccess(Supplier<Outcome<SV>> supplier)
-    {
-        return supplier.get();
-    }
-
-    @Override
-    public Outcome<SV> ifSuccess(Function<SV, Outcome<SV>> transform)
-    {
-        return transform.apply(get());
-    }
-
-    @Override
-    public void onSuccess(Consumer<Outcome<SV>> action)
-    {
+        Objects.requireNonNull(action, "Action cannot be null");
         action.accept(this);
+        return this;
     }
 
-    @Override
-    public Outcome<SV> ifFailure(Supplier<Outcome<SV>> supplier)
+    default Result<T> ifFailure(CheckedConsumer<Failure<T>> action) throws Exception
     {
+        Objects.requireNonNull(action, "Action cannot be null");
+        return this;
+    }
+
+    default Result<T> orElse(Result<T> alternateResult)
+    {
+        Objects.requireNonNull(alternateResult, "Alternate result cannot be null");
+
+        return alternateResult;
+    }
+
+    default Result<T> orElseGet(CheckedSupplier<Result<T>> supplier)
+    {
+        Objects.requireNonNull(supplier, "CheckedSupplier cannot be null");
+
         return this;
     }
 
     @Override
-    public Outcome<SV> ifFailure(Function<Outcome<SV>, Outcome<SV>> transform)
+    default void act(CheckedConsumer<T> action) throws Exception
     {
-        return this;
+        Objects.requireNonNull(action, "Action cannot be null");
+        
+        action.accept(get());
     }
 
-    @Override
-    public Outcome<SV> onFailure(Consumer<Failure<SV>> action)
-    {
-        return this;
-    }
 
-    @Override
-    public void on(Consumer<Outcome<SV>> successAction, Consumer<Outcome<SV>> failureAction)
-    {
-        successAction.accept(this);
-    }
 
-    @Override
-    public <SV2> Outcome<SV2> map(Function<SV, SV2> transform)
-    {
-        return new Success<SV2>(transform.apply(value));
-    }
-
-    @Override
-    public <U> Outcome<U> flatMap(Function<SV, Outcome<U>> transform)
-    {
-        return transform.apply(value);
-    }
-
-    public String toString()
-    {
-        return new StringBuffer("Success").append("[")
-                                           .append(value)
-                                           .append("]")
-                                           .toString();
-    }
 }
+

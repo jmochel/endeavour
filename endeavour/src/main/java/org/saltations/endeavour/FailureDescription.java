@@ -12,16 +12,13 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 
-import static java.util.Optional.ofNullable;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.IntStream;
 
 /**
- * A class that represents a failure analysis with details about what went wrong.
+ * A class that describes a failure with details about what went wrong.
  * <p>
- * This class provides a fluent builder API for constructing failure analyses with various attributes
+ * This class provides a fluent builder API for constructing failure descriptions with various attributes
  * such as type, title, detail, cause, and template arguments.
  * <p>
  * Example usage:
@@ -92,7 +89,9 @@ public class FailureDescription
     public enum GenericFailureType implements FailureType 
     {
         GENERIC("generic-failure", ""),
-        GENERIC_EXCEPTION("generic-exception-failure", "")
+        GENERIC_EXCEPTION("generic-checked-exception-failure", ""),
+        GENERIC_INTERRUPTED_EXCEPTION("generic-interrupted-exception-failure", ""),
+        GENERIC_RUNTIME_EXCEPTION("generic-runtime-exception-failure", "")
         ;
 
         private final String title;
@@ -347,6 +346,5 @@ public class FailureDescription
 
             return MessageFormatter.basicArrayFormat(inTemplate, augmentedArgs.toArray());
         }
-
     }
 }

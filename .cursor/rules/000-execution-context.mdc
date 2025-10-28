@@ -1,0 +1,22 @@
+---
+alwaysApply: true
+---
+
+# Execution Context Rule
+
+- Always assume the project root is the working directory.
+- When generating scripts or tasks, prefix commands with paths relative to the repo root (e.g., `./cmd/foo`, `./internal/...`).
+- Do not hardcode `$HOME` paths; always use relative-to-root.
+- When showing a `make` or `go` command, assume execution from the root:
+  - `make test`
+  - `go run ./cmd/myapp`
+  - `go generate ./...`
+# Execution Context Rule
+
+- Always assume the project root is the working directory.
+- When generating scripts or tasks, prefix commands with paths relative to the repo root (e.g., `./cmd/foo`, `./internal/...`).
+- Do not hardcode `$HOME` paths; always use relative-to-root.
+- When showing a `make` or `go` command, assume execution from the root:
+  - `make test`
+  - `go run ./cmd/myapp`
+  - `go generate ./...`

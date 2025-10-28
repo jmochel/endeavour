@@ -1,0 +1,9 @@
+# Task Execution Overrides (Project Rule)
+
+## When running `/task` on any item:
+- If the task is a code/config change, **also create**:
+  - A **Unit Test sub-task** with file paths and test names.
+  - An **Integration Test sub-task** (or a short rationale if N/A).
+
+
+

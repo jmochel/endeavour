@@ -1,0 +1,25 @@
+---
+description: General Java rules for this project
+globs: *Test.java,*IT.java
+alwaysApply: false
+---
+# Java Unit Test Coding Guidelines
+
+## General Principles
+
+- Test for the Wrong Path — Not the Happy Path
+- 
+
+## Test Names
+
+
+
+## Junit 
+
+## Assertions
+
+
+## Mocks
+
+- Mock only what is impossible to run (slow external calls, payment gateways).
+- But for services, DBs, and logic — use real in-memory or test containers.

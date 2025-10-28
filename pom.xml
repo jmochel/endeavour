@@ -19,8 +19,8 @@
     </modules>
 
     <scm>
-        <connection>scm:git:git@github.com:jmochel/endeavour.git</connection>
-        <developerConnection>scm:git:git@github.com:jmochel/endeavour.git</developerConnection>
+        <connection>scm:git:https://github.com/jmochel/endeavour.git</connection>
+        <developerConnection>scm:git:https://github.com/jmochel/endeavour.git</developerConnection>
         <url>https://github.com/jmochel/endeavour</url>
         <tag>HEAD</tag>
     </scm>

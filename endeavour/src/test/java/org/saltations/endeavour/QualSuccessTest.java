@@ -45,7 +45,7 @@ public class QualSuccessTest
 
     @Test
     @Order(20)
-    void whenMappedToNullThenReturnsQualSuccess() throws Throwable
+    void whenMappedToNullThenReturnsQualSuccess() throws Exception
     {
         var result = qualSuccess.map(x -> null);
 
@@ -59,9 +59,9 @@ public class QualSuccessTest
 
     @Test
     @Order(21)
-    void whenPayloadMappedToNonNullThenReturnsQuantSuccess() throws Throwable
+    void whenPayloadMappedToNonNullThenReturnsQuantSuccess() throws Exception
     {
-        // QualSuccess.map() with null result should return QualSuccess
+        // QualSuccess.map() with non-null result should return QuantSuccess
         var result = qualSuccess.map(x -> 2222L);
 
         assertThat(result)
@@ -74,20 +74,20 @@ public class QualSuccessTest
 
     @Test
     @Order(30)
-    void whenBindingThenReturnsResultOfMappingFunction() throws Throwable
+    void whenBindingThenReturnsResultOfMappingFunction() throws Exception
     {
-        var result1 = qualSuccess.flatMap(x -> Try.success(x));
+        var result1 = qualSuccess.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x));
         assertThat(result1)
             .isSuccess()
             .isQualSuccess()
             .hasNoPayload()
         ;
         
-        var result2 = qualSuccess.flatMap(x -> Try.failure());
+        var result2 = qualSuccess.flatMap((CheckedFunction<Long, Result<Object>>) x -> Try.failure());
         assertThat(result2)
             .isFailure()
             .hasNoPayload()
-            ;
+        ;
     }
 
     @Test
@@ -104,17 +104,14 @@ public class QualSuccessTest
 
     @Test
     @Order(50)
-    void whenTakingActionThenTakesSuccessAction()
+    void whenTakingActionThenTakesSuccessAction() throws Exception
     {
         final AtomicBoolean appliedForFailure = new AtomicBoolean(false);
         final AtomicBoolean appliedForSuccess = new AtomicBoolean(false);
 
-        qualSuccess.act(x -> {
-            switch (x)
-            {
-                case Failure<Long> out -> appliedForFailure.getAndSet(true);
-                case Success<Long> out -> appliedForSuccess.getAndSet(true);
-            }
+        qualSuccess.act(payload -> {
+            // For QualSuccess, the payload is null but the action is still called
+            appliedForSuccess.getAndSet(true);
         });
 
         assertTrue(appliedForSuccess.get(), "Success Action taken");

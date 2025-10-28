@@ -1,7 +1,5 @@
 package org.saltations.endeavour;
 
-import java.util.function.Supplier;
-
 /**
  * A Java Supplier function that can throw a checked exception.
  *

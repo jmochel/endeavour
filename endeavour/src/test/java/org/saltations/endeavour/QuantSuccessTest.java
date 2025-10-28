@@ -47,7 +47,7 @@ public class QuantSuccessTest
 
     @Test
     @Order(20)
-    void whenMappedToNullThenReturnsQualSuccess() throws Throwable
+    void whenMappedToNullThenReturnsQualSuccess() throws Exception
     {
         // QuantSuccess.map() with null result should return QualSuccess
         var result = value.map(x -> null);
@@ -63,9 +63,9 @@ public class QuantSuccessTest
 
     @Test
     @Order(21)
-    void whenMappedThenReturnsQuantSuccess() throws Throwable
+    void whenMappedThenReturnsQuantSuccess() throws Exception
     {
-        // QuantSuccess.map() with null result should return QualSuccess
+        // QuantSuccess.map() with non-null result should return QuantSuccess
         var result = value.map(x -> 2 * x);
 
         assertThat(result)
@@ -77,17 +77,17 @@ public class QuantSuccessTest
 
     @Test
     @Order(30)
-    void whenBindingThenReturnsResultOfMappingFunction() throws Throwable
+    void whenBindingThenReturnsResultOfMappingFunction() throws Exception
     {
         // QuantSuccess.flatMap() calls mapping.apply(value) and returns the result
-        var result1 = value.flatMap(x -> Try.success(x * 2));
+        var result1 = value.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x * 2));
         assertThat(result1)
             .isSuccess()
             .isQuantSuccess()
             .hasPayload()
             .hasValue(2222L);
         
-        var outcome2 = value.flatMap(x -> Try.failure());
+        var outcome2 = value.flatMap((CheckedFunction<Long, Result<Object>>) x -> Try.failure());
         assertThat(outcome2)
             .isFailure();
     }
@@ -109,9 +109,9 @@ public class QuantSuccessTest
 
     @Test
     @Order(30)
-    void whenMappingPayloadToNewPayloadOnSuccessThenReturnsNewValue() throws Throwable
+    void whenMappingPayloadToNewPayloadOnSuccessThenReturnsNewValue() throws Exception
     {
-        var outcome = value.flatMap(x -> Try.success(x * 3));
+        var outcome = value.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x * 3));
 
         assertThat(outcome)
             .isSuccess()
@@ -122,9 +122,9 @@ public class QuantSuccessTest
    
     @Test
     @Order(32)
-    void whenMappingPayloadOnSuccessToNullThenReturnsNoValue() throws Throwable
+    void whenMappingPayloadOnSuccessToNullThenReturnsNoValue() throws Exception
     {
-        var outcome = value.flatMap(x -> Try.failure());
+        var outcome = value.flatMap((CheckedFunction<Long, Result<Object>>) x -> Try.failure());
         assertThat(outcome)
             .isFailure();
     }
@@ -163,17 +163,14 @@ public class QuantSuccessTest
 
     @Test
     @Order(70)
-    void whenTakingActionOnBothThenTakesSuccessAction()
+    void whenTakingActionOnBothThenTakesSuccessAction() throws Exception
     {
         final AtomicBoolean appliedForFailure = new AtomicBoolean(false);
         final AtomicBoolean appliedForSuccess = new AtomicBoolean(false);
 
-        value.act(x -> {
-            switch (x)
-            {
-                case Failure<Long> out -> appliedForFailure.getAndSet(true);
-                case Success<Long> out -> appliedForSuccess.getAndSet(true);
-            }
+        value.act(payload -> {
+            // For QuantSuccess, the payload is the actual value
+            appliedForSuccess.getAndSet(true);
         });
 
         assertTrue(appliedForSuccess.get(), "Success Action taken");
@@ -182,7 +179,7 @@ public class QuantSuccessTest
 
     @Test
     @Order(80)
-    void whenMappingThenTakesSuccessAction()
+    void whenMappingThenTakesSuccessAction() throws Exception
     {
         var outcome = value.map(x -> x * 3);
 
@@ -195,9 +192,9 @@ public class QuantSuccessTest
 
     @Test
     @Order(90)
-    void whenFlatMappingThenTakesSuccessAction()
+    void whenFlatMappingThenTakesSuccessAction() throws Exception
     {
-        var outcome = value.flatMap(x -> Try.success(x * 3));
+        var outcome = value.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x * 3));
 
         assertThat(outcome)
             .isSuccess()

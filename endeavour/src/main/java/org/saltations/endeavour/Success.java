@@ -1,5 +1,7 @@
 package org.saltations.endeavour;
 
+import java.util.Objects;
+
 /**
  * Represents a successful operation result. This interface is implemented by
  * {@link QuantSuccess} (for operations that produced a value) and {@link QualSuccess}
@@ -28,18 +30,24 @@ public sealed interface Success<T> extends Result<T> permits QuantSuccess, QualS
 
     default Result<T> orElse(Result<T> alternateResult)
     {
-        if (alternateResult == null) {
-            throw new NullPointerException("Alternate result cannot be null");
-        }
+        Objects.requireNonNull(alternateResult, "Alternate result cannot be null");
+
         return alternateResult;
     }
 
     default Result<T> orElseGet(CheckedSupplier<Result<T>> supplier)
     {
-        if (supplier == null) {
-            throw new NullPointerException("CheckedSupplier cannot be null");
-        }
+        Objects.requireNonNull(supplier, "CheckedSupplier cannot be null");
+
         return this;
+    }
+
+    @Override
+    default void act(CheckedConsumer<T> action) throws Exception
+    {
+        Objects.requireNonNull(action, "Action cannot be null");
+        
+        action.accept(get());
     }
 
 

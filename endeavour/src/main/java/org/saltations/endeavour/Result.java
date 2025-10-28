@@ -82,24 +82,27 @@ public sealed interface Result<T> permits Failure, Success
      * @param mapping a mapping function for T to U. <b>Not null.</b> <b>Must handle nulls from the {@code Result#get()}. method</b>
      *
      * @return mapped result
+     * 
+     * @throws Exception if the mapping function throws a checked exception
      *
      * @param <U>
      */
 
-    <U> Result<U> map(@NonNull Function<T,U> mapping);
+    <U> Result<U> map(@NonNull CheckedFunction<T,U> mapping) throws Exception;
 
     /**
      * Maps the unwrapped payload of type {@code T} to {@code Result<U>}
      *
-     * @param mapping a mapping function for T to  {@code Result<U>}.  <b>Not null.</b> <b>Must handle nulls.</b>
+     * @param mapping a mapping function for T to {@code Result<U>}. <b>Not null.</b> <b>Must handle nulls.</b>
      *
      * @return mapped result
+     * 
+     * @throws Exception if the mapping function throws a checked exception
      *
      * @param <U>
      */
 
-    @Deprecated
-    <U> Result<U> flatMap(@NonNull Function<T,Result<U>> mapping);
+    <U> Result<U> flatMap(@NonNull CheckedFunction<T,Result<U>> mapping) throws Exception;
 
     /**
      * If this outcome is a success transform to a new outcome
@@ -142,20 +145,19 @@ public sealed interface Result<T> permits Failure, Success
     }
 
     /**
-     * Consumes any {@code Result}
+     * Consumes the payload value from this {@code Result} if it's a success.
+     * For failures, no action is taken.
      *
-     * @param action the action to execute
+     * @param action the action to execute on the payload value. <b>Not null.</b>
+     * 
+     * @throws Exception if the action throws a checked exception
      *
      * <p><b>Example:</b>
      * {@snippet :
-     *   var newResult = outcome.act(x -> log.info("{}", x.get()));
+     *   outcome.act(value -> log.info("Value: {}", value));
      * }
      */
-
-    default void act(ExceptionalConsumer<Result<T>> action)
-    {
-        action.accept(this);
-    }
+    void act(CheckedConsumer<T> action) throws Exception;
 
     /**
      * Executes action if this outcome is a success, takes no action otherwise.

@@ -34,8 +34,10 @@ public record QualSuccess<T>() implements Success<T> {
     }
 
     @Override
-    public <U> Result<U> map(Function<T, U> mapping)
+    public <U> Result<U> map(CheckedFunction<T, U> mapping) throws Exception
     {
+        Objects.requireNonNull(mapping, "Mapping function cannot be null");
+        
         // If the mapping transforms a null into a payload, we are returning a QuantSuccess of an appropriate type,
         // otherwise we are returning QualSuccess
 
@@ -45,8 +47,9 @@ public record QualSuccess<T>() implements Success<T> {
     }
 
     @Override
-    public <U> Result<U> flatMap(Function<T, Result<U>> mapping)
+    public <U> Result<U> flatMap(CheckedFunction<T, Result<U>> mapping) throws Exception
     {
+        Objects.requireNonNull(mapping, "Mapping function cannot be null");
         return mapping.apply(null);
     }
 

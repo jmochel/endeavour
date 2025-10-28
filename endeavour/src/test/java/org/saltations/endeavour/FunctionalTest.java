@@ -22,22 +22,10 @@ public class FunctionalTest {
     }
 
     @Test
-    public void whenWrappedExceptionalSupplierThrowsExceptionThenShouldThrowRecastException() {
-        var supplier = Functional.toSupplier(() -> new File("/notarealpathhere/foo.txt").createNewFile());
-        assertThrows(RuntimeException.class, () -> supplier.get());
-    }
-
-    @Test
     @Order(1)
     public void whenWrappedExceptionalFunctionThrowsExceptionThenShouldThrowRecastException() {
         var function = Functional.toFunction(x -> new File("/notarealpathhere/foo.txt").createNewFile());
         assertThrows(RuntimeException.class, () -> function.apply("nothing"));
-    }
-
-    @Test
-    public void whenWrappedExceptionalConsumerThrowsExceptionThenShouldThrowRecastException() {
-        var consumer = Functional.toConsumer(x -> new File("/notarealpathhere/foo.txt").createNewFile());
-        assertThrows(RuntimeException.class, () -> consumer.accept("nothing"));
     }
 
     @Test

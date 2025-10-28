@@ -48,7 +48,7 @@ public class FailureTest
 
     @Test
     @Order(20)
-    void whenMappingThenReturnsThenNewFailureInstance()
+    void whenMappingThenReturnsThenNewFailureInstance() throws Exception
     {
         var result = failure.map(x -> "999");
 
@@ -62,9 +62,9 @@ public class FailureTest
 
     @Test
     @Order(30)
-    void whenMappingPayloadThenReturnsNewFailureInstance()
+    void whenMappingPayloadThenReturnsNewFailureInstance() throws Exception
     {
-        var outcome = failure.flatMap(x -> Try.success(x * 3));
+        var outcome = failure.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x * 3));
 
         assertThat(outcome)
             .isFailure()
@@ -93,16 +93,15 @@ public class FailureTest
 
     @Test
     @Order(50)
-    void whenActInvokedOnFailureThenExecutesFailureAction() {
-        final AtomicBoolean failureActionCalled = new AtomicBoolean(false);
+    void whenActInvokedOnFailureThenNoActionIsExecuted() throws Exception {
+        final AtomicBoolean actionCalled = new AtomicBoolean(false);
 
-        failure.act(res -> {
-            if (res instanceof Failure) {
-                failureActionCalled.set(true);
-            }
+        failure.act(payload -> {
+            // This should never be called for failures
+            actionCalled.set(true);
         });
 
-        assertTrue(failureActionCalled.get(), "Action for Failure should be called");
+        assertFalse(actionCalled.get(), "Action should not be called for failures");
     }
 
 

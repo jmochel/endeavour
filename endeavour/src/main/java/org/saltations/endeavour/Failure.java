@@ -51,14 +51,17 @@ public record Failure<T>(FailureDescription description) implements Result<T>
     }
 
     @Override
-    public <U> Result<U> map(Function<T, U> mapping)
+    public <U> Result<U> map(CheckedFunction<T, U> mapping) throws Exception
     {
+        Objects.requireNonNull(mapping, "Mapping function cannot be null");
+        
         return new Failure<U>(description);
     }
 
     @Override
-    public <U> Result<U> flatMap(Function<T, Result<U>> mapping)
+    public <U> Result<U> flatMap(CheckedFunction<T, Result<U>> mapping) throws Exception
     {
+        Objects.requireNonNull(mapping, "Mapping function cannot be null");
         return new Failure<U>(description);
     }
 
@@ -66,6 +69,13 @@ public record Failure<T>(FailureDescription description) implements Result<T>
     public Result<T> flatMap(ExceptionalFunction<T, Result<T>> transform)
     {
         return this;
+    }
+
+    @Override
+    public void act(CheckedConsumer<T> action) throws Exception
+    {
+        Objects.requireNonNull(action, "Action cannot be null");
+        // Do Nothing
     }
 
     @Override
@@ -140,5 +150,7 @@ public record Failure<T>(FailureDescription description) implements Result<T>
                                            .append("]")
                                            .toString();
     }
+
+
 
 }

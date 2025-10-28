@@ -18,23 +18,6 @@ import java.util.function.Supplier;
 public class Functional
 {
     /**
-     * Wraps an {@code ExceptionalSupplier} in a {@code Supplier}.
-     */
-
-    public static <R> Supplier<R> toSupplier(ExceptionalSupplier<R> exceptionalSupplier)
-    {
-        return exceptionalSupplier;
-    }
-
-    /**
-     * Casts an {@code ExceptionalConsumer} to a {@code Consumer}.
-     */
-
-    public static <R> Consumer<R> toConsumer(ExceptionalConsumer<R> exceptionalConsumer) {
-        return exceptionalConsumer;
-    }
-
-    /**
      * Casts an {@code ExceptionalBiConsumer} to a {@code BiConsumer}.
      */
 

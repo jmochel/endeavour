@@ -1,6 +1,5 @@
 package org.saltations.endeavour;
 
-import java.util.function.Function;
 import java.util.Optional;
 import java.util.Objects;
 
@@ -66,13 +65,6 @@ public record Failure<T>(FailureDescription description) implements Result<T>
     }
 
     @Override
-    public void act(CheckedConsumer<T> action) throws Exception
-    {
-        Objects.requireNonNull(action, "Action cannot be null");
-        // Do Nothing
-    }
-
-    @Override
     public Result<T> ifSuccess(CheckedConsumer<Success<T>> action) throws Exception
     {
         Objects.requireNonNull(action, "Action cannot be null");
@@ -102,7 +94,7 @@ public record Failure<T>(FailureDescription description) implements Result<T>
         if (supplier == null) {
             throw new NullPointerException("CheckedSupplier cannot be null");
         }
-        
+
         try
         {
             return supplier.get();
@@ -130,6 +122,15 @@ public record Failure<T>(FailureDescription description) implements Result<T>
                     .build());
             };
         }
+    }
+
+    @Override
+    public <V> V reduce(CheckedFunction<T, V> onSuccess, CheckedFunction<Failure<T>, V> onFailure) throws Exception
+    {
+        Objects.requireNonNull(onSuccess, "Success function cannot be null");
+        Objects.requireNonNull(onFailure, "Failure function cannot be null");
+
+        return onFailure.apply(this);
     }
 
 

@@ -90,21 +90,6 @@ public class FailureTest
         assertEquals("Failure path", result, "Reduced to 'Failure path'");
     }
 
-
-    @Test
-    @Order(50)
-    void whenActInvokedOnFailureThenNoActionIsExecuted() throws Exception {
-        final AtomicBoolean actionCalled = new AtomicBoolean(false);
-
-        failure.act(payload -> {
-            // This should never be called for failures
-            actionCalled.set(true);
-        });
-
-        assertFalse(actionCalled.get(), "Action should not be called for failures");
-    }
-
-
     @Test
     @Order(60)
     void whenIfSuccessThenDoesNotTakeAction() throws Exception {

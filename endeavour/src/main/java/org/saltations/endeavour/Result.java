@@ -1,7 +1,6 @@
 package org.saltations.endeavour;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 import lombok.NonNull;
 
@@ -74,6 +73,7 @@ public sealed interface Result<T> permits Failure, Success
      * 
      * @return {@code Optional} containing the success payload if this outcome is a {@code QuantSuccess}, otherwise an empty {@code Optional}.
      */
+
     Optional<T> opt();
 
     /**
@@ -111,41 +111,13 @@ public sealed interface Result<T> permits Failure, Success
      * @param onFailure function to apply if this is a failure. <b>Not null.</b>
      *
      * @return the result of applying the appropriate function
-     * 
+     *
      * @throws Exception if either function throws a checked exception
      *
      * @param <V> the type of the reduced value
      */
-    default <V> V reduce(@NonNull CheckedFunction<T, V> onSuccess, @NonNull CheckedFunction<Failure<T>, V> onFailure) throws Exception
-    {
-        if (onSuccess == null) {
-            throw new NullPointerException("Success function cannot be null");
-        }
-        if (onFailure == null) {
-            throw new NullPointerException("Failure function cannot be null");
-        }
-        
-        return switch (this) {
-            case QuantSuccess<T> value -> onSuccess.apply(value.get());
-            case QualSuccess<T> qualSuccess -> onSuccess.apply(null);
-            case Failure<T> failure -> onFailure.apply(failure);
-        };
-    }
 
-    /**
-     * Consumes the payload value from this {@code Result} if it's a success.
-     * For failures, no action is taken.
-     *
-     * @param action the action to execute on the payload value. <b>Not null.</b>
-     * 
-     * @throws Exception if the action throws a checked exception
-     *
-     * <p><b>Example:</b>
-     * {@snippet :
-     *   outcome.act(value -> log.info("Value: {}", value));
-     * }
-     */
-    void act(CheckedConsumer<T> action) throws Exception;
+    <V> V reduce(@NonNull CheckedFunction<T, V> onSuccess, @NonNull CheckedFunction<Failure<T>, V> onFailure) throws Exception;
 
     /**
      * Executes action if this outcome is a success, takes no action otherwise.

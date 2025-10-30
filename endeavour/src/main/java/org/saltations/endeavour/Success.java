@@ -40,14 +40,13 @@ public sealed interface Success<T> extends Result<T> permits QuantSuccess, QualS
     }
 
     @Override
-    default void act(CheckedConsumer<T> action) throws Exception
+    default <V> V reduce(CheckedFunction<T, V> onSuccess, CheckedFunction<Failure<T>, V> onFailure) throws Exception
     {
-        Objects.requireNonNull(action, "Action cannot be null");
-        
-        action.accept(get());
+        Objects.requireNonNull(onSuccess, "Success function cannot be null");
+        Objects.requireNonNull(onFailure, "Failure function cannot be null");
+
+        return onSuccess.apply(get());
     }
-
-
 
 }
 

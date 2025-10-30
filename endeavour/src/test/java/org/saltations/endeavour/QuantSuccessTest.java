@@ -162,22 +162,6 @@ public class QuantSuccessTest
     }
 
     @Test
-    @Order(70)
-    void whenTakingActionOnBothThenTakesSuccessAction() throws Exception
-    {
-        final AtomicBoolean appliedForFailure = new AtomicBoolean(false);
-        final AtomicBoolean appliedForSuccess = new AtomicBoolean(false);
-
-        value.act(payload -> {
-            // For QuantSuccess, the payload is the actual value
-            appliedForSuccess.getAndSet(true);
-        });
-
-        assertTrue(appliedForSuccess.get(), "Success Action taken");
-        assertFalse(appliedForFailure.get(), "Failure Action taken");
-    }
-
-    @Test
     @Order(80)
     void whenMappingThenTakesSuccessAction() throws Exception
     {

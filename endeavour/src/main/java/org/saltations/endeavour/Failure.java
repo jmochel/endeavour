@@ -76,8 +76,9 @@ public record Failure<T>(FailureDescription description) implements Result<T>
             return action.accept(this);
         } catch (Exception ex) {
             return new Failure<>(FailureDescription.of()
-                .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                .type(FailureDescription.GenericFailureType.GENERIC_CONSUMER_EXCEPTION)
                 .cause(ex)
+                .precedingFailure(this.description)
                 .build());
         }
     }
@@ -108,6 +109,7 @@ public record Failure<T>(FailureDescription description) implements Result<T>
             return new Failure<>(FailureDescription.of()
                 .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
                 .cause(ex)
+                .precedingFailure(this.description)
                 .build());
         }
         catch (Exception e)
@@ -117,10 +119,12 @@ public record Failure<T>(FailureDescription description) implements Result<T>
                 case RuntimeException ex -> new Failure<>(FailureDescription.of()
                     .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
                     .cause(ex)
+                    .precedingFailure(this.description)
                     .build());
                 case Exception ex -> new Failure<>(FailureDescription.of()
                     .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
                     .cause(ex)
+                    .precedingFailure(this.description)
                     .build());
             };
         }

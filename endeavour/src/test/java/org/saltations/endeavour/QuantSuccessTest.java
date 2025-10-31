@@ -77,7 +77,7 @@ public class QuantSuccessTest
 
     @Test
     @Order(30)
-    void whenBindingThenReturnsResultOfMappingFunction() throws Exception
+    void whenBindingThenReturnsResultOfMappingFunction()
     {
         // QuantSuccess.flatMap() calls mapping.apply(value) and returns the result
         var result1 = value.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x * 2));
@@ -109,7 +109,7 @@ public class QuantSuccessTest
 
     @Test
     @Order(30)
-    void whenMappingPayloadToNewPayloadOnSuccessThenReturnsNewValue() throws Exception
+    void whenMappingPayloadToNewPayloadOnSuccessThenReturnsNewValue()
     {
         var outcome = value.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x * 3));
 
@@ -122,7 +122,7 @@ public class QuantSuccessTest
    
     @Test
     @Order(32)
-    void whenMappingPayloadOnSuccessToNullThenReturnsNoValue() throws Exception
+    void whenMappingPayloadOnSuccessToNullThenReturnsNoValue()
     {
         var outcome = value.flatMap((CheckedFunction<Long, Result<Object>>) x -> Try.failure());
         assertThat(outcome)
@@ -141,13 +141,13 @@ public class QuantSuccessTest
 
     @Test
     @Order(60)
-    void whenTransformingResultOnFailureThenReturnsExistingSuccess() throws Exception
+    void whenTransformingResultOnFailureThenReturnsExistingSuccess()
     {
         var outcome = value.reduce(
             success -> value,  // Return original result for success cases
             failure -> Try.success(failure.get() * 3)
         );
-        assertSame(outcome, value, "Existing Success");
+        assertSame(outcome.get(), value, "Existing Success");
     }
 
 
@@ -159,22 +159,6 @@ public class QuantSuccessTest
 
         value.ifFailure(x -> applied.getAndSet(true));
         assertFalse(applied.get(), "Action taken");
-    }
-
-    @Test
-    @Order(70)
-    void whenTakingActionOnBothThenTakesSuccessAction() throws Exception
-    {
-        final AtomicBoolean appliedForFailure = new AtomicBoolean(false);
-        final AtomicBoolean appliedForSuccess = new AtomicBoolean(false);
-
-        value.act(payload -> {
-            // For QuantSuccess, the payload is the actual value
-            appliedForSuccess.getAndSet(true);
-        });
-
-        assertTrue(appliedForSuccess.get(), "Success Action taken");
-        assertFalse(appliedForFailure.get(), "Failure Action taken");
     }
 
     @Test
@@ -192,7 +176,7 @@ public class QuantSuccessTest
 
     @Test
     @Order(90)
-    void whenFlatMappingThenTakesSuccessAction() throws Exception
+    void whenFlatMappingThenTakesSuccessAction()
     {
         var outcome = value.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x * 3));
 
@@ -205,14 +189,14 @@ public class QuantSuccessTest
 
     @Test
     @Order(100)
-    void whenTransformingThenGivesTransformedResult() throws Exception
+    void whenTransformingThenGivesTransformedResult()
     {
         var result = value.reduce(
             v -> "Success with value",
             f -> "Failure"
         );
 
-        assertEquals("Success with value", result, "Transformed to 'Success with value'");
+        assertEquals("Success with value", result.get(), "Transformed to 'Success with value'");
     }
 
     @Test

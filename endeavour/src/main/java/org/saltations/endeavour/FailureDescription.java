@@ -61,23 +61,65 @@ public class FailureDescription
     private Exception cause;
 
     /**
+     * A reference to the failure that preceded this one, forming a chain of failures.
+     * <p>
+     * This field enables tracking failure chains where one failure leads to another,
+     * providing full context of what went wrong. This is particularly useful for:
+     * <ul>
+     *   <li>Multi-step operations where each step can fail</li>
+     *   <li>Recovery attempts that themselves fail</li>
+     *   <li>Cascading failures in distributed systems</li>
+     *   <li>Debugging complex failure scenarios</li>
+     * </ul>
+     * <p>
+     * Example usage:
+     * <pre>{@code
+     * // Original failure during database operation
+     * var dbFailure = FailureDescription.of()
+     *     .type(DatabaseFailureType.CONNECTION_FAILED)
+     *     .detail("Connection timeout after 30s")
+     *     .build();
+     *
+     * // Subsequent failure during retry attempt
+     * var retryFailure = FailureDescription.of()
+     *     .type(RetryFailureType.MAX_RETRIES_EXCEEDED)
+     *     .detail("Failed after 3 retry attempts")
+     *     .precedingFailure(dbFailure)
+     *     .build();
+     * }</pre>
+     */
+    private final FailureDescription precedingFailure;
+
+    /**
      * Creates a new FailureAnalysis with the specified parameters.
      *
-     * @param type   The type of failure. If null, defaults to {@link GenericFailureType#GENERIC}
-     * @param title  The title of the failure
-     * @param detail Additional details about the failure
-     * @param cause  The underlying exception that caused this failure, if any
+     * @param type             The type of failure. If null, defaults to {@link GenericFailureType#GENERIC}
+     * @param title            The title of the failure
+     * @param detail           Additional details about the failure
+     * @param cause            The underlying exception that caused this failure, if any
+     * @param precedingFailure The failure that preceded this one in a chain, if any
      */
-    public FailureDescription(FailureType type, String title, String detail, Exception cause) {
+    public FailureDescription(FailureType type, String title, String detail, Exception cause, FailureDescription precedingFailure) {
         this.type = nonNull(type) ? type : GenericFailureType.GENERIC;
         this.title = title;
         this.detail = detail;
         this.cause = cause;
+        this.precedingFailure = precedingFailure;
     }
 
     public boolean hasCause()
     {
         return cause != null;
+    }
+
+    /**
+     * Checks if this failure has a preceding failure in the chain.
+     *
+     * @return true if there is a preceding failure, false otherwise
+     */
+    public boolean hasPrecedingFailure()
+    {
+        return precedingFailure != null;
     }
 
     /**
@@ -134,6 +176,7 @@ public class FailureDescription
 
         private FailureType type;
         private Exception cause;
+        private FailureDescription precedingFailure;
 
         // Additional fields input for building
 
@@ -153,6 +196,7 @@ public class FailureDescription
             this.title = initialData.title;
             this.detail = initialData.detail;
             this.cause = initialData.cause;
+            this.precedingFailure = initialData.precedingFailure;
         }
 
 
@@ -230,14 +274,45 @@ public class FailureDescription
 
         /**
          * Sets the arguments to be used in expanding the template.
-         * 
+         *
          * @param args The arguments of the failure.
-         * 
+         *
          * @return The builder instance.
          */
         public Builder args(Object... args)
         {
             this.args = args;
+            return this;
+        }
+
+        /**
+         * Sets the preceding failure in the failure chain.
+         * <p>
+         * This allows tracking chains of failures where one failure leads to another.
+         * The preceding failure provides context about what went wrong earlier in the
+         * operation sequence.
+         *
+         * @param precedingFailure The failure that occurred before this one
+         *
+         * @return The builder instance
+         *
+         * <p><b>Example:</b>
+         * <pre>{@code
+         * var originalFailure = FailureDescription.of()
+         *     .type(NetworkFailureType.TIMEOUT)
+         *     .detail("Request timed out after 30s")
+         *     .build();
+         *
+         * var chainedFailure = FailureDescription.of()
+         *     .type(OperationFailureType.CANCELLED)
+         *     .detail("Operation cancelled due to network failure")
+         *     .precedingFailure(originalFailure)
+         *     .build();
+         * }</pre>
+         */
+        public Builder precedingFailure(FailureDescription precedingFailure)
+        {
+            this.precedingFailure = precedingFailure;
             return this;
         }
 
@@ -289,10 +364,10 @@ public class FailureDescription
             }
 
             // Title comes from the provided title, then from the type
-            
+
             this.title = titleProvided ? this.title : this.type.getTitle();
 
-            return new FailureDescription(this.type, this.title, this.detail, this.cause);
+            return new FailureDescription(this.type, this.title, this.detail, this.cause, this.precedingFailure);
         }
 
         /**

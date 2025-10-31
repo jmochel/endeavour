@@ -1,6 +1,7 @@
 package org.saltations.endeavour;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Represents a successful operation result. This interface is implemented by
@@ -40,14 +41,16 @@ public sealed interface Success<T> extends Result<T> permits QuantSuccess, QualS
     }
 
     @Override
-    default void act(CheckedConsumer<T> action) throws Exception
+    default <V> Optional<V> reduce(CheckedFunction<T, V> onSuccess, CheckedFunction<Failure<T>, V> onFailure)
     {
-        Objects.requireNonNull(action, "Action cannot be null");
-        
-        action.accept(get());
+        Objects.requireNonNull(onSuccess, "Success function cannot be null");
+
+        try {
+            return Optional.ofNullable(onSuccess.apply(get()));
+        } catch (Exception ex) {
+            return Optional.empty();
+        }
     }
-
-
 
 }
 

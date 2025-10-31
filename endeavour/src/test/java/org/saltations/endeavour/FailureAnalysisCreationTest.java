@@ -80,14 +80,15 @@ class FailureAnalysisCreationTest
         void andFailureTypeIsExplicitlyNullThenAnalysisHasDefaultGenericTypeTitleAndEmptyDetails()
         {
             // Given
-            var analysis = new FailureDescription(null, null, null, null);
+            var analysis = new FailureDescription(null, null, null, null, null);
 
             // Then
             assertAll(
                 () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, analysis.getType()),
                 () -> assertNull(analysis.getTitle()),
                 () -> assertNull(analysis.getDetail()),
-                () -> assertFalse(analysis.hasCause())
+                () -> assertFalse(analysis.hasCause()),
+                () -> assertFalse(analysis.hasPrecedingFailure())
             );
         }
 
@@ -96,14 +97,15 @@ class FailureAnalysisCreationTest
         void andNothingElseThenAnalysisHasDefaultGenericTypeTitleAndEmptyDetails()
         {
             // Given
-            var analysis = new FailureDescription(null, null, null, null);
+            var analysis = new FailureDescription(null, null, null, null, null);
 
             // Then
             assertAll(
                 () -> assertEquals(FailureDescription.GenericFailureType.GENERIC, analysis.getType()),
                 () -> assertNull(analysis.getTitle()),
                 () -> assertNull(analysis.getDetail()),
-                () -> assertFalse(analysis.hasCause())
+                () -> assertFalse(analysis.hasCause()),
+                () -> assertFalse(analysis.hasPrecedingFailure())
             );
         }
 
@@ -112,7 +114,7 @@ class FailureAnalysisCreationTest
         void andFailureTypeIsExplicitlyGenericThenAnalysisHasGenericTypeTitleAndEmptyDetails()
         {
             // Given
-            var analysis = new FailureDescription(FailureDescription.GenericFailureType.GENERIC, null, null, null);
+            var analysis = new FailureDescription(FailureDescription.GenericFailureType.GENERIC, null, null, null, null);
 
             // Then
             assertAll(
@@ -922,7 +924,147 @@ class FailureAnalysisCreationTest
                 .cause(testException)
                 .build();
 
-        assertEquals("", analysis.getDetail(), 
+        assertEquals("", analysis.getDetail(),
                 "Should use empty detail when cause has null message");
+    }
+
+    /**
+     * Tests for the precedingFailure feature that enables failure chaining.
+     * <p>
+     * Failure chaining allows tracking sequences of failures where one failure leads
+     * to another, providing full context for debugging complex scenarios.
+     */
+    @Nested
+    @Order(110)
+    @DisplayNameGeneration(ReplaceBDDCamelCase.class)
+    class WhenBuildingWithPrecedingFailure
+    {
+        @Test
+        @Order(1)
+        void thenHasPrecedingFailureReturnsTrue()
+        {
+            // Given: A preceding failure
+            var precedingFailure = FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC)
+                    .detail("Original failure")
+                    .build();
+
+            // When: Building a new failure with the preceding failure
+            var chainedFailure = FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC)
+                    .detail("Chained failure")
+                    .precedingFailure(precedingFailure)
+                    .build();
+
+            // Then
+            assertAll("Chained failure",
+                    () -> assertTrue(chainedFailure.hasPrecedingFailure(), "has preceding failure"),
+                    () -> assertNotNull(chainedFailure.getPrecedingFailure(), "preceding failure is not null"),
+                    () -> assertEquals(precedingFailure, chainedFailure.getPrecedingFailure(), "preceding failure matches")
+            );
+        }
+
+        @Test
+        @Order(2)
+        void andNoPrecedingFailureThenHasPrecedingFailureReturnsFalse()
+        {
+            // When: Building a failure without a preceding failure
+            var failure = FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC)
+                    .detail("Standalone failure")
+                    .build();
+
+            // Then
+            assertAll("Standalone failure",
+                    () -> assertFalse(failure.hasPrecedingFailure(), "has no preceding failure"),
+                    () -> assertNull(failure.getPrecedingFailure(), "preceding failure is null")
+            );
+        }
+
+        @Test
+        @Order(3)
+        void andMultipleLevelChainThenPreservesFullChain()
+        {
+            // Given: A chain of three failures
+            var firstFailure = FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC)
+                    .detail("First failure in chain")
+                    .build();
+
+            var secondFailure = FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC)
+                    .detail("Second failure in chain")
+                    .precedingFailure(firstFailure)
+                    .build();
+
+            var thirdFailure = FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC)
+                    .detail("Third failure in chain")
+                    .precedingFailure(secondFailure)
+                    .build();
+
+            // Then: Can traverse the full chain
+            assertAll("Full failure chain",
+                    () -> assertTrue(thirdFailure.hasPrecedingFailure(), "third has preceding"),
+                    () -> assertEquals(secondFailure, thirdFailure.getPrecedingFailure(), "third -> second"),
+                    () -> assertTrue(secondFailure.hasPrecedingFailure(), "second has preceding"),
+                    () -> assertEquals(firstFailure, secondFailure.getPrecedingFailure(), "second -> first"),
+                    () -> assertFalse(firstFailure.hasPrecedingFailure(), "first has no preceding")
+            );
+        }
+
+        @Test
+        @Order(4)
+        void andCopyConstructorThenPreservesPrecedingFailure()
+        {
+            // Given: A failure with a preceding failure
+            var precedingFailure = FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC)
+                    .detail("Preceding failure")
+                    .build();
+
+            var originalFailure = FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC)
+                    .detail("Original failure")
+                    .precedingFailure(precedingFailure)
+                    .build();
+
+            // When: Using copy constructor
+            var copiedFailure = new FailureDescription.Builder(originalFailure)
+                    .detail("Modified detail")
+                    .build();
+
+            // Then: Preceding failure is preserved
+            assertAll("Copied failure",
+                    () -> assertTrue(copiedFailure.hasPrecedingFailure(), "has preceding failure"),
+                    () -> assertEquals(precedingFailure, copiedFailure.getPrecedingFailure(), "preceding failure matches"),
+                    () -> assertEquals("Modified detail", copiedFailure.getDetail(), "detail was modified")
+            );
+        }
+
+        @Test
+        @Order(5)
+        void withDifferentFailureTypesThenChainPreservesTypes()
+        {
+            // Given: Different failure types in chain
+            var runtimeFailure = FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC_RUNTIME_EXCEPTION)
+                    .cause(new RuntimeException("Runtime error"))
+                    .build();
+
+            var interruptedFailure = FailureDescription.of()
+                    .type(FailureDescription.GenericFailureType.GENERIC_INTERRUPTED_EXCEPTION)
+                    .cause(new InterruptedException("Thread interrupted"))
+                    .precedingFailure(runtimeFailure)
+                    .build();
+
+            // Then: Types are preserved
+            assertAll("Failure types in chain",
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC_INTERRUPTED_EXCEPTION,
+                            interruptedFailure.getType(), "current failure type"),
+                    () -> assertEquals(FailureDescription.GenericFailureType.GENERIC_RUNTIME_EXCEPTION,
+                            interruptedFailure.getPrecedingFailure().getType(), "preceding failure type")
+            );
+        }
     }
 }

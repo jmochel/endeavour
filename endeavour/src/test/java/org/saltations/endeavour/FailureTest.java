@@ -2,7 +2,6 @@ package org.saltations.endeavour;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 import org.junit.jupiter.api.ClassOrderer;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -15,8 +14,6 @@ import org.saltations.endeavour.fixture.ReplaceBDDCamelCase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.saltations.endeavour.fixture.ResultAssert.assertThat;
@@ -62,7 +59,7 @@ public class FailureTest
 
     @Test
     @Order(30)
-    void whenMappingPayloadThenReturnsNewFailureInstance() throws Exception
+    void whenMappingPayloadThenReturnsNewFailureInstance()
     {
         var outcome = failure.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x * 3));
 
@@ -76,9 +73,9 @@ public class FailureTest
 
     @Test
     @Order(40)
-    void whenReducingFailureThenCallsFailureFunction() throws Exception
+    void whenReducingFailureThenCallsFailureFunction()
     {
-        String result = failure.reduce(
+        Optional<String> result = failure.reduce(
             success -> {
                 return "Success path";
             },
@@ -87,23 +84,8 @@ public class FailureTest
             }
         );
 
-        assertEquals("Failure path", result, "Reduced to 'Failure path'");
+        assertEquals("Failure path", result.get(), "Reduced to 'Failure path'");
     }
-
-
-    @Test
-    @Order(50)
-    void whenActInvokedOnFailureThenNoActionIsExecuted() throws Exception {
-        final AtomicBoolean actionCalled = new AtomicBoolean(false);
-
-        failure.act(payload -> {
-            // This should never be called for failures
-            actionCalled.set(true);
-        });
-
-        assertFalse(actionCalled.get(), "Action should not be called for failures");
-    }
-
 
     @Test
     @Order(60)

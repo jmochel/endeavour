@@ -1,6 +1,5 @@
 package org.saltations.endeavour;
 
-import java.util.function.Function;
 import java.util.Optional;
 import java.util.Objects;
 
@@ -53,30 +52,18 @@ public record Failure<T>(FailureDescription description) implements Result<T>
     @Override
     public <U> Result<U> map(CheckedFunction<T, U> mapping) throws Exception
     {
-        Objects.requireNonNull(mapping, "Mapping function cannot be null");
-        
         return new Failure<U>(description);
     }
 
     @Override
-    public <U> Result<U> flatMap(CheckedFunction<T, Result<U>> mapping) throws Exception
+    public <U> Result<U> flatMap(CheckedFunction<T, Result<U>> mapping)
     {
-        Objects.requireNonNull(mapping, "Mapping function cannot be null");
         return new Failure<U>(description);
-    }
-
-    @Override
-    public void act(CheckedConsumer<T> action) throws Exception
-    {
-        Objects.requireNonNull(action, "Action cannot be null");
-        // Do Nothing
     }
 
     @Override
     public Result<T> ifSuccess(CheckedConsumer<Success<T>> action) throws Exception
     {
-        Objects.requireNonNull(action, "Action cannot be null");
-        // Do Nothing
         return this;    
     }
 
@@ -102,7 +89,7 @@ public record Failure<T>(FailureDescription description) implements Result<T>
         if (supplier == null) {
             throw new NullPointerException("CheckedSupplier cannot be null");
         }
-        
+
         try
         {
             return supplier.get();
@@ -129,6 +116,18 @@ public record Failure<T>(FailureDescription description) implements Result<T>
                     .cause(ex)
                     .build());
             };
+        }
+    }
+
+    @Override
+    public <V> Optional<V> reduce(CheckedFunction<T, V> onSuccess, CheckedFunction<Failure<T>, V> onFailure)
+    {
+        Objects.requireNonNull(onFailure, "Failure function cannot be null");
+
+        try {
+            return Optional.ofNullable(onFailure.apply(this));
+        } catch (Exception ex) {
+            return Optional.empty();
         }
     }
 

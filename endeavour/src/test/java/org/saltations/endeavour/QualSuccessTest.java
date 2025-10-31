@@ -74,7 +74,7 @@ public class QualSuccessTest
 
     @Test
     @Order(30)
-    void whenBindingThenReturnsResultOfMappingFunction() throws Exception
+    void whenBindingThenReturnsResultOfMappingFunction()
     {
         var result1 = qualSuccess.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x));
         assertThat(result1)
@@ -92,32 +92,15 @@ public class QualSuccessTest
 
     @Test
     @Order(40)
-    void whenReducingThenReturnsSuccessValue() throws Exception
+    void whenReducingThenReturnsSuccessValue()
     {
         var result = qualSuccess.reduce(
             success -> "Eureka",
             failure -> "DangIt"
         );
 
-        assertSame(result, "Eureka", "Success value");
+        assertSame(result.get(), "Eureka", "Success value");
     }
-
-    @Test
-    @Order(50)
-    void whenTakingActionThenTakesSuccessAction() throws Exception
-    {
-        final AtomicBoolean appliedForFailure = new AtomicBoolean(false);
-        final AtomicBoolean appliedForSuccess = new AtomicBoolean(false);
-
-        qualSuccess.act(payload -> {
-            // For QualSuccess, the payload is null but the action is still called
-            appliedForSuccess.getAndSet(true);
-        });
-
-        assertTrue(appliedForSuccess.get(), "Success Action taken");
-        assertFalse(appliedForFailure.get(), "Failure Action taken");
-    }
-
 
     @Test
     @Order(60)

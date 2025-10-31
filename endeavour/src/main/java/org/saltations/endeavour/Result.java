@@ -1,7 +1,6 @@
 package org.saltations.endeavour;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 import lombok.NonNull;
 
@@ -74,6 +73,7 @@ public sealed interface Result<T> permits Failure, Success
      * 
      * @return {@code Optional} containing the success payload if this outcome is a {@code QuantSuccess}, otherwise an empty {@code Optional}.
      */
+
     Optional<T> opt();
 
     /**
@@ -92,60 +92,35 @@ public sealed interface Result<T> permits Failure, Success
 
     /**
      * Maps the unwrapped payload of type {@code T} to {@code Result<U>}
-     *
-     * @param mapping a mapping function for T to {@code Result<U>}. <b>Not null.</b> <b>Must handle nulls.</b>
+     * <p>
+     * The mapping function must be able to handle nulls. If the mapping function returns a null,
+     * the result will be a {@code Success} of type {@code U}.
+     * <p>
+     * Exceptions thrown by the mapping function are caught and converted to a {@code Failure}.
+     * 
+     * @param mapping a mapping function for T to {@code Result<U>} that can handle nulls. <b>Not null.</b>
      *
      * @return mapped result
-     * 
-     * @throws Exception if the mapping function throws a checked exception
      *
      * @param <U>
      */
 
-    <U> Result<U> flatMap(@NonNull CheckedFunction<T,Result<U>> mapping) throws Exception;
+    <U> Result<U> flatMap(@NonNull CheckedFunction<T,Result<U>> mapping);
 
     /**
      * Reduces the {@code Result<T>} to a single value of type {@code V} using a fold operation.
+     * <p>
+     * Exceptions thrown by the reduction functions are caught and converted to a {@code Failure}.
      *
      * @param onSuccess function to apply if this is a success. <b>Not null.</b>
      * @param onFailure function to apply if this is a failure. <b>Not null.</b>
      *
-     * @return the result of applying the appropriate function
-     * 
-     * @throws Exception if either function throws a checked exception
+     * @return Optional containing the result of applying the appropriate function, empty if the function returns null
      *
      * @param <V> the type of the reduced value
      */
-    default <V> V reduce(@NonNull CheckedFunction<T, V> onSuccess, @NonNull CheckedFunction<Failure<T>, V> onFailure) throws Exception
-    {
-        if (onSuccess == null) {
-            throw new NullPointerException("Success function cannot be null");
-        }
-        if (onFailure == null) {
-            throw new NullPointerException("Failure function cannot be null");
-        }
-        
-        return switch (this) {
-            case QuantSuccess<T> value -> onSuccess.apply(value.get());
-            case QualSuccess<T> qualSuccess -> onSuccess.apply(null);
-            case Failure<T> failure -> onFailure.apply(failure);
-        };
-    }
 
-    /**
-     * Consumes the payload value from this {@code Result} if it's a success.
-     * For failures, no action is taken.
-     *
-     * @param action the action to execute on the payload value. <b>Not null.</b>
-     * 
-     * @throws Exception if the action throws a checked exception
-     *
-     * <p><b>Example:</b>
-     * {@snippet :
-     *   outcome.act(value -> log.info("Value: {}", value));
-     * }
-     */
-    void act(CheckedConsumer<T> action) throws Exception;
+    <V> Optional<V> reduce(@NonNull CheckedFunction<T, V> onSuccess, @NonNull CheckedFunction<Failure<T>, V> onFailure);
 
     /**
      * Executes action if this outcome is a success, takes no action otherwise.

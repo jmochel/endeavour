@@ -133,10 +133,15 @@ public class QuantSuccessTest
     @Order(40)
     void whenTakingActionOnSuccessThenTakesAction() throws Exception
     {
-        final AtomicBoolean applied = new AtomicBoolean(false);
-
-        value.ifSuccess(x -> applied.getAndSet(true));
-        assertTrue(applied.get(), "Action taken");
+        final StringBuilder resultBuilder = new StringBuilder();
+        
+        var result = value.ifSuccess(x -> {
+            resultBuilder.append("Processed: ").append(x.get());
+            return x; // Return the value to satisfy CheckedConsumer contract
+        });
+        
+        assertEquals("Processed: 1111", resultBuilder.toString(), "Action taken");
+        assertSame(value, result, "Should return same result");
     }
 
     @Test
@@ -155,10 +160,15 @@ public class QuantSuccessTest
     @Order(70)
     void whenTakingActionOnFailureThenTakesNoAction() throws Exception
     {
-        final AtomicBoolean applied = new AtomicBoolean(false);
-
-        value.ifFailure(x -> applied.getAndSet(true));
-        assertFalse(applied.get(), "Action taken");
+        final StringBuilder resultBuilder = new StringBuilder();
+        
+        var result = value.ifFailure(x -> {
+            resultBuilder.append("Processed: ").append(x.getTitle());
+            return x; // Return the value to satisfy CheckedConsumer contract
+        });
+        
+        assertEquals("", resultBuilder.toString(), "Action not taken");
+        assertSame(value, result, "Should return same result");
     }
 
     @Test

@@ -1,7 +1,6 @@
 package org.saltations.endeavour;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.ClassOrderer;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -13,7 +12,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.saltations.endeavour.fixture.ReplaceBDDCamelCase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.saltations.endeavour.fixture.ResultAssert.assertThat;
@@ -90,17 +89,29 @@ public class FailureTest
     @Test
     @Order(60)
     void whenIfSuccessThenDoesNotTakeAction() throws Exception {
-        final AtomicBoolean applied = new AtomicBoolean(false);
-        failure.ifSuccess(x -> applied.getAndSet(true));
-        assertFalse(applied.get(), "Action taken");
+        final StringBuilder resultBuilder = new StringBuilder();
+        
+        var result = failure.ifSuccess(x -> {
+            resultBuilder.append("Processed: ").append(x.get());
+            return x; // Return the value to satisfy CheckedConsumer contract
+        });
+        
+        assertEquals("", resultBuilder.toString(), "Action not taken");
+        assertSame(failure, result, "Should return same result");
     }
 
     @Test
     @Order(61)
     void whenIfFailureThenTakesAction() throws Exception {
-        final AtomicBoolean applied = new AtomicBoolean(false);
-        failure.ifFailure(x -> applied.getAndSet(true));
-        assertTrue(applied.get(), "Action taken");
+        final StringBuilder resultBuilder = new StringBuilder();
+        
+        var result = failure.ifFailure(x -> {
+            resultBuilder.append("Processed: ").append(x.getTitle());
+            return x; // Return the value to satisfy CheckedConsumer contract
+        });
+        
+        assertTrue(resultBuilder.length() > 0, "Action taken");
+        assertSame(failure, result, "Should return same result");
     }
 
 

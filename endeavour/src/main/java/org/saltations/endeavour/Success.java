@@ -13,14 +13,22 @@ import java.util.Optional;
 public sealed interface Success<T> extends Result<T> permits QuantSuccess, QualSuccess {
 
 
-    default Result<T> ifSuccess(CheckedConsumer<Success<T>> action) throws Exception
+    default Result<T> ifSuccess(CheckedConsumer<Success<T>> action)
     {
         Objects.requireNonNull(action, "Action cannot be null");
-        action.accept(this);
-        return this;
+        
+        
+        try {
+            return action.accept(this);
+        } catch (Exception ex) {
+            return new Failure<>(FailureDescription.of()
+                .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                .cause(ex)
+                .build());
+        }
     }
 
-    default Result<T> ifFailure(CheckedConsumer<Failure<T>> action) throws Exception
+    default Result<T> ifFailure(CheckedConsumer<Failure<T>> action)
     {
         Objects.requireNonNull(action, "Action cannot be null");
         return this;

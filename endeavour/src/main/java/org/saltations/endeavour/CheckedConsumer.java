@@ -21,6 +21,6 @@ public interface CheckedConsumer<T>
      * @throws Exception if the consume operation fails.
      */
     
-    void accept(T t) throws Exception;
+    T accept(T t) throws Exception;
 
 }

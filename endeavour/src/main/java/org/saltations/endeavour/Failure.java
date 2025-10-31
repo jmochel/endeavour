@@ -62,17 +62,24 @@ public record Failure<T>(FailureDescription description) implements Result<T>
     }
 
     @Override
-    public Result<T> ifSuccess(CheckedConsumer<Success<T>> action) throws Exception
+    public Result<T> ifSuccess(CheckedConsumer<Success<T>> action)
     {
         return this;    
     }
 
     @Override
-    public Result<T> ifFailure(CheckedConsumer<Failure<T>> action) throws Exception
+    public Result<T> ifFailure(CheckedConsumer<Failure<T>> action)
     {
         Objects.requireNonNull(action, "Action cannot be null");
-        action.accept(this);
-        return this;
+
+        try {
+            return action.accept(this);
+        } catch (Exception ex) {
+            return new Failure<>(FailureDescription.of()
+                .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                .cause(ex)
+                .build());
+        }
     }
 
     @Override

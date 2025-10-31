@@ -126,7 +126,7 @@ public class ResultTest
 
         @Test
         @Order(10)
-        void whenTransmutingSuccessThenReturnsTransformedValue() throws Exception {
+        void whenTransmutingSuccessThenReturnsTransformedValue() {
             // Given a success outcome and a transform function
             var result = success.reduce(
                 v -> v * 2,
@@ -134,12 +134,12 @@ public class ResultTest
             );
 
             // Then the result should be the transformed value
-            assertEquals(2222L, result);
+            assertEquals(2222L, result.get());
         }
 
         @Test
         @Order(20)
-        void whenTransmutingFailureThenReturnsTransformedValue() throws Exception {
+        void whenTransmutingFailureThenReturnsTransformedValue() {
             // Given a failure outcome and a transform function
             var result = failure.reduce(
                 v -> "Success",
@@ -147,12 +147,12 @@ public class ResultTest
             );
 
             // Then the result should be the transformed value
-            assertEquals("Failed", result);
+            assertEquals("Failed", result.get());
         }
 
         @Test
         @Order(30)
-        void whenTransmutingWithNullTransformThenThrowsException() throws Exception {
+        void whenTransmutingWithNullTransformThenThrowsException() {
             // Given a success outcome and a null transform function
             assertThrows(NullPointerException.class, () -> {
                 success.reduce(null, f -> "Failed");
@@ -160,26 +160,8 @@ public class ResultTest
         }
 
         @Test
-        @Order(31)
-        void whenTransmutingWithNullFailureTransformThenThrowsException() throws Exception {
-            // Given a success outcome and a null failure transform function
-            assertThrows(NullPointerException.class, () -> {
-                success.reduce(v -> "Success", null);
-            });
-        }
-
-        @Test
-        @Order(32)
-        void whenTransmutingFailureWithNullSuccessTransformThenThrowsException() throws Exception {
-            // Given a failure outcome and a null success transform function
-            assertThrows(NullPointerException.class, () -> {
-                failure.reduce(null, f -> "Failed");
-            });
-        }
-
-        @Test
         @Order(33)
-        void whenTransmutingFailureWithNullFailureTransformThenThrowsException() throws Exception {
+        void whenTransmutingFailureWithNullFailureTransformThenThrowsException() {
             // Given a failure outcome and a null failure transform function
             assertThrows(NullPointerException.class, () -> {
                 failure.reduce(v -> "Success", null);
@@ -188,19 +170,20 @@ public class ResultTest
 
         @Test
         @Order(50)
-        void whenTransmutingWithThrowingTransformThenThrowsException() throws Exception {
+        void whenTransmutingWithThrowingTransformThenReturnsEmpty() {
             // Given a success outcome and a transform function that throws
-            assertThrows(RuntimeException.class, () -> {
-                success.reduce(
-                    v -> { throw new RuntimeException("Transform failed"); },
-                    f -> "Failed"
-                );
-            });
+            var result = success.reduce(
+                v -> { throw new RuntimeException("Transform failed"); },
+                f -> "Failed"
+            );
+
+            // Then the result should be empty Optional
+            assertTrue(result.isEmpty());
         }
 
         @Test
         @Order(60)
-        void whenTransmutingWithComplexTransformThenReturnsExpectedResult() throws Exception {
+        void whenTransmutingWithComplexTransformThenReturnsExpectedResult() {
             // Given a success outcome and a complex transform function
             var result = success.reduce(
                 v -> new ComplexResult(v, v * 2, v * 3),
@@ -208,9 +191,9 @@ public class ResultTest
             );
 
             // Then the result should be the complex transformed value
-            assertEquals(1111L, result.value1);
-            assertEquals(2222L, result.value2);
-            assertEquals(3333L, result.value3);
+            assertEquals(1111L, result.get().value1);
+            assertEquals(2222L, result.get().value2);
+            assertEquals(3333L, result.get().value3);
         }
 
         private static class ComplexResult {

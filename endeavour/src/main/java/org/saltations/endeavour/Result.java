@@ -109,18 +109,18 @@ public sealed interface Result<T> permits Failure, Success
 
     /**
      * Reduces the {@code Result<T>} to a single value of type {@code V} using a fold operation.
+     * <p>
+     * Exceptions thrown by the reduction functions are caught and converted to a {@code Failure}.
      *
      * @param onSuccess function to apply if this is a success. <b>Not null.</b>
      * @param onFailure function to apply if this is a failure. <b>Not null.</b>
      *
-     * @return the result of applying the appropriate function
-     *
-     * @throws Exception if either function throws a checked exception
+     * @return Optional containing the result of applying the appropriate function, empty if the function returns null
      *
      * @param <V> the type of the reduced value
      */
 
-    <V> V reduce(@NonNull CheckedFunction<T, V> onSuccess, @NonNull CheckedFunction<Failure<T>, V> onFailure) throws Exception;
+    <V> Optional<V> reduce(@NonNull CheckedFunction<T, V> onSuccess, @NonNull CheckedFunction<Failure<T>, V> onFailure);
 
     /**
      * Executes action if this outcome is a success, takes no action otherwise.

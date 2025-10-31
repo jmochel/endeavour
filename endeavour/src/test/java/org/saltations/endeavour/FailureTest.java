@@ -73,9 +73,9 @@ public class FailureTest
 
     @Test
     @Order(40)
-    void whenReducingFailureThenCallsFailureFunction() throws Exception
+    void whenReducingFailureThenCallsFailureFunction()
     {
-        String result = failure.reduce(
+        Optional<String> result = failure.reduce(
             success -> {
                 return "Success path";
             },
@@ -84,7 +84,7 @@ public class FailureTest
             }
         );
 
-        assertEquals("Failure path", result, "Reduced to 'Failure path'");
+        assertEquals("Failure path", result.get(), "Reduced to 'Failure path'");
     }
 
     @Test

@@ -92,14 +92,14 @@ public class QualSuccessTest
 
     @Test
     @Order(40)
-    void whenReducingThenReturnsSuccessValue() throws Exception
+    void whenReducingThenReturnsSuccessValue()
     {
         var result = qualSuccess.reduce(
             success -> "Eureka",
             failure -> "DangIt"
         );
 
-        assertSame(result, "Eureka", "Success value");
+        assertSame(result.get(), "Eureka", "Success value");
     }
 
     @Test

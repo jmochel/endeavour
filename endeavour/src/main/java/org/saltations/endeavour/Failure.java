@@ -120,12 +120,15 @@ public record Failure<T>(FailureDescription description) implements Result<T>
     }
 
     @Override
-    public <V> V reduce(CheckedFunction<T, V> onSuccess, CheckedFunction<Failure<T>, V> onFailure) throws Exception
+    public <V> Optional<V> reduce(CheckedFunction<T, V> onSuccess, CheckedFunction<Failure<T>, V> onFailure)
     {
-        Objects.requireNonNull(onSuccess, "Success function cannot be null");
         Objects.requireNonNull(onFailure, "Failure function cannot be null");
 
-        return onFailure.apply(this);
+        try {
+            return Optional.ofNullable(onFailure.apply(this));
+        } catch (Exception ex) {
+            return Optional.empty();
+        }
     }
 
 

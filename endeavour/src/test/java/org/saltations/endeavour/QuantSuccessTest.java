@@ -141,13 +141,13 @@ public class QuantSuccessTest
 
     @Test
     @Order(60)
-    void whenTransformingResultOnFailureThenReturnsExistingSuccess() throws Exception
+    void whenTransformingResultOnFailureThenReturnsExistingSuccess()
     {
         var outcome = value.reduce(
             success -> value,  // Return original result for success cases
             failure -> Try.success(failure.get() * 3)
         );
-        assertSame(outcome, value, "Existing Success");
+        assertSame(outcome.get(), value, "Existing Success");
     }
 
 
@@ -189,14 +189,14 @@ public class QuantSuccessTest
 
     @Test
     @Order(100)
-    void whenTransformingThenGivesTransformedResult() throws Exception
+    void whenTransformingThenGivesTransformedResult()
     {
         var result = value.reduce(
             v -> "Success with value",
             f -> "Failure"
         );
 
-        assertEquals("Success with value", result, "Transformed to 'Success with value'");
+        assertEquals("Success with value", result.get(), "Transformed to 'Success with value'");
     }
 
     @Test

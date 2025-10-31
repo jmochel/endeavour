@@ -114,6 +114,105 @@ public class FailureTest
         assertSame(failure, result, "Should return same result");
     }
 
+    @Test
+    @Order(62)
+    void whenIfFailureActionThrowsExceptionThenReturnsFailureWithPrecedingFailure()
+    {
+        Exception testException = new Exception("Test exception");
+        
+        Result<Long> result = failure.ifFailure(x -> {
+            throw testException;
+        });
+        
+        assertThat(result)
+            .isFailure()
+            .hasFailureType(FailureDescription.GenericFailureType.GENERIC_CONSUMER_EXCEPTION)
+            .hasCause()
+            .hasCauseOfType(Exception.class)
+            .hasCauseWithMessage("Test exception");
+        
+        // Verify preceding failure is preserved
+        Failure<Long> resultFailure = (Failure<Long>) result;
+        assertTrue(resultFailure.description().hasPrecedingFailure(), "Should have preceding failure");
+        assertEquals(((Failure<Long>)failure).description(), resultFailure.description().getPrecedingFailure(), "Preceding failure should match original failure");
+    }
+
+    @Test
+    @Order(63)
+    void whenIfFailureActionThrowsRuntimeExceptionThenReturnsFailureWithPrecedingFailure()
+    {
+        RuntimeException testException = new RuntimeException("Test runtime exception");
+        
+        Result<Long> result = failure.ifFailure(x -> {
+            throw testException;
+        });
+        
+        assertThat(result)
+            .isFailure()
+            .hasFailureType(FailureDescription.GenericFailureType.GENERIC_CONSUMER_EXCEPTION)
+            .hasCause()
+            .hasCauseOfType(RuntimeException.class)
+            .hasCauseWithMessage("Test runtime exception");
+        
+        Failure<Long> resultFailure = (Failure<Long>) result;
+        assertTrue(resultFailure.description().hasPrecedingFailure(), "Should have preceding failure");
+    }
+
+    @Test
+    @Order(64)
+    void whenIfFailureWithNullActionThenThrowsNullPointerException()
+    {
+        assertThrows(NullPointerException.class, () -> {
+            failure.ifFailure(null);
+        });
+    }
+
+    @Test
+    @Order(65)
+    void whenIfFailureReturnsDifferentResultThenUsesReturnedResult()
+    {
+        // CheckedConsumer<Failure<Long>>.accept returns Failure<Long>
+        // The ifFailure method returns action.accept(this), which returns the Failure
+        Result<Long> result = failure.ifFailure(x -> {
+            // Return a different Failure instance
+            return new Failure<>(FailureDescription.of()
+                .type(FailureDescription.GenericFailureType.GENERIC)
+                .detail("Different failure")
+                .build());
+        });
+        
+        assertThat(result)
+            .isFailure()
+            .hasFailureType(FailureDescription.GenericFailureType.GENERIC);
+        assertEquals("Different failure", ((Failure<Long>)result).getDetail(), "Should have different detail");
+    }
+
+    @Test
+    @Order(66)
+    void whenReduceFailureFunctionThrowsExceptionThenReturnsEmptyOptional()
+    {
+        Exception testException = new Exception("Test exception");
+        
+        Optional<String> result = failure.reduce(
+            v -> "Success",
+            f -> { throw testException; }
+        );
+        
+        assertTrue(result.isEmpty(), "Should return empty Optional on exception");
+    }
+
+    @Test
+    @Order(67)
+    void whenReduceFailureFunctionReturnsNullThenReturnsEmptyOptional()
+    {
+        Optional<String> result = failure.reduce(
+            v -> "Success",
+            f -> null
+        );
+        
+        assertTrue(result.isEmpty(), "Should return empty Optional when function returns null");
+    }
+
 
     @Test
     @Order(70)

@@ -145,6 +145,88 @@ public class QuantSuccessTest
     }
 
     @Test
+    @Order(41)
+    void whenIfSuccessActionThrowsExceptionThenReturnsFailure()
+    {
+        Exception testException = new Exception("Test exception");
+        
+        Result<Long> result = value.ifSuccess(x -> {
+            throw testException;
+        });
+        
+        assertThat(result)
+            .isFailure()
+            .hasFailureType(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+            .hasCause()
+            .hasCauseOfType(Exception.class)
+            .hasCauseWithMessage("Test exception");
+    }
+
+    @Test
+    @Order(42)
+    void whenIfSuccessActionThrowsRuntimeExceptionThenReturnsFailure()
+    {
+        RuntimeException testException = new RuntimeException("Test runtime exception");
+        
+        Result<Long> result = value.ifSuccess(x -> {
+            throw testException;
+        });
+        
+        assertThat(result)
+            .isFailure()
+            .hasFailureType(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+            .hasCause()
+            .hasCauseOfType(RuntimeException.class)
+            .hasCauseWithMessage("Test runtime exception");
+    }
+
+    @Test
+    @Order(43)
+    void whenIfSuccessActionThrowsInterruptedExceptionThenReturnsFailure()
+    {
+        InterruptedException testException = new InterruptedException("Test interrupted");
+        
+        Result<Long> result = value.ifSuccess(x -> {
+            throw testException;
+        });
+        
+        assertThat(result)
+            .isFailure()
+            .hasFailureType(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+            .hasCause()
+            .hasCauseOfType(InterruptedException.class)
+            .hasCauseWithMessage("Test interrupted");
+    }
+
+    @Test
+    @Order(44)
+    void whenIfSuccessWithNullActionThenThrowsNullPointerException()
+    {
+        assertThrows(NullPointerException.class, () -> {
+            value.ifSuccess(null);
+        });
+    }
+
+    @Test
+    @Order(45)
+    void whenIfSuccessReturnsDifferentResultThenUsesReturnedResult()
+    {
+        // CheckedConsumer<Success<Long>>.accept returns Success<Long>
+        // We need to return a Success<Long>, which Try.success() provides
+        // Since Success<Long> extends Result<Long>, the method can return it
+        Result<Long> result = value.ifSuccess(x -> {
+            // Return a different Success instance - Try.success returns Result but we know it's Success
+            Success<Long> newSuccess = (Success<Long>) Try.success(9999L);
+            return newSuccess;
+        });
+        
+        assertThat(result)
+            .isSuccess()
+            .isQuantSuccess()
+            .hasValue(9999L);
+    }
+
+    @Test
     @Order(60)
     void whenTransformingResultOnFailureThenReturnsExistingSuccess()
     {
@@ -207,6 +289,32 @@ public class QuantSuccessTest
         );
 
         assertEquals("Success with value", result.get(), "Transformed to 'Success with value'");
+    }
+
+    @Test
+    @Order(101)
+    void whenReduceSuccessFunctionThrowsExceptionThenReturnsEmptyOptional()
+    {
+        Exception testException = new Exception("Test exception");
+        
+        Optional<String> result = value.reduce(
+            v -> { throw testException; },
+            f -> "Failure"
+        );
+        
+        assertTrue(result.isEmpty(), "Should return empty Optional on exception");
+    }
+
+    @Test
+    @Order(102)
+    void whenReduceReturnsNullThenReturnsEmptyOptional()
+    {
+        Optional<String> result = value.reduce(
+            v -> null,
+            f -> "Failure"
+        );
+        
+        assertTrue(result.isEmpty(), "Should return empty Optional when function returns null");
     }
 
     @Test

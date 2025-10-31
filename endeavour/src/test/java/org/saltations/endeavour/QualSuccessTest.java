@@ -117,6 +117,47 @@ public class QualSuccessTest
         assertSame(qualSuccess, result, "Should return same result");
     }
 
+    @Test
+    @Order(61)
+    void whenIfSuccessActionThrowsExceptionThenReturnsFailure()
+    {
+        Exception testException = new Exception("Test exception");
+        
+        Result<Long> result = qualSuccess.ifSuccess(x -> {
+            throw testException;
+        });
+        
+        assertThat(result)
+            .isFailure()
+            .hasFailureType(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+            .hasCause()
+            .hasCauseOfType(Exception.class)
+            .hasCauseWithMessage("Test exception");
+    }
+
+    @Test
+    @Order(62)
+    void whenIfSuccessWithNullActionThenThrowsNullPointerException()
+    {
+        assertThrows(NullPointerException.class, () -> {
+            qualSuccess.ifSuccess(null);
+        });
+    }
+
+    @Test
+    @Order(63)
+    void whenReduceSuccessFunctionThrowsExceptionThenReturnsEmptyOptional()
+    {
+        Exception testException = new Exception("Test exception");
+        
+        Optional<String> result = qualSuccess.reduce(
+            v -> { throw testException; },
+            f -> "Failure"
+        );
+        
+        assertTrue(result.isEmpty(), "Should return empty Optional on exception");
+    }
+
 
     @Test
     @Order(61)

@@ -133,7 +133,8 @@ public class FailureDescription
         GENERIC("generic-failure", ""),
         GENERIC_EXCEPTION("generic-checked-exception-failure", ""),
         GENERIC_INTERRUPTED_EXCEPTION("generic-interrupted-exception-failure", ""),
-        GENERIC_RUNTIME_EXCEPTION("generic-runtime-exception-failure", "")
+        GENERIC_RUNTIME_EXCEPTION("generic-runtime-exception-failure", ""),
+        GENERIC_CONSUMER_EXCEPTION("generic-consumer-exception-failure", "")
         ;
 
         private final String title;

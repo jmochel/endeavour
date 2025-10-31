@@ -135,7 +135,7 @@ public sealed interface Result<T> permits Failure, Success
      * }
      */
 
-     Result<T> ifSuccess(@NonNull CheckedConsumer<Success<T>> action) throws Exception;
+     Result<T> ifSuccess(@NonNull CheckedConsumer<Success<T>> action);
 
     /**
      * Executes action if this outcome is a failure, takes no action otherwise.
@@ -150,7 +150,7 @@ public sealed interface Result<T> permits Failure, Success
      * }
      */
 
-     Result<T> ifFailure(@NonNull CheckedConsumer<Failure<T>> action) throws Exception;
+     Result<T> ifFailure(@NonNull CheckedConsumer<Failure<T>> action);
 
     /**
      * Returns the alternate result if this outcome is a failure, otherwise returns the existing outcome.

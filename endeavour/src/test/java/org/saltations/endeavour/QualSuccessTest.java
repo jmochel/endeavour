@@ -106,10 +106,15 @@ public class QualSuccessTest
     @Order(60)
     void whenTakingActionIfSuccessThenTakesAction() throws Exception
     {
-        final AtomicBoolean applied = new AtomicBoolean(false);
-
-        qualSuccess.ifSuccess(x -> applied.getAndSet(true));
-        assertTrue(applied.get(), "Action taken");
+        final StringBuilder resultBuilder = new StringBuilder();
+        
+        var result = qualSuccess.ifSuccess(x -> {
+            resultBuilder.append("Processed: ").append(x.hasPayload() ? "with payload" : "no payload");
+            return x; // Return the value to satisfy CheckedConsumer contract
+        });
+        
+        assertEquals("Processed: no payload", resultBuilder.toString(), "Action taken");
+        assertSame(qualSuccess, result, "Should return same result");
     }
 
 
@@ -117,10 +122,15 @@ public class QualSuccessTest
     @Order(61)
     void whenTakingActionIfFailureThenTakesNoAction() throws Exception
     {
-        final AtomicBoolean applied = new AtomicBoolean(false);
-
-        qualSuccess.ifFailure(x -> applied.getAndSet(true));
-        assertFalse(applied.get(), "Action taken");
+        final StringBuilder resultBuilder = new StringBuilder();
+        
+        var result = qualSuccess.ifFailure(x -> {
+            resultBuilder.append("Processed: ").append(x.getTitle());
+            return x; // Return the value to satisfy CheckedConsumer contract
+        });
+        
+        assertEquals("", resultBuilder.toString(), "Action not taken");
+        assertSame(qualSuccess, result, "Should return same result");
     }
 
 
@@ -141,10 +151,15 @@ public class QualSuccessTest
     @Order(70)
     void whenTakingActionOnFailureThenTakesNoAction() throws Exception
     {
-        final AtomicBoolean applied = new AtomicBoolean(false);
-
-        qualSuccess.ifFailure(x -> applied.getAndSet(true));
-        assertFalse(applied.get(), "Action taken");
+        final StringBuilder resultBuilder = new StringBuilder();
+        
+        var result = qualSuccess.ifFailure(x -> {
+            resultBuilder.append("Processed: ").append(x.getTitle());
+            return x; // Return the value to satisfy CheckedConsumer contract
+        });
+        
+        assertEquals("", resultBuilder.toString(), "Action not taken");
+        assertSame(qualSuccess, result, "Should return same result");
     }
 
 

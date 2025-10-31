@@ -1,7 +1,6 @@
 package org.saltations.endeavour;
 
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.Optional;
 
 /**
@@ -47,10 +46,18 @@ public record QualSuccess<T>() implements Success<T> {
     }
 
     @Override
-    public <U> Result<U> flatMap(CheckedFunction<T, Result<U>> mapping) throws Exception
+    public <U> Result<U> flatMap(CheckedFunction<T, Result<U>> mapping)
     {
         Objects.requireNonNull(mapping, "Mapping function cannot be null");
-        return mapping.apply(null);
+
+        try {
+            return mapping.apply(null);
+        } catch (Exception ex) {
+            return new Failure<>(FailureDescription.of()
+                .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                .cause(ex)
+                .build());
+        }
     }
 
     public String toString()

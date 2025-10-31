@@ -52,23 +52,18 @@ public record Failure<T>(FailureDescription description) implements Result<T>
     @Override
     public <U> Result<U> map(CheckedFunction<T, U> mapping) throws Exception
     {
-        Objects.requireNonNull(mapping, "Mapping function cannot be null");
-        
         return new Failure<U>(description);
     }
 
     @Override
-    public <U> Result<U> flatMap(CheckedFunction<T, Result<U>> mapping) throws Exception
+    public <U> Result<U> flatMap(CheckedFunction<T, Result<U>> mapping)
     {
-        Objects.requireNonNull(mapping, "Mapping function cannot be null");
         return new Failure<U>(description);
     }
 
     @Override
     public Result<T> ifSuccess(CheckedConsumer<Success<T>> action) throws Exception
     {
-        Objects.requireNonNull(action, "Action cannot be null");
-        // Do Nothing
         return this;    
     }
 

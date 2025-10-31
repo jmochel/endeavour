@@ -77,7 +77,7 @@ public class QuantSuccessTest
 
     @Test
     @Order(30)
-    void whenBindingThenReturnsResultOfMappingFunction() throws Exception
+    void whenBindingThenReturnsResultOfMappingFunction()
     {
         // QuantSuccess.flatMap() calls mapping.apply(value) and returns the result
         var result1 = value.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x * 2));
@@ -109,7 +109,7 @@ public class QuantSuccessTest
 
     @Test
     @Order(30)
-    void whenMappingPayloadToNewPayloadOnSuccessThenReturnsNewValue() throws Exception
+    void whenMappingPayloadToNewPayloadOnSuccessThenReturnsNewValue()
     {
         var outcome = value.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x * 3));
 
@@ -122,7 +122,7 @@ public class QuantSuccessTest
    
     @Test
     @Order(32)
-    void whenMappingPayloadOnSuccessToNullThenReturnsNoValue() throws Exception
+    void whenMappingPayloadOnSuccessToNullThenReturnsNoValue()
     {
         var outcome = value.flatMap((CheckedFunction<Long, Result<Object>>) x -> Try.failure());
         assertThat(outcome)
@@ -176,7 +176,7 @@ public class QuantSuccessTest
 
     @Test
     @Order(90)
-    void whenFlatMappingThenTakesSuccessAction() throws Exception
+    void whenFlatMappingThenTakesSuccessAction()
     {
         var outcome = value.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x * 3));
 

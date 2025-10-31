@@ -74,7 +74,7 @@ public class QualSuccessTest
 
     @Test
     @Order(30)
-    void whenBindingThenReturnsResultOfMappingFunction() throws Exception
+    void whenBindingThenReturnsResultOfMappingFunction()
     {
         var result1 = qualSuccess.flatMap((CheckedFunction<Long, Result<Long>>) x -> Try.success(x));
         assertThat(result1)

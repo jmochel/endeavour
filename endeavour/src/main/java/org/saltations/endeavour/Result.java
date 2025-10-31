@@ -92,17 +92,20 @@ public sealed interface Result<T> permits Failure, Success
 
     /**
      * Maps the unwrapped payload of type {@code T} to {@code Result<U>}
-     *
-     * @param mapping a mapping function for T to {@code Result<U>}. <b>Not null.</b> <b>Must handle nulls.</b>
+     * <p>
+     * The mapping function must be able to handle nulls. If the mapping function returns a null,
+     * the result will be a {@code Success} of type {@code U}.
+     * <p>
+     * Exceptions thrown by the mapping function are caught and converted to a {@code Failure}.
+     * 
+     * @param mapping a mapping function for T to {@code Result<U>} that can handle nulls. <b>Not null.</b>
      *
      * @return mapped result
-     * 
-     * @throws Exception if the mapping function throws a checked exception
      *
      * @param <U>
      */
 
-    <U> Result<U> flatMap(@NonNull CheckedFunction<T,Result<U>> mapping) throws Exception;
+    <U> Result<U> flatMap(@NonNull CheckedFunction<T,Result<U>> mapping);
 
     /**
      * Reduces the {@code Result<T>} to a single value of type {@code V} using a fold operation.

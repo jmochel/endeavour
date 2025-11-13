@@ -1,0 +1,264 @@
+---
+id: java-readme-generator
+title: "Generate README.md for Java projects"
+status: stable
+version: 1.0.0
+owner: "Docs & Platform Eng"
+tags: [java, readme, onboarding, documentation, cursor-rule]
+applies_to:
+  language: java
+  build_tools: [maven, gradle]
+outputs:
+  - path: README.md
+    overwrite: true
+goals:
+  - "Onboard a new developer to first successful run in ≤ 5 minutes (Quick Start)."
+  - "Explain core concepts + module map in ≤ 30 minutes."
+  - "Document dev workflow (build, test, lint, run) and common tasks."
+  - "Link to deeper references (API docs, architecture, compatibility, license)."
+references:
+  - label: "Onboarding doc strategy (4 layers)"
+    url: "https://medium.com/@neerupujari5/the-documentation-strategy-that-onboards-developers-in-1-day-e2bab7f0978a"
+  - label: "Guava README patterns"
+    url: "https://github.com/google/guava/blob/master/README.md?plain=1"
+  - label: "Guava site (dependency & flavors)"
+    url: "https://guava.dev/"
+conventions:
+  tone: terse, plain, actionable; copy/paste friendly
+  formatting:
+    - use GitHub-flavored Markdown
+    - prefer code fences with language hints
+    - keep headings predictable; no novelty formatting
+  code_examples:
+    - compile and run as-is (or with obvious project variables)
+    - verify commands include expected output when relevant
+quality_gates:
+  - "README includes a runnable Quick Start block that produces a visible success (e.g., `./mvnw -q -DskipTests package` then `java -jar ...` or a health endpoint curl)."
+  - "Lists JDK compatibility and supported platforms."
+  - "Includes install snippets for Maven AND Gradle if it’s a library; run instructions if it’s an app/CLI."
+  - "Badges show build, release, coverage (when available)."
+  - "Has links for API docs, changelog, issues, security, license."
+  - "Has ‘Troubleshooting’ with top 3 setup failures + fixes."
+  - "No TODOs left in final output; all placeholders resolved."
+
+# PRINCIPLES
+- Quick Start first: dev should see something work in ≤5 minutes.
+- Layered reading path: Quick Start → Concepts → Workflow → References.
+- Copy/paste > prose; minimize narrative; maximize runnable blocks.
+- Show the “contract”: what the lib/app guarantees (compatibility, versioning).
+- Keep it maintainable: badge sources auto-discoverable; versions pulled from build files; links stable.
+
+# INPUT DISCOVERY (AUTO)
+- Project type:
+  - library if root has `src/main/java` and no runnable entry or no `application` plugin.
+  - application/CLI if there is a main class, Spring Boot plugin, Micronaut app plugin, or Picocli entry.
+- Build tool: prefer Maven if `pom.xml` exists; prefer Gradle if `build.gradle[.kts]` exists.
+- Coordinates:
+  - Maven: read `<groupId>`, `<artifactId>`, `<version>` from `pom.xml`.
+  - Gradle: read `group`, `version`, root project name (artifactId).
+- JDK target: detect from `maven-compiler-plugin` or `toolchain` (Maven), or `java { toolchain { languageVersion } }` (Gradle).
+- Modules: list immediate submodules (Maven `<module>` entries or Gradle included projects).
+- CI badges: detect `.github/workflows/*.yml` names; pick the default build workflow.
+- Coverage badge: detect Codecov config (`codecov.yml`) or JaCoCo report presence.
+- API docs: if `./docs` or published Javadoc link provided, include it; else omit.
+
+# README SECTION ORDER (DERIVED FROM STRATEGY + GUAVA)
+1. Title + one-liner + badges
+2. Quick Start (5-minute path)
+3. Install / Dependency (Maven/Gradle) OR Run (app/CLI)
+4. Core Concepts & Module Map
+5. Usage examples (minimal → typical)
+6. Development Workflow (build/test/lint/format/run/release)
+7. Compatibility & Versioning
+8. Troubleshooting (top 3 issues)
+9. Links: API Docs, Changelog, Roadmap, Security, Contributing, License
+
+# BADGE RULES
+- Build: GitHub Actions
+- Release / Maven Central (if library): shields.io Maven Central
+- Codecov (if present)
+- Javadoc (if hosted) or Docs site
+- Keep badges on a single line; 4–6 max; link each badge to its source.
+
+# GENERATION STEPS
+1. Detect project metadata (type, build tool, coords, jdk, modules, ci).
+2. Render README from the template below, filling placeholders from discovery.
+3. Prune sections that don’t apply (e.g., dependency snippet for an app).
+4. Validate runnable blocks (syntactic sanity) and remove unresolved placeholders.
+5. Output to `README.md`.
+
+# README TEMPLATE (FILL ALL {{PLACEHOLDERS}})
+{{#if project_is_library}}
+# {{PROJECT_NAME}} — {{ONE_LINER}}
+
+[![Build]({{BADGE_BUILD_IMG}})]({{BADGE_BUILD_LINK}}){{#if BADGE_MAVEN}} [![Maven Central]({{BADGE_MAVEN_IMG}})]({{BADGE_MAVEN_LINK}}){{/if}}{{#if BADGE_COVERAGE}} [![Coverage]({{BADGE_COVERAGE_IMG}})]({{BADGE_COVERAGE_LINK}}){{/if}}{{#if BADGE_JAVADOC}} [![Javadoc]({{BADGE_JAVADOC_IMG}})]({{BADGE_JAVADOC_LINK}}){{/if}}
+
+{{PROJECT_PITCH}}
+
+## Quick Start (5 minutes)
+```bash
+# Clone + build
+git clone {{REPO_CLONE_URL}}
+cd {{REPO_DIR}}
+{{BUILD_CMD_FAST}}
+
+# Sanity check (unit tests fast path)
+{{TEST_CMD_FAST}}
+```
+
+## Install
+### Maven
+```xml
+<dependency>
+  <groupId>{{GROUP_ID}}</groupId>
+  <artifactId>{{ARTIFACT_ID}}</artifactId>
+  <version>{{VERSION}}</version>
+</dependency>
+```
+
+### Gradle (Kotlin DSL)
+```kotlin
+dependencies {
+  implementation("{{GROUP_ID}}:{{ARTIFACT_ID}}:{{VERSION}}")
+}
+```
+
+## Usage
+```java
+{{USAGE_MIN_SNIPPET}}
+```
+
+## Core Concepts & Modules
+- **JDK:** {{JDK_COMPAT}}
+- **Modules:** {{MODULE_LIST}}
+- **Key Concepts:** {{KEY_CONCEPTS_BULLETS}}
+
+## Development Workflow
+```bash
+# Build
+{{BUILD_CMD}}
+
+# Test (unit)
+{{TEST_CMD}}
+
+# Format / Lint
+{{FORMAT_LINT_CMD}}
+
+# Generate docs (if any)
+{{DOCS_CMD}}
+```
+
+## Compatibility & Versioning
+- Supported Java: {{JDK_COMPAT}}
+- Semantic versioning unless noted; see **Changelog**.
+
+## Troubleshooting
+- {{TROUBLE_1}}
+- {{TROUBLE_2}}
+- {{TROUBLE_3}}
+
+## Links
+- API Docs: {{LINK_API_DOCS}}
+- Changelog: {{LINK_CHANGELOG}}
+- Issues: {{LINK_ISSUES}}
+- Security: {{LINK_SECURITY}}
+- Contributing: {{LINK_CONTRIBUTING}}
+- License: {{LINK_LICENSE}}
+{{/if}}
+
+{{#if project_is_app}}
+# {{PROJECT_NAME}} — {{ONE_LINER}}
+
+[![Build]({{BADGE_BUILD_IMG}})]({{BADGE_BUILD_LINK}}){{#if BADGE_COVERAGE}} [![Coverage]({{BADGE_COVERAGE_IMG}})]({{BADGE_COVERAGE_LINK}}){{/if}}
+
+{{PROJECT_PITCH}}
+
+## Quick Start (5 minutes)
+```bash
+git clone {{REPO_CLONE_URL}}
+cd {{REPO_DIR}}
+{{BUILD_CMD_FAST}}
+{{RUN_CMD_QUICK}}
+# Expected: {{RUN_EXPECTED_OUTPUT}}
+```
+
+## Run
+```bash
+{{RUN_CMD}}
+```
+
+{{#if HAS_CONFIG}}
+### Configuration
+```properties
+{{CONFIG_SAMPLE}}
+```
+{{/if}}
+
+## Core Concepts & Module Map
+- **JDK:** {{JDK_COMPAT}}
+- **Modules:** {{MODULE_LIST}}
+- **Architecture:** {{ARCH_OVERVIEW_1P}}
+{{#if ARCH_MERMAID}}
+```mermaid
+{{ARCH_MERMAID}}
+```
+{{/if}}
+
+## Development Workflow
+```bash
+# Build & test
+{{BUILD_CMD}} && {{TEST_CMD}}
+
+# Lint / Format
+{{FORMAT_LINT_CMD}}
+
+# Package / Distribution
+{{PACKAGE_CMD}}
+```
+
+## Troubleshooting
+- {{TROUBLE_1}}
+- {{TROUBLE_2}}
+- {{TROUBLE_3}}
+
+## Links
+- Roadmap: {{LINK_ROADMAP}}
+- Issues: {{LINK_ISSUES}}
+- Security: {{LINK_SECURITY}}
+- Contributing: {{LINK_CONTRIBUTING}}
+- License: {{LINK_LICENSE}}
+{{/if}}
+
+# PLACEHOLDER SOURCING
+- {{PROJECT_NAME}}: repo name or root project name
+- {{ONE_LINER}}: 1-sentence value prop extracted from project description or `description` in build file
+- {{REPO_CLONE_URL}}: git remote (origin fetch)
+- {{JDK_COMPAT}}: read from toolchain / compiler target
+- {{MODULE_LIST}}: discovered modules (names only)
+- Badges:
+  - {{BADGE_BUILD_IMG}}: `https://github.com/{{ORG}}/{{REPO}}/actions/workflows/{{WORKFLOW}}/badge.svg`
+  - {{BADGE_BUILD_LINK}}: `https://github.com/{{ORG}}/{{REPO}}/actions/workflows/{{WORKFLOW}}.yml`
+  - {{BADGE_MAVEN_IMG}}: shields.io Maven Central for `{{GROUP_ID}}:{{ARTIFACT_ID}}`
+  - {{BADGE_MAVEN_LINK}}: search.maven.org artifact page
+  - {{BADGE_COVERAGE_IMG}} / {{BADGE_COVERAGE_LINK}}: Codecov if present
+  - {{BADGE_JAVADOC_*}}: link if published
+- Commands:
+  - Maven fast build: `./mvnw -q -DskipTests package` (fallback: `mvn`)
+  - Gradle fast build: `./gradlew -q assemble` (fallback: `gradle`)
+  - Test: `./mvnw -q -DskipITs test` or `./gradlew -q test`
+  - Format/Lint: detect Spotless/Checkstyle/PMD ktlint rules
+  - Run: detect Spring Boot `bootRun`, Micronaut run, or `java -jar target/*.jar`
+
+# EXAMPLES & HINTS
+- Library README should include dual Java/Gradle install blocks and a tiny usage snippet (mirror Guava’s README conventions). It must state supported JDK and any Android notes if relevant.
+- If this project offers multiple artifacts or “flavors,” show them as a table with `<artifactId>` variants and short descriptions.
+
+# TROUBLESHOOTING SEED LIST (CHOOSE TOP 3 IF PRESENT)
+- JDK version mismatch: “`maven-compiler-plugin` target is {{TARGET}}; install JDK {{TARGET}}+.”
+- Proxy/cert issues downloading dependencies: show `MAVEN_OPTS`/Gradle `-Djavax.net.ssl.trustStore` hint.
+- Native toolchain missing for tests (e.g., Docker, Testcontainers): install and restart.
+
+# EDIT SAFETY
+- Do not emit unresolved `{{PLACEHOLDER}}` tokens.
+- Do not invent coordinates; if missing, omit Install section for apps.
+- Keep README ≤ ~200 lines; push deep content to docs links.

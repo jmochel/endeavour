@@ -12,13 +12,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @Order(40)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
-public class ExceptionalBiConsumerTest
+public class CheckedBiConsumerTest
 {
     @Test
     @Order(1)
-    void whenNoExceptionIsThrownThenExceptionalBiConsumerConsumes()
+    void whenNoExceptionIsThrownThenCheckedBiConsumerConsumes()
     {
-        var exceptionalBiConsumer = new ExceptionalBiConsumer<String, String>() {
+        var checkedBiConsumer = new CheckedBiConsumer<String, String>() {
 
             @Override
             public void consumeIt(String s, String s2) throws Exception
@@ -27,14 +27,14 @@ public class ExceptionalBiConsumerTest
             }
         };
 
-        assertDoesNotThrow(() -> exceptionalBiConsumer.accept("Hello", "World"));
+        assertDoesNotThrow(() -> checkedBiConsumer.accept("Hello", "World"));
     }
 
     @Test
     @Order(2)
-    void whenRuntimeExceptionIsThrownThenExceptionalBiConsumerThrowsUntouchedRuntimeException()
+    void whenRuntimeExceptionIsThrownThenCheckedBiConsumerThrowsUntouchedRuntimeException()
     {
-        var exceptionalBiConsumer = new ExceptionalBiConsumer<String, String>() {
+        var checkedBiConsumer = new CheckedBiConsumer<String, String>() {
             @Override
             public void consumeIt(String s, String s2) throws Exception
             {
@@ -42,14 +42,14 @@ public class ExceptionalBiConsumerTest
             }
         };
 
-        assertThrows(RuntimeException.class, () -> exceptionalBiConsumer.accept("Hello", "World"));
+        assertThrows(RuntimeException.class, () -> checkedBiConsumer.accept("Hello", "World"));
     }
 
     @Test
     @Order(3)
-    void whenCheckedExceptionIsThrownThenExceptionalBiConsumerThrowsWrappedRuntimeException()
+    void whenCheckedExceptionIsThrownThenCheckedBiConsumerThrowsWrappedRuntimeException()
     {
-        var exceptionalBiConsumer = new ExceptionalBiConsumer<String, String>() {
+        var checkedBiConsumer = new CheckedBiConsumer<String, String>() {
             @Override
             public void consumeIt(String s, String s2) throws Exception
             {
@@ -57,7 +57,7 @@ public class ExceptionalBiConsumerTest
             }
         };
 
-        var exception = assertThrows(Exception.class, () -> exceptionalBiConsumer.accept("Hello", "World"));
+        var exception = assertThrows(Exception.class, () -> checkedBiConsumer.accept("Hello", "World"));
         assertEquals("Test exception", exception.getMessage());
     }
 }

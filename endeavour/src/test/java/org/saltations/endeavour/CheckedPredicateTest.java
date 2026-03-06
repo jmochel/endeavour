@@ -14,15 +14,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Order(43)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
-class ExceptionalPredicateTest
+class CheckedPredicateTest
 {
 
     // Test for normal execution
     @Test
     @Order(1)
-    void whenNoExceptionIsThrownThenExceptionalPredicateReturnsTransformedValue()
+    void whenNoExceptionIsThrownThenCheckedPredicateReturnsTransformedValue()
     {
-        var exceptionalPredicate = new ExceptionalPredicate<Integer>()
+        var checkedPredicate = new CheckedPredicate<Integer>()
         {
             @Override
             public boolean testIt(Integer integer) throws Exception
@@ -31,18 +31,18 @@ class ExceptionalPredicateTest
             }
         };
 
-        var result = exceptionalPredicate.test(5);
+        var result = checkedPredicate.test(5);
         assertTrue(result, "The predicate should return true");
     }
 
     @Test
     @Order(2)
-    void whenRuntimeExceptionIsThrownThenExceptionalPredicateThrowsUntouchedRuntimeException()
+    void whenRuntimeExceptionIsThrownThenCheckedPredicateThrowsUntouchedRuntimeException()
     {
 
         final String EXCEPTION_MESSAGE = "Oooops!";
 
-        var exceptionalPredicate = new ExceptionalPredicate<Integer>()
+        var checkedPredicate = new CheckedPredicate<Integer>()
         {
             @Override
             public boolean testIt(Integer integer) throws Exception
@@ -51,18 +51,18 @@ class ExceptionalPredicateTest
             }
         };
 
-        var exception = assertThrows(RuntimeException.class, () -> exceptionalPredicate.test(5));
+        var exception = assertThrows(RuntimeException.class, () -> checkedPredicate.test(5));
         assertEquals(EXCEPTION_MESSAGE, exception.getMessage(), "Exception message should match");
     }
 
     @Test
     @Order(3)
-    void whenCheckedExceptionIsThrownThenExceptionalPredicateThrowsWrappedRuntimeException()
+    void whenCheckedExceptionIsThrownThenCheckedPredicateThrowsWrappedRuntimeException()
     {
 
         final String EXCEPTION_MESSAGE = "Oooops!";
 
-        var exceptionalPredicate = new ExceptionalPredicate<Integer>()
+        var checkedPredicate = new CheckedPredicate<Integer>()
         {
             @Override
             public boolean testIt(Integer integer) throws Exception
@@ -71,7 +71,7 @@ class ExceptionalPredicateTest
             }
         };
 
-        var exception = assertThrows(RuntimeException.class, () -> exceptionalPredicate.test(5));
+        var exception = assertThrows(RuntimeException.class, () -> checkedPredicate.test(5));
         assertEquals("java.lang.Exception: " + EXCEPTION_MESSAGE, exception.getMessage(), "Exception message should match");
     }
 }

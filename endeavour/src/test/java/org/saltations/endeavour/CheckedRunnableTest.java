@@ -14,15 +14,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Order(44)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
-class ExceptionalRunnableTest
+class CheckedRunnableTest
 {
     public static final String SNOOPY_BIT_THE_MAILMAN = "Snoopy bit the mailman";
 
     @Test
     @Order(1)
-    void whenNoExceptionThrownThenExceptionalRunnableReturnsResult()
+    void whenNoExceptionThrownThenCheckedRunnableReturnsResult()
     {
-        var runnable = new ExceptionalRunnable()
+        var runnable = new CheckedRunnable()
         {
             @Override
             public void runIt() throws Exception
@@ -36,9 +36,9 @@ class ExceptionalRunnableTest
 
     @Test
     @Order(2)
-    void whenRuntimeExceptionThrownThenExceptionalRunnableThrowsUntouchedRuntimeException()
+    void whenRuntimeExceptionThrownThenCheckedRunnableThrowsUntouchedRuntimeException()
     {
-        var runnable = new ExceptionalRunnable()
+        var runnable = new CheckedRunnable()
         {
             @Override
             public void runIt() throws Exception
@@ -53,9 +53,9 @@ class ExceptionalRunnableTest
 
     @Test
     @Order(3)
-    void whenCheckedExceptionThrownThenExceptionalRunnableThrowsWrappedRuntimeException()
+    void whenCheckedExceptionThrownThenCheckedRunnableThrowsWrappedRuntimeException()
     {
-        var runnable = new ExceptionalRunnable()
+        var runnable = new CheckedRunnable()
         {
             @Override
             public void runIt() throws Exception
@@ -68,6 +68,4 @@ class ExceptionalRunnableTest
         assertEquals("java.lang.Exception: " + SNOOPY_BIT_THE_MAILMAN, exception.getMessage());
     }
 }
-
-
 

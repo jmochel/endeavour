@@ -14,7 +14,7 @@ import java.util.function.BiConsumer;
  */
 
 @FunctionalInterface
-public interface ExceptionalBiConsumer<T,U> extends BiConsumer<T,U>
+public interface CheckedBiConsumer<T,U> extends BiConsumer<T,U>
 {
     void consumeIt(T t, U u) throws Exception;
 

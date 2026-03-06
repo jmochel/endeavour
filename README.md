@@ -87,16 +87,16 @@ Each implementation acts as a monad: it wraps a value that may or may not be pre
 
 **Checked Exception Handling:**
 * [CheckedConsumer.java](endeavour/src/main/java/org/saltations/endeavour/CheckedConsumer.java) - Consumer that can throw checked exceptions
+* [CheckedBiConsumer.java](endeavour/src/main/java/org/saltations/endeavour/CheckedBiConsumer.java) - BiConsumer that can throw checked exceptions
+* [CheckedCallable.java](endeavour/src/main/java/org/saltations/endeavour/CheckedCallable.java) - Callable wrapper
 * [CheckedFunction.java](endeavour/src/main/java/org/saltations/endeavour/CheckedFunction.java) - Function that can throw checked exceptions  
+* [CheckedPredicate.java](endeavour/src/main/java/org/saltations/endeavour/CheckedPredicate.java) - Predicate that can throw checked exceptions
+* [CheckedRunnable.java](endeavour/src/main/java/org/saltations/endeavour/CheckedRunnable.java) - Runnable that can throw checked exceptions
 * [CheckedSupplier.java](endeavour/src/main/java/org/saltations/endeavour/CheckedSupplier.java) - Supplier that can throw checked exceptions
 
 **Legacy Functional Interfaces (for compatibility):**
-* [ExceptionalBiConsumer.java](endeavour/src/main/java/org/saltations/endeavour/ExceptionalBiConsumer.java) - BiConsumer that can throw exceptions
-* [ExceptionalCallable.java](endeavour/src/main/java/org/saltations/endeavour/ExceptionalCallable.java) - Callable wrapper
 * [ExceptionalConsumer.java](endeavour/src/main/java/org/saltations/endeavour/ExceptionalConsumer.java) - Consumer that can throw exceptions *(unused)*
 * [ExceptionalFunction.java](endeavour/src/main/java/org/saltations/endeavour/ExceptionalFunction.java) - Function that can throw exceptions
-* [ExceptionalPredicate.java](endeavour/src/main/java/org/saltations/endeavour/ExceptionalPredicate.java) - Predicate that can throw exceptions *(unused)*
-* [ExceptionalRunnable.java](endeavour/src/main/java/org/saltations/endeavour/ExceptionalRunnable.java) - Runnable that can throw exceptions
 * [ExceptionalSupplier.java](endeavour/src/main/java/org/saltations/endeavour/ExceptionalSupplier.java) - Supplier that can throw exceptions
 
 **Utility Classes:**

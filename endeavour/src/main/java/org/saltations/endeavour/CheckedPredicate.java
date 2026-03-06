@@ -10,7 +10,7 @@ import java.util.function.Predicate;
  */
 
 @FunctionalInterface
-public interface ExceptionalPredicate<T> extends Predicate<T>
+public interface CheckedPredicate<T> extends Predicate<T>
 {
     boolean testIt(T t) throws Exception;
 

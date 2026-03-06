@@ -1,5 +1,7 @@
 package org.saltations.endeavour;
 
+import java.util.concurrent.Callable;
+
 /**
  * This is similar to the Java Supplier function type. It has a checked exception on it to allow it to
  * be used in lambda expressions on the outcome methods.
@@ -8,15 +10,15 @@ package org.saltations.endeavour;
  */
 
 @FunctionalInterface
-public interface ExceptionalRunnable extends Runnable
+public interface CheckedCallable<T> extends Callable<T>
 {
-    void runIt() throws Exception;
+    T callIt() throws Exception;
 
-    default void run()
+    default T call()
     {
         try
         {
-            runIt();
+            return callIt();
         }
         catch (Exception e)
         {
@@ -29,5 +31,6 @@ public interface ExceptionalRunnable extends Runnable
             throw toBeThrown;
         }
     }
+
 
 }

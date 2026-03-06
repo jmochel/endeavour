@@ -42,10 +42,10 @@ mvn test -Dtest=OutcomeTest#testSuccessCreation
 - `ExceptionalSupplier<T>` - Supplier that can throw exceptions
 - `ExceptionalFunction<T,R>` - Function that can throw exceptions
 - `ExceptionalConsumer<T>` - Consumer that can throw exceptions
-- `ExceptionalRunnable` - Runnable that can throw exceptions
-- `ExceptionalCallable<T>` - Callable wrapper
-- `ExceptionalPredicate<T>` - Predicate that can throw exceptions
-- `ExceptionalBiConsumer<T,U>` - BiConsumer that can throw exceptions
+- `CheckedRunnable` - Runnable that can throw exceptions
+- `CheckedCallable<T>` - Callable wrapper
+- `CheckedPredicate<T>` - Predicate that can throw exceptions
+- `CheckedBiConsumer<T,U>` - BiConsumer that can throw exceptions
 
 ### Key Classes
 

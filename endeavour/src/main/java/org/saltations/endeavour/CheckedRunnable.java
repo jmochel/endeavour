@@ -1,24 +1,20 @@
 package org.saltations.endeavour;
 
-import java.util.concurrent.Callable;
-
 /**
- * This is similar to the Java Supplier function type. It has a checked exception on it to allow it to
+ * This is similar to the Java Runnable interface. It has a checked exception on it to allow it to
  * be used in lambda expressions on the outcome methods.
- *
- * @param <T> Type of the supplied value
  */
 
 @FunctionalInterface
-public interface ExceptionalCallable<T> extends Callable<T>
+public interface CheckedRunnable extends Runnable
 {
-    T callIt() throws Exception;
+    void runIt() throws Exception;
 
-    default T call()
+    default void run()
     {
         try
         {
-            return callIt();
+            runIt();
         }
         catch (Exception e)
         {
@@ -31,6 +27,5 @@ public interface ExceptionalCallable<T> extends Callable<T>
             throw toBeThrown;
         }
     }
-
 
 }

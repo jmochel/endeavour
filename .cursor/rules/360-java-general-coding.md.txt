@@ -65,13 +65,61 @@ public String toString() {
 - Use business domain nouns and verbs. A method should do something, and its name should say so
 - 
 
-## Handling No-Things
+## Handling No-Things (NULLs etc)
 
 - Do not initialize variables to null
 - Do not return nulls, return Optional or empty collections instead
 - Option1: Return Optional<T> for Explicit Absence
--  Option2: Don’t use Optional In DTOs or method parameters (especially in performance-critical code).
--  Option3: Return a Default or Empty Object (The Null Object Pattern)
+- Option2: Don’t use Optional In DTOs or method parameters (especially in performance-critical code).
+- Option3: Return a Default or Empty Object (The Null Object Pattern)
+- Option4: Java 21 using pattern matching and sealed classes
+```java
+// Using sealed classes and pattern matching (Java 21+)
+public sealed interface UserResult permits ValidUser, InvalidUser {}
+record ValidUser(String name, String email) implements UserResult {}
+record InvalidUser(String reason) implements UserResult {}
+
+public String processUserModern(UserResult result) {
+    return switch (result) {
+        case ValidUser(var name, var email) -> name + " - " + email;
+        case InvalidUser(var reason) -> "Invalid: " + reason;
+    };
+}
+```  
+
+Performance:
+- Traditional null checking: 45.2 ns/op
+- Optional-based approach: 38.7 ns/op (14% faster)
+- Pattern matching: 29.3 ns/op (35% faster)
+
+```plaintext
+Traditional Approach:
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Controller    │───▶│    Service       │───▶│   Repository    │
+│                 │    │                  │    │                 │
+│ if (user != null)│    │ if (result != null)│  │ if (data != null)│
+│   process()     │    │   validate()     │    │   return data   │
+│ else throw...   │    │ else return null │    │ else return null│
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                               │
+                               ▼
+                    Null propagation creates
+                    defensive programming everywhere
+
+Modern Approach:
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Controller    │───▶│    Service       │───▶│   Repository    │
+│                 │    │                  │    │                 │
+│ Optional<User>  │    │ Result<T>        │    │ Optional<Data>  │
+│ .map(process)   │    │ .flatMap(valid)  │    │ .orElse(empty)  │
+│ .orElseThrow()  │    │ .recover(error)  │    │                 │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                               │
+                               ▼
+                    Type-safe error handling
+                    with explicit control flow
+```                    
+
 
 ## Javadoc Comments
 
@@ -119,6 +167,72 @@ public String toString() {
 - Use peek() for Debugging (But Don’t Leave It In)
 - 
 
+## Instantiate Generics 
+
+
+
+## Sorting Lists involving nulls
+
+```java
+list.sort(Comparator.nullsFirst(Comparator.naturalOrder())); 
+// or
+list.sort(Comparator.nullsLast(Comparator.naturalOrder()));
+```
+
+## When to use loop labels
+
+Use them only when they significantly simplify nested loop logic — and alternatives would be uglier or introduce artificial flags.
+
+Typical valid uses:
+
+1.  **Early exit from nested loops** — e.g., searching a 2D array or grid:
+    
+```java
+search: for (int row = 0; row < rows; row++) { for (int col = 0; col < cols; col++) { if (matrix[row][col] == target) {
+            foundRow = row;
+            foundCol = col; break search;
+        }
+    }
+}
+```
+    → This is cleaner than managing a `found` flag or throwing a dummy exception.
+    
+2.  **Early continue of outer loop** when an inner condition invalidates the outer iteration:
+    
+```java    
+outer: for (Order order : orders) { for (Item item : order.getItems()) { if (item.isInvalid()) continue outer;
+    }
+    process(order);
+}
+```
+
+## JVM Shutdown Hooks
+
+You Can Add Shutdown Hooks to JVM
+Want to gracefully close resources when your Java app is killed?
+
+```java
+Runtime.getRuntime().addShutdownHook(new Thread(() ->
+    System.out.println("Shutting down cleanly...")
+));
+```
+
+# List recommendations for when and how to use 'JVM Shutdown Hooks' in Java
+
+- List pros and cons of the feature
+- List recommendations for when to use this feature and when not to use this feature focusing on maintainability and testability
+- List practices for using '
+lock
+AI Prompt: List range of recommendations and practices for using a Java feature' in Java broken into 3 groupings
+  - "common industry practices" : what’s actually done in the wild
+  - "best current practices" : emphasize what experienced engineers recommend for maintainability and robustness
+  - "thought-leader practices" : These are the “pundit-level” or thought-leader-endorsed standards — typically promoted in books, conference talks, or advanced frameworks.
+
+- Answer in terse, direct language
+
+  
+
+
 
 
 ## Java 11 or greater
@@ -134,7 +248,15 @@ public String toString() {
 - Records
 - ??? USe sealed classes and pattern matching  ????
 - Multiline Text Blocks: Multiline String Sanity
-- 
+
+```java
+// The instanceof Operator Can Bind a Variable (Pattern Matching)
+Object obj = "Hello";
+if (obj instanceof String s) {
+  System.out.println(s.toUpperCase());
+}
+```
+ 
 
 ## Java 21 or greater 
 
@@ -149,4 +271,84 @@ public String toString() {
 - Primitive types in patterns
 - Nullabel vs non-nullable value types
 
-- 
+- Sequenced collections
+```java
+SequencedMap<String,Integer> counts = new LinkedHashMap<>();
+counts.put("a",1);
+counts.put("b",2);
+
+// Clear intent
+var first = counts.firstEntry();
+var last  = counts.lastEntry();
+counts.putLast("c", 3);
+counts.pollFirstEntry();
+```
+
+- Scoped values to pass context without thread-locals
+
+Request context leaks through thread-locals on virtual threads.
+Scoped values let me pass keys safely and read them deep in the stack. I stop worrying about accidental retention.
+
+```plaintext
+\+ request \-> \[Scope.open\]  
+| traceId=abc123  
+| v v  
+| handler \-> service \-> repo  
+| ^ closes with scope  
+\+ done \-> \[Scope.close\]
+```
+
+```java
+static final ScopedValue<String> TRACE_ID = ScopedValue.newInstance();
+
+void handle(HttpRequest req) {
+  ScopedValue.where(TRACE_ID, req.header("X-Trace"))
+      .run(() -> service(req));
+}
+void service(HttpRequest req) {
+  log.info("trace={}", TRACE_ID.get());
+}
+```
+
+- Use record patterns where you unwrap structured data then decide behavior
+
+```java
+sealed interface Event permits OrderCreated, OrderPaid {}
+record OrderCreated(long id, Customer c) implements Event {}
+record Customer(String name, Address addr) {}
+record Address(String city) {}
+
+String city = switch (event) {
+  case OrderCreated(long id, Customer(var n, Address(var c))) -> c;
+  default -> "NA";
+};
+```
+- Pattern matching for switch that reads like policy
+
+I used instanceof ladders around DTOs and enums with state. Pattern matching folds it into one readable switch. The team reads the rules without jumping lines.
+
+```java
+String label = switch (obj) {
+  case String s when s.isBlank() -> "empty";
+  case String s                 -> s;
+  case Number n                 -> "num:" + n.longValue();
+  default                       -> "other";
+};
+```
+
+
+
+# List recommendations for when and how to use 'volatile' in Java
+
+- List pros and cons of using 'volatile'
+- List recommendations for when to use 'volatile' and when not to use 'volatile' focusing on maintainability and testability
+- List practices for using 'volatile' in Java broken into 3 groupings
+  - "common industry practices" : what’s actually done in the wild
+  - "best current practices" : emphasize what experienced engineers recommend for maintainability and robustness
+  - "thought-leader practices" : These are the “pundit-level” or thought-leader-endorsed standards — typically promoted in books, conference talks, or advanced frameworks.
+
+- Answer in terse, direct language
+
+
+
+

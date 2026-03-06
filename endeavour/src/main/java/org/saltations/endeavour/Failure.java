@@ -73,7 +73,8 @@ public record Failure<T>(FailureDescription description) implements Result<T>
         Objects.requireNonNull(action, "Action cannot be null");
 
         try {
-            return action.accept(this);
+            var result = action.accept(this);
+            return Objects.requireNonNull(result, "Action must not return null");
         } catch (Exception ex) {
             return new Failure<>(FailureDescription.of()
                 .type(FailureDescription.GenericFailureType.GENERIC_CONSUMER_EXCEPTION)
@@ -94,9 +95,7 @@ public record Failure<T>(FailureDescription description) implements Result<T>
     @Override
     public Result<T> orElseGet(CheckedSupplier<Result<T>> supplier)
     {
-        if (supplier == null) {
-            throw new NullPointerException("CheckedSupplier cannot be null");
-        }
+        Objects.requireNonNull(supplier, "CheckedSupplier cannot be null");
 
         try
         {
@@ -114,19 +113,11 @@ public record Failure<T>(FailureDescription description) implements Result<T>
         }
         catch (Exception e)
         {
-            return switch(e)
-            {
-                case RuntimeException ex -> new Failure<>(FailureDescription.of()
-                    .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
-                    .cause(ex)
-                    .precedingFailure(this.description)
-                    .build());
-                case Exception ex -> new Failure<>(FailureDescription.of()
-                    .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
-                    .cause(ex)
-                    .precedingFailure(this.description)
-                    .build());
-            };
+            return new Failure<>(FailureDescription.of()
+                .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
+                .cause(e)
+                .precedingFailure(this.description)
+                .build());
         }
     }
 

@@ -219,6 +219,21 @@ public class Try
     }
 
 
+    /**
+     * Construct a failed result with the given failure type and optional template/arguments.
+     * <p>
+     * When {@code failureType.templateParameterCount() == 0} and {@code args.length == 1},
+     * the single argument is treated as a detail message and must be a {@link String};
+     * otherwise it is used as template format arguments.
+     *
+     * @param failureType the failure type. <b>Not null.</b>
+     * @param args when the type's template has no placeholders and exactly one arg is given,
+     *        that arg must be a {@code String} (detail message); otherwise template format arguments
+     * @param <T> class of the contained success value
+     * @return a {@code Failure} with the given type and details
+     * @throws IllegalArgumentException if {@code templateParameterCount() == 0}, {@code args.length == 1},
+     *         and {@code args[0]} is not a {@code String}
+     */
     public static <T> Result<T> typedFailure(FailureType failureType, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
@@ -227,7 +242,10 @@ public class Try
 
         if (failureType.templateParameterCount() == 0 && args.length == 1)
         {
-            builder.template((String)args[0]);
+            if (!(args[0] instanceof String s)) {
+                throw new IllegalArgumentException("When failure type has no template parameters and one argument is supplied, that argument must be a String; got " + (args[0] == null ? "null" : args[0].getClass().getName()));
+            }
+            builder.template(s);
         }
         else {
             builder.args(args);
@@ -264,6 +282,20 @@ public class Try
         return new Failure<>(fail);
     }
 
+    /**
+     * Construct a failed result with the given cause, failure type, and optional template/arguments.
+     * <p>
+     * When {@code failureType.templateParameterCount() == 0} and {@code args.length == 1},
+     * the single argument must be a {@link String} (detail message); see {@link #typedFailure}.
+     *
+     * @param cause the exception cause. <b>Not null.</b>
+     * @param failureType the failure type. <b>Not null.</b>
+     * @param args when the type has no template placeholders and one arg is given, must be a {@code String}; otherwise template arguments
+     * @param <T> class of the contained success value
+     * @return a {@code Failure} with the given cause, type, and details
+     * @throws IllegalArgumentException if {@code templateParameterCount() == 0}, {@code args.length == 1},
+     *         and {@code args[0]} is not a {@code String}
+     */
     public static <T> Result<T> causedFailure(Exception cause, FailureType failureType, Object...args)
     {
         requireNonNull(failureType, "Failure needs a non-null failure type");
@@ -272,7 +304,10 @@ public class Try
 
         if (failureType.templateParameterCount() == 0 && args.length == 1)
         {
-            builder.template((String)args[0]);
+            if (!(args[0] instanceof String s)) {
+                throw new IllegalArgumentException("When failure type has no template parameters and one argument is supplied, that argument must be a String; got " + (args[0] == null ? "null" : args[0].getClass().getName()));
+            }
+            builder.template(s);
         }
         else {
             builder.args(args);

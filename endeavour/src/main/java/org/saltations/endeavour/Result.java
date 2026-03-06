@@ -110,12 +110,15 @@ public sealed interface Result<T> permits Failure, Success
     /**
      * Reduces the {@code Result<T>} to a single value of type {@code V} using a fold operation.
      * <p>
-     * Exceptions thrown by the reduction functions are caught and converted to a {@code Failure}.
+     * Applies {@code onSuccess} when this is a success, or {@code onFailure} when this is a failure.
+     * If the applied function throws an exception, that exception is caught and an empty
+     * {@code Optional} is returned (the exception is not propagated).
      *
      * @param onSuccess function to apply if this is a success. <b>Not null.</b>
      * @param onFailure function to apply if this is a failure. <b>Not null.</b>
      *
-     * @return Optional containing the result of applying the appropriate function, empty if the function returns null
+     * @return Optional containing the result of applying the appropriate function; empty if the
+     *         function returns null or throws an exception
      *
      * @param <V> the type of the reduced value
      */
@@ -135,7 +138,7 @@ public sealed interface Result<T> permits Failure, Success
      * }
      */
 
-     Result<T> ifSuccess(@NonNull CheckedConsumer<Success<T>> action);
+    @org.jspecify.annotations.NonNull Result<T> ifSuccess(@NonNull CheckedConsumer<Success<T>> action);
 
     /**
      * Executes action if this outcome is a failure, takes no action otherwise.
@@ -150,7 +153,7 @@ public sealed interface Result<T> permits Failure, Success
      * }
      */
 
-     Result<T> ifFailure(@NonNull CheckedConsumer<Failure<T>> action);
+    @org.jspecify.annotations.NonNull Result<T> ifFailure(@NonNull CheckedConsumer<Failure<T>> action);
 
     /**
      * Returns the alternate result if this outcome is a failure, otherwise returns the existing outcome.

@@ -149,7 +149,7 @@ public class FailureDescription
 
     public String getTotalMessage()
     {
-        return title + "-" + detail;
+        return (title != null ? title : "") + "-" + (detail != null ? detail : "");
     }
 
     /**

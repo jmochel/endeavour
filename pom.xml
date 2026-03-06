@@ -38,6 +38,7 @@
         <guava.version>33.5.0-jre</guava.version>
         <picocli.version>4.7.7</picocli.version>
         <jacoco.version>0.8.14</jacoco.version>
+        <jspecify.version>1.0.0</jspecify.version>
 
         <!-- Plugins -->
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
@@ -87,6 +88,11 @@
                 <groupId>info.picocli</groupId>
                 <artifactId>picocli</artifactId>
                 <version>${picocli.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jspecify</groupId>
+                <artifactId>jspecify</artifactId>
+                <version>${jspecify.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

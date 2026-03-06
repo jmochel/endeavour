@@ -19,7 +19,8 @@ public sealed interface Success<T> extends Result<T> permits QuantSuccess, QualS
         
         
         try {
-            return action.accept(this);
+            var result = action.accept(this);
+            return Objects.requireNonNull(result, "Action must not return null");
         } catch (Exception ex) {
             return new Failure<>(FailureDescription.of()
                 .type(FailureDescription.GenericFailureType.GENERIC_EXCEPTION)
